@@ -1,1 +1,2 @@
-https://raw.githubusercontent.com/FireFather/fire-zero/master/docs/environment.md
+https://raw.githubusercontent.com/FireFather/fire-zero/master/bitmaps/nnue-auto-dir.PNG
+
