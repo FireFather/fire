@@ -8,6 +8,8 @@
 ![alt tag](https://raw.githubusercontent.com/FireFather/fire-zero/master/bitmaps/nnue-extract2.PNG)
 
 ![alt tag](https://raw.githubusercontent.com/FireFather/fire-zero/master/bitmaps/plain-txt.PNG)
+![alt tag](https://raw.githubusercontent.com/FireFather/fire-zero/master/bitmaps/extract.PNG)
+
 
 
 
