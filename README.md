@@ -5,7 +5,7 @@ fire 8.2 self-play nnue
 
 ## tools used:
 
-- fire 8.2 https://github.com/FireFather/fire (engine for generation of self-play games)
+- fire 8.2 <https://github.com/FireFather/fire target="_blank"> (engine for generation of self-play games)
 - cutechess https://github.com/cutechess/cutechess (command-line application to run self-play games)
 - deeds tools https://outskirts.altervista.org/forum/viewtopic.php?t=2009 (nnue-extract.exe to obtain fen positions and evaluation data from pgn files)
 - nnue-gui https://github.com/FireFather/nnue-gui (windows application for nnue training session management)
