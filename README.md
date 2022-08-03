@@ -31,10 +31,8 @@ fire 8.2 self-play nnue
   - [cutechess-opening-books.md](docs/cutechess-opening-books.md)
 - running selfplay games for a 'zero' nnue approach
   - [selfplay-with-cutechess.md](docs/selfplay-with-cutechess.md)
-- using eval-nnue and/or eval-extract
-  - [environment.md](docs/environment.md)
-- position (fen) extraction from pgn files
-  - [fen-extraction&conversion-to-plain-text.md.md](docs/fen-extraction&conversion-to-plain-text.md)
+- using eval-extract to obtain fens & data from pgn files
+  - [fen-extraction&conversion-to-plain-text.md](docs/fen-extraction&conversion-to-plain-text.md)
 - conversion of plain text files to nnue .bin training format
   - [plain-text-conversion-to-bin-format.md](docs/plain-text-conversion-to-bin-format.md)
 - training & command-line management using nnue-gui
