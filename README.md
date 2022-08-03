@@ -34,7 +34,7 @@ fire 8.2 self-play nnue
 - using eval-extract to obtain fens & data from pgn files
   - [nnue-extract_fen-&-data-extraction-&-conversion-to-plain-text.md](docs/nnue-extract_fen-&-data-extraction-&-conversion-to-plain-text.md)
 - converting plain text data files to nnue .bin training format
-  - [plain-text-conversion-to-nnue training .bin-format.md](docs/plain-text-conversion-to-nnue training .bin-format.md)
+  - [plain-text-conversion-to-nnue-training-.bin-format.md](docs/plain-text-conversion-to-nnue-training-.bin-format.md)
 - training & command-line management using nnue-gui
   - [create-a-nnue-with-nnue-gui.md](docs/create-a-nnue-with-nnue-gui.md)
 - testing the generated nnues
