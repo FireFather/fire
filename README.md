@@ -19,9 +19,9 @@ fire 8.2 self-play nnue
   - pgn-extract https://www.cs.kent.ac.uk/people/staff/djb/pgn-extract/
 - application for testing nnue vs nnue, etc.
   - little blitzer http://www.kimiensoftware.com/software/chess/littleblitzer
-- utility for opening book creation...remove duplicate games from pgn files
+- utility for removing duplicate games from pgn files
   - chessbase 16 64-bit https://shop.chessbase.com/en/products/chessbase_16_fritz18_bundle
-- misc utilities: truncate.exe opening book ply limitation, & gameSplit.exe to break up pgns to multiple parts
+- misc utilities: truncate.exe (opening book ply limitation) & gameSplit.exe (break up pgns to multiple parts)
   - 40H-pgn tools http://40hchess.epizy.com/
 
 ## instructions to create an efficiently-updatable neural network (nnue) for any engine:
@@ -33,7 +33,7 @@ fire 8.2 self-play nnue
   - [selfplay-with-cutechess.md](docs/selfplay-with-cutechess.md)
 - using eval-extract to obtain fens & data from pgn files
   - [fen-extraction&conversion-to-plain-text.md](docs/fen-extraction&conversion-to-plain-text.md)
-- conversion of plain text files to nnue .bin training format
+- converting plain text data files to nnue .bin training format
   - [plain-text-conversion-to-bin-format.md](docs/plain-text-conversion-to-bin-format.md)
 - training & command-line management using nnue-gui
   - [create-a-nnue-with-nnue-gui.md](docs/create-a-nnue-with-nnue-gui.md)
