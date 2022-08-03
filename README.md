@@ -26,25 +26,21 @@ fire 8.2 self-play nnue
 
 ## instructions to create an efficiently-updatable neural network (nnue) for any engine:
 - setting up a suitable Windows environment
-  - [environment.md](docs/environment.md)
+  - [windows-environment.md](docs/windows-environment.md)
 - creating an efficient opening book using cutechess-cli
-  - [environment.md](docs/environment.md)
+  - [cutechess-opening-books.md](docs/cutechess-opening-books.md)
 - running selfplay games for a 'zero' nnue approach
-  - [environment.md](docs/environment.md)
+  - [selfplay-with-cutechess.md](docs/selfplay-with-cutechess.md)
 - using eval-nnue and/or eval-extract
   - [environment.md](docs/environment.md)
 - position (fen) extraction from pgn files
-  - [environment.md](docs/environment.md)
-- conversion to plain text
-  - [environment.md](docs/environment.md)
+  - [fen-extraction&conversion-to-plain-text.md.md](docs/fen-extraction&conversion-to-plain-text.md)
 - conversion of plain text files to nnue .bin training format
-  - [environment.md](docs/environment.md)
+  - [plain-text-conversion-to-bin-format.md](docs/plain-text-conversion-to-bin-format.md)
 - training & command-line management using nnue-gui
-  - [environment.md](docs/environment.md)
-- creating an initial nnue
-  - [environment.md](docs/environment.md)
+  - [create-a-nnue-with-nnue-gui.md](docs/create-a-nnue-with-nnue-gui.md)
 - testing the generated nnues
-  - [environment.md](docs/environment.md)
+  - [testing-with-little-blitzer.md](docs/testing-with-little-blitzer.md)
 - improving the NNUE with supervised & reinforcement learning
-  - [environment.md](docs/environment.md)
+  - [improving-the-nnue.md](docs/improving-the-nnue.md)
 
