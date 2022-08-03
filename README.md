@@ -1,4 +1,4 @@
-![alt tag](https://raw.githubusercontent.com/FireFather/fire-zero/master/bitmaps/nnue-gui.png)
+https://raw.githubusercontent.com/FireFather/fire-zero/master/bitmaps/nnue-gui.png
 
 # fire-zero
 fire 8.2 self-play nnue
