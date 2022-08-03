@@ -15,7 +15,7 @@ fire 8.2 self-play nnue
 (or another suitable program to removes duplicate games from a pgn file)
 - 40H-pgn tools http://40hchess.epizy.com/
 
-## efficiently-updatable neural network (nnue) for any engine:
+## instructions to create an efficiently-updatable neural network (nnue) for any engine:
 - setting up a suitable Windows environment
 - creating an efficient opening book using cutechess-cli
 - running selfplay games for a 'zero' nnue approach
