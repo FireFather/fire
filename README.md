@@ -30,7 +30,7 @@ fire 8.2 self-play nnue
 - creating an efficient opening book using cutechess-cli
   - [cutechess-opening-books.md](docs/cutechess-opening-books.md)
 - running selfplay games for a 'zero' nnue approach
-  - [engine selfplay-via-cutechess-cli.md](docs/engine selfplay-via-cutechess-cli.md)
+  - [engine-selfplay-via-cutechess-cli.md](docs/engine-selfplay-via-cutechess-cli.md)
 - using eval-extract to obtain fens & data from pgn files
   - [nnue-extract_fen-&-data-extraction-&-conversion-to-plain-text.md](docs/nnue-extract_fen-&-data-extraction-&-conversion-to-plain-text.md)
 - converting plain text data files to nnue .bin training format
