@@ -20,8 +20,8 @@ fire 8.2 self-play nnue
 - using eval-nnue eval-extract (deeds tools https://outskirts.altervista.org/forum/viewtopic.php?f=41&t=2009&start=30)
 - position (fen) extraction from pgn files
 - conversion to plain text
-- conversion ofplain text files to nnue .bin training format
-- training management using nnue-gui (https://github.com/FireFather/nnue-gui)
+- conversion of plain text files to nnue .bin training format
+- training é command-line management using nnue-gui (https://github.com/FireFather/nnue-gui)
 - creating an initial nnue
 - testing the generated nnues
 - improving the NNUE with supervised and reinforcement learning
