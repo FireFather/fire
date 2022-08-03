@@ -30,15 +30,15 @@ fire 8.2 self-play nnue
 - creating an efficient opening book using cutechess-cli
   - [cutechess-opening-books.md](docs/cutechess-opening-books.md)
 - running selfplay games for a 'zero' nnue approach
-  - [selfplay-with-cutechess.md](docs/selfplay-with-cutechess.md)
+  - [engine selfplay-via-cutechess-cli.md](docs/engine selfplay-via-cutechess-cli.md)
 - using eval-extract to obtain fens & data from pgn files
-  - [fen-extraction&conversion-to-plain-text.md](docs/fen-extraction&conversion-to-plain-text.md)
+  - [nnue-extract_fen&data-extraction-&-conversion-to-plain-text.md](docs/nnue-extract_fen&data-extraction-&-conversion-to-plain-text.md)
 - converting plain text data files to nnue .bin training format
-  - [plain-text-conversion-to-bin-format.md](docs/plain-text-conversion-to-bin-format.md)
+  - [plain-text-conversion-to-nnue training .bin-format.md](docs/plain-text-conversion-to-nnue training .bin-format.md)
 - training & command-line management using nnue-gui
   - [create-a-nnue-with-nnue-gui.md](docs/create-a-nnue-with-nnue-gui.md)
 - testing the generated nnues
-  - [testing-with-little-blitzer.md](docs/testing-with-little-blitzer.md)
+  - [version-testing-with-little-blitzer.md](docs/version-testing-with-little-blitzer.md)
 - improving the NNUE with supervised & reinforcement learning
   - [improving-the-nnue.md](docs/improving-the-nnue.md)
 
