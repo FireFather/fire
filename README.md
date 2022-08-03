@@ -3,9 +3,9 @@ fire 8.2 self-play nnue
 
 ## tools used:
 
--fire 8.2 https://github.com/FireFather/fire
+- fire 8.2 https://github.com/FireFather/fire
 - cutechess https://github.com/cutechess/cutechess
-- Deeds Tools https://outskirts.altervista.org/forum/viewtopic.php?t=2009
+- deeds tools https://outskirts.altervista.org/forum/viewtopic.php?t=2009
 - nnue-gui https://github.com/FireFather/nnue-gui
 - sf-nnue https://github.com/FireFather/sf-nnue
 - pgn-extract https://www.cs.kent.ac.uk/people/staff/djb/pgn-extract/
@@ -16,10 +16,10 @@ fire 8.2 self-play nnue
 - 40H-PGN Tools http://40hchess.epizy.com/
 
 ## efficiently-updatable neural network (NNUE) for any engine:
-- Setting up a suitable Windows environment
-- Creating an efficient opening book using cutechess-cli
-- Running selfplay games for a 'Zero' NNUE approach
-- Using eval-nnue eval-extract (Deeds Tools https://outskirts.altervista.org/forum/viewtopic.php?f=41&t=2009&start=30)
+- setting up a suitable Windows environment
+- creating an efficient opening book using cutechess-cli
+- running selfplay games for a 'Zero' NNUE approach
+- using eval-nnue eval-extract (Deeds Tools https://outskirts.altervista.org/forum/viewtopic.php?f=41&t=2009&start=30)
 - position (fen) extraction from PGNs
 - conversion to plain text
 - conversion ofplain text files to NNUE .bin training format
