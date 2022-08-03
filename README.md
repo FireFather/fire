@@ -26,7 +26,7 @@ fire 8.2 self-play nnue
 
 ## instructions to create an efficiently-updatable neural network (nnue) for any engine:
 - setting up a suitable Windows environment
-  - https://raw.githubusercontent.com/FireFather/fire-zero/master/docs/environment.md
+  - [project](docs/environment.md)
 - creating an efficient opening book using cutechess-cli
   - https://raw.githubusercontent.com/FireFather/fire-zero/master/docs/environment.md 
 - running selfplay games for a 'zero' nnue approach
