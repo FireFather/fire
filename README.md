@@ -3,7 +3,7 @@ fire 8.2 self-play nnue
 
 ## tools used:
 
--f ire 8.2 https://github.com/FireFather/fire
+-fire 8.2 https://github.com/FireFather/fire
 - cutechess https://github.com/cutechess/cutechess
 - Deeds Tools https://outskirts.altervista.org/forum/viewtopic.php?t=2009
 - nnue-gui https://github.com/FireFather/nnue-gui
