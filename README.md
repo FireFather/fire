@@ -27,14 +27,24 @@ fire 8.2 self-play nnue
 ## instructions to create an efficiently-updatable neural network (nnue) for any engine:
 - setting up a suitable Windows environment
   - https://raw.githubusercontent.com/FireFather/fire-zero/master/docs/environment.md
-
 - creating an efficient opening book using cutechess-cli
+  - https://raw.githubusercontent.com/FireFather/fire-zero/master/docs/environment.md 
 - running selfplay games for a 'zero' nnue approach
+  - https://raw.githubusercontent.com/FireFather/fire-zero/master/docs/environment.md
 - using eval-nnue and/or eval-extract
+  - https://raw.githubusercontent.com/FireFather/fire-zero/master/docs/environment.md
 - position (fen) extraction from pgn files
+  - https://raw.githubusercontent.com/FireFather/fire-zero/master/docs/environment.md
 - conversion to plain text
+  - https://raw.githubusercontent.com/FireFather/fire-zero/master/docs/environment.md
 - conversion of plain text files to nnue .bin training format
-- training é command-line management using nnue-gui
+  - https://raw.githubusercontent.com/FireFather/fire-zero/master/docs/environment.md 
+- training & command-line management using nnue-gui
+  - https://raw.githubusercontent.com/FireFather/fire-zero/master/docs/environment.md 
 - creating an initial nnue
+  - https://raw.githubusercontent.com/FireFather/fire-zero/master/docs/environment.md
 - testing the generated nnues
+  - https://raw.githubusercontent.com/FireFather/fire-zero/master/docs/environment.md
 - improving the NNUE with supervised & reinforcement learning
+  - https://raw.githubusercontent.com/FireFather/fire-zero/master/docs/environment.md
+
