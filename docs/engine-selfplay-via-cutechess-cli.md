@@ -6,7 +6,7 @@
 ![alt tag](https://raw.githubusercontent.com/FireFather/fire-zero/master/bitmaps/cutechess-fire_8.2-test2.PNG)
 ![alt tag](https://raw.githubusercontent.com/FireFather/fire-zero/master/bitmaps/cutechess-run(once).bat.PNG)
 ![alt tag](https://raw.githubusercontent.com/FireFather/fire-zero/master/bitmaps/cutechess-output2.PNG)
-
+![alt tag](https://raw.githubusercontent.com/FireFather/fire-zero/master/bitmaps/pgns.PNG)
 
 
 
