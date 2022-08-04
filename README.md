@@ -8,7 +8,7 @@ fire 8.2 self-play nnue
 - engine for generation of self-play games
   - fire 8.2 https://github.com/FireFather/fire
 - application to run self-play games
-  - cutechess-cli https://github.com/cutechess/cutechess- 
+  - cutechess-cli https://github.com/cutechess/cutechess
 - application to obtain fen positions and evaluation data from pgn files & convert to plain text
   - nnue-extract.exe from deeds tools https://outskirts.altervista.org/forum/viewtopic.php?t=2009
 - windows application for nnue training session management
