@@ -160,8 +160,8 @@ void uci_loop(const int argc, char* argv[])
 			divide(depth, fen);
 		}
 		else if (token == "bench")
-		{	//bench depth = 16 unless specified on command line
-			auto bench_depth = is >> token ? token : "16";
+		{	//bench depth = 14 unless specified on command line
+			auto bench_depth = is >> token ? token : "14";
 			// to suppress extraneous output			
 			bench_active = true;
 			bench(stoi(bench_depth));
