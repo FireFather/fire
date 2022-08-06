@@ -12,6 +12,7 @@
 
 ![alt tag](https://raw.githubusercontent.com/FireFather/fire-zero/master/bitmaps/plain-txt.PNG)
 ![alt tag](https://raw.githubusercontent.com/FireFather/fire-zero/master/bitmaps/extract.PNG)
+![alt tag](https://raw.githubusercontent.com/FireFather/fire-zero/master/bitmaps/stats.PNG)
 
 
 
