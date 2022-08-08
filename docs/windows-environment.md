@@ -7,6 +7,7 @@ I recommend mirroring the installation to a networked drive for backup & redunda
 ![alt tag](https://raw.githubusercontent.com/FireFather/fire-zero/master/bitmaps/nnue-auto-dir.PNG)
 
 The nnue-train directory holds nnue-gui.exe (training management), sf-nnue exectuables (training), and .bat files to organize data  rename nets etc.
+
 ![alt tag](https://raw.githubusercontent.com/FireFather/fire-zero/master/bitmaps/nnue-train.PNG)
 
 ![alt tag](https://raw.githubusercontent.com/FireFather/fire-zero/master/bitmaps/pgns.PNG)
