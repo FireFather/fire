@@ -10,5 +10,6 @@ The nnue-train directory holds nnue-gui.exe (training management), sf-nnue exect
 
 ![alt tag](https://raw.githubusercontent.com/FireFather/fire-zero/master/bitmaps/nnue-train.PNG)
 
+The 'run' scripts which launch cutechess-cli to generate self-play games automatically renames the pgn with a unique signature: MMDDYYY-HHMMSS.pgn
 ![alt tag](https://raw.githubusercontent.com/FireFather/fire-zero/master/bitmaps/pgns.PNG)
 
