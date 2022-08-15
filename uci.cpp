@@ -142,18 +142,18 @@ void uci_loop(const int argc, char* argv[])
 		else if (token == "perft")
 		{
 			auto depth = 7;
-			auto& fen = startpos;
-
+			auto &fen = startpos;
+			
 			is >> depth;
 			is >> fen;
-
+			
 			perft(depth, fen);
 		}
 		else if (token == "divide")
 		{
 			auto depth = 7;
-			auto& fen = startpos;
-
+			auto &fen = startpos;
+			
 			is >> depth;
 			is >> fen;
 
