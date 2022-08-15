@@ -14,7 +14,6 @@
   this program: copying.txt.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "../hash.h"
 #include "tbprobe.h"
 #include "../thread.h"
 #include "../util/util.h"

@@ -83,26 +83,26 @@ namespace util
 
 	std::string compiler_info() {
 
-#define stringify2(x) #x
-#define stringify(x) stringify2(x)
-#define make_version_string(major, minor, patch) stringify(major) "." stringify(minor) "." stringify(patch)
+#define STRINGIFY2(x) #x
+#define STRINGIFY(x) STRINGIFY2(x)
+#define MAKE_VERSION_STRING(major, minor, patch) STRINGIFY(major) "." STRINGIFY(minor) "." STRINGIFY(patch)
 
 		std::string compiler = "Compiled using   : ";
 
 #ifdef __clang__
 		compiler += "clang++ ";
-		compiler += make_version_string(__clang_major__, __clang_minor__, __clang_patchlevel__);
+		compiler += MAKE_VERSION_STRING(__clang_major__, __clang_minor__, __clang_patchlevel__);
 
 #elif __INTEL_COMPILER
 		compiler += "Intel compiler ";
 		compiler += "(version ";
-		compiler += stringify(__INTEL_COMPILER) " update " stringify(__INTEL_COMPILER_UPDATE);
+		compiler += STRINGIFY(__INTEL_COMPILER) " update " STRINGIFY(__INTEL_COMPILER_UPDATE);
 		compiler += ")";
 
 #elif _MSC_VER
 		compiler += "MSVC ";
 		compiler += "(version ";
-		compiler += stringify(_MSC_FULL_VER) "." stringify(_MSC_BUILD);
+		compiler += STRINGIFY(_MSC_FULL_VER) "." STRINGIFY(_MSC_BUILD);
 		compiler += ")";
 
 #elif defined(__e2k__) && defined(__LCC__)
@@ -120,7 +120,7 @@ namespace util
 
 #elif __GNUC__
 		compiler += "g++ (GNUC) ";
-		compiler += make_version_string(__GNUC__, __GNUC_MINOR__, __GNUC_PATCHLEVEL__);
+		compiler += MAKE_VERSION_STRING(__GNUC__, __GNUC_MINOR__, __GNUC_PATCHLEVEL__);
 #else
 		compiler += "Unknown compiler ";
 		compiler += "(unknown version)";

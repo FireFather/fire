@@ -422,13 +422,13 @@ sfactor endgame_krpkr(const position& pos)
 	if (r <= rank_5
 		&& distance(bk_sq, queening_sq) <= 1
 		&& wk_sq <= h5
-		&& (rank_of(br_sq) == rank_6 || r <= rank_3 && rank_of(wr_sq) != rank_6))
+		&& (rank_of(br_sq) == rank_6 || (r <= rank_3 && rank_of(wr_sq) != rank_6)))
 		return draw_factor;
 
 	if (r == rank_6
 		&& distance(bk_sq, queening_sq) <= 1
 		&& rank_of(wk_sq) + tempo <= rank_6
-		&& (rank_of(br_sq) == rank_1 || !tempo && file_distance(br_sq, wp_sq) >= 3))
+		&& (rank_of(br_sq) == rank_1 || (!tempo && file_distance(br_sq, wp_sq) >= 3)))
 		return draw_factor;
 
 	if (r >= rank_6
@@ -464,8 +464,8 @@ sfactor endgame_krpkr(const position& pos)
 		&& distance(wk_sq, queening_sq) < distance(bk_sq, queening_sq) - 2 + tempo
 		&& distance(wk_sq, wp_sq + north) < distance(bk_sq, wp_sq + north) - 2 + tempo
 		&& (distance(bk_sq, wr_sq) + tempo >= 3
-			|| distance(wk_sq, queening_sq) < distance(bk_sq, wr_sq) + tempo
-			&& distance(wk_sq, wp_sq + north) < distance(bk_sq, wr_sq) + tempo))
+			|| (distance(wk_sq, queening_sq) < distance(bk_sq, wr_sq) + tempo
+			&& distance(wk_sq, wp_sq + north) < distance(bk_sq, wr_sq) + tempo)))
 		return static_cast<sfactor>(max_factor - 12 * distance(wp_sq, queening_sq) - 3 * distance(wk_sq, queening_sq));
 
 	if (r <= rank_4 && bk_sq > wp_sq)
@@ -522,8 +522,8 @@ sfactor endgame_kqkp(const position& pos)
 
 	if (const auto tempo = !white_on_move || !(attack & static_cast<square>(pawn ^ flop)); dame != pawn - 8
 		&& rank_of(black_king) <= rank_2 + tempo
-		&& (square_distance[black_king][pawn] <= 1 + tempo || pawn == c2
-		&& black_king == a1 || pawn == f2 && black_king == h1))
+		&& (square_distance[black_king][pawn] <= 1 + tempo) || (pawn == c2
+		&& black_king == a1) || (pawn == f2 && black_king == h1))
 	{
 		if (file_of(pawn) >= file_e)
 		{
@@ -552,14 +552,14 @@ sfactor endgame_kqkp(const position& pos)
 			&& !bk_check)
 		{
 			if (pawn == a2
-				&& (square_distance[a1][black_king] == 1
-				|| file_of(dame) != file_a
+				&& (square_distance[a1][black_king] == 1)
+				|| (file_of(dame) != file_a
 				&& !(attack & static_cast<square>(a1 ^ flop))))
 				return draw_factor;
 
 			if (pawn == c2
-				&& (square_distance[c1][black_king] == 1
-				|| file_of(dame) != file_c
+				&& (square_distance[c1][black_king] == 1)
+				|| (file_of(dame) != file_c
 				&& !(attack & static_cast<square>(c1 ^ flop))))
 				return draw_factor;
 		}

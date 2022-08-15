@@ -36,7 +36,7 @@ void hash::init(const size_t mb_size)
 	if (hash_mem_)
 		free(hash_mem_);
 
-	hash_mem_ = static_cast<bucket*>(calloc(buckets_ * sizeof(bucket) + 63, 1));
+	hash_mem_ = static_cast<bucket*>(calloc(buckets_ * sizeof(bucket) + 63, sizeof(bucket)));
 
 	if (!hash_mem_)
 	{
@@ -45,7 +45,6 @@ void hash::init(const size_t mb_size)
 		exit(EXIT_FAILURE);
 	}
 
-	buckets_ = new_size;
 	bucket_mask_ = (buckets_ - 1) * sizeof(bucket);
 }
 

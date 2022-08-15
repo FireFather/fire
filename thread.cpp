@@ -107,9 +107,11 @@ void thread::idle_loop()
 	cmhi = cmh_data;
 
 	auto* p = calloc(sizeof(threadinfo), true);
-	std::memset(p, 0, sizeof(threadinfo));
-	ti = new(p) threadinfo;
-
+	if (p != nullptr)
+	{
+		std::memset(p, 0, sizeof(threadinfo));
+		ti = new(p) threadinfo;
+	}
 	root_position = &ti->root_position;
 
 	while (!exit_)

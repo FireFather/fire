@@ -47,7 +47,7 @@ uint64_t start_perft(position& pos, const int depth) {
 
 void perft(int depth, std::string& fen)
 {
-	char buf[256];
+	char buf[32];
 
 	uint64_t nodes = 0;
 
@@ -60,7 +60,7 @@ void perft(int depth, std::string& fen)
 
 	// if 'perft.epd' is specified as 4th function parameter
 	// read positions from that file
-	if (static char file_name[256]; fen == "perft.epd")
+	if (static char file_name[64]; fen == "perft.epd")
 	{
 		std::fstream file;
 		file.open("perft.epd", std::ios::in);
@@ -184,7 +184,7 @@ void perft(int depth, std::string& fen)
 // divide is similar to perft but lists all moves possible and calculates the perft of the decremented depth for each
 void divide(int depth, std::string& fen)
 {
-	char buf[256];
+	char buf[32];
 	uint64_t nodes = 0;
 
 	if (depth < 1) depth = 1;

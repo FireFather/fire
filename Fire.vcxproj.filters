@@ -203,9 +203,6 @@
     <ClInclude Include="random\random.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="options.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="nnue\misc.h">
       <Filter>Header Files</Filter>
     </ClInclude>

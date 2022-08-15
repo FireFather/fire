@@ -297,7 +297,8 @@ void syzygy_path_init(const std::string& path)
 	const auto* const p = path.c_str();
 	if (strlen(p) == 0 || !strcmp(p, "<empty>")) return;
 	path_string = static_cast<char*>(malloc(strlen(p) + 1));
-	strcpy(path_string, p);
+	if (path_string != nullptr)
+		strcpy(path_string, p);
 	num_paths = 0;
 	for (i = 0; i <= static_cast<int>(strlen(p)); i++) {
 		if (path_string[i] != sep_char)
@@ -308,12 +309,14 @@ void syzygy_path_init(const std::string& path)
 		path_string[i] = 0;
 	}
 	paths = static_cast<char**>(malloc(num_paths * sizeof(char*)));
-	for (i = j = 0; i < num_paths; i++) {
-		while (!path_string[j]) j++;
-		paths[i] = &path_string[j];
-		while (path_string[j]) j++;
+	if (paths != nullptr)
+	{
+		for (i = j = 0; i < num_paths; i++) {
+			while (!path_string[j]) j++;
+			paths[i] = &path_string[j];
+			while (path_string[j]) j++;
+		}
 	}
-
 	LOCK_INIT(tb_mutex);
 
 	tb_num_piece = tb_num_pawn = 0;
@@ -334,51 +337,51 @@ void syzygy_path_init(const std::string& path)
 	}
 
 	for (i = 1; i < 6; i++)
-		for (j = i; j < 6; j++) {
+		for (j = i + 1; j < 6; j++) {
 			sprintf(str, "K%cvK%c", pchr[i], pchr[j]);
 			init_tb(str);
 		}
 
 	for (i = 1; i < 6; i++)
-		for (j = i; j < 6; j++) {
+		for (j = i + 1; j < 6; j++) {
 			sprintf(str, "K%c%cvK", pchr[i], pchr[j]);
 			init_tb(str);
 		}
 
 	for (i = 1; i < 6; i++)
-		for (j = i; j < 6; j++)
+		for (j = i + 1; j < 6; j++)
 			for (k = 1; k < 6; k++) {
 				sprintf(str, "K%c%cvK%c", pchr[i], pchr[j], pchr[k]);
 				init_tb(str);
 			}
 
 	for (i = 1; i < 6; i++)
-		for (j = i; j < 6; j++)
-			for (k = j; k < 6; k++) {
+		for (j = i + 1; j < 6; j++)
+			for (k = j + 1; k < 6; k++) {
 				sprintf(str, "K%c%c%cvK", pchr[i], pchr[j], pchr[k]);
 				init_tb(str);
 			}
 
 	for (i = 1; i < 6; i++)
-		for (j = i; j < 6; j++)
-			for (k = i; k < 6; k++)
+		for (j = i + 1; j < 6; j++)
+			for (k = i + 1; k < 6; k++)
 				for (l = (i == k) ? j : k; l < 6; l++) {
 					sprintf(str, "K%c%cvK%c%c", pchr[i], pchr[j], pchr[k], pchr[l]);
 					init_tb(str);
 				}
 
 	for (i = 1; i < 6; i++)
-		for (j = i; j < 6; j++)
-			for (k = j; k < 6; k++)
+		for (j = i + 1; j < 6; j++)
+			for (k = j + 1; k < 6; k++)
 				for (l = 1; l < 6; l++) {
 					sprintf(str, "K%c%c%cvK%c", pchr[i], pchr[j], pchr[k], pchr[l]);
 					init_tb(str);
 				}
 
 	for (i = 1; i < 6; i++)
-		for (j = i; j < 6; j++)
-			for (k = j; k < 6; k++)
-				for (l = k; l < 6; l++) {
+		for (j = i + 1; j < 6; j++)
+			for (k = j + 1; k < 6; k++)
+				for (l = k + 1; l < 6; l++) {
 					sprintf(str, "K%c%c%c%cvK", pchr[i], pchr[j], pchr[k], pchr[l]);
 					init_tb(str);
 				}
@@ -667,7 +670,7 @@ static uint64 encode_piece(const tb_entry_piece* ptr, const ubyte* norm, int* po
 		for (j = i; j < i + t; j++)
 			for (auto k = j + 1; k < i + t; k++)
 				if (pos[j] > pos[k])
-					SWAP(pos[j], pos[k]);
+					SWAP(pos[j], pos[k])
 		auto s = 0;
 		for (auto m = i; m < i + t; m++) {
 			const auto p = pos[m];
@@ -687,7 +690,7 @@ static int pawn_file(const tb_entry_pawn* ptr, int* pos)
 {
 	for (auto i = 1; i < ptr->pawns[0]; i++)
 		if (flap[pos[0]] > flap[pos[i]])
-			SWAP(pos[0], pos[i]);
+			SWAP(pos[0], pos[i])
 
 	return file_to_file[pos[0] & 0x07];
 }
@@ -704,7 +707,7 @@ static uint64 encode_pawn(const tb_entry_pawn* ptr, const ubyte* norm, int* pos,
 	for (i = 1; i < ptr->pawns[0]; i++)
 		for (j = i + 1; j < ptr->pawns[0]; j++)
 			if (ptwist[pos[i]] < ptwist[pos[j]])
-				SWAP(pos[i], pos[j]);
+				SWAP(pos[i], pos[j])
 
 	auto t = ptr->pawns[0] - 1;
 	uint64 idx = pawnidx[t][flap[pos[0]]];
@@ -719,7 +722,7 @@ static uint64 encode_pawn(const tb_entry_pawn* ptr, const ubyte* norm, int* pos,
 		for (j = i; j < t; j++)
 			for (k = j + 1; k < t; k++)
 				if (pos[j] > pos[k])
-					SWAP(pos[j], pos[k]);
+					SWAP(pos[j], pos[k])
 		s = 0;
 		for (m = i; m < t; m++) {
 			const auto p = pos[m];
@@ -736,7 +739,7 @@ static uint64 encode_pawn(const tb_entry_pawn* ptr, const ubyte* norm, int* pos,
 		for (j = i; j < i + t; j++)
 			for (k = j + 1; k < i + t; k++)
 				if (pos[j] > pos[k])
-					SWAP(pos[j], pos[k]);
+					SWAP(pos[j], pos[k])
 		s = 0;
 		for (m = i; m < i + t; m++) {
 			const auto p = pos[m];
@@ -913,16 +916,19 @@ static void setup_pieces_pawn_dtz(dtz_entry_pawn* ptr, const unsigned char* data
 
 static void calc_symlen(pairs_data* d, const int s, char* tmp)
 {
-	const auto* const w = d->sympat + 3 * static_cast<int>(s);
-	if (const auto s2 = (w[2] << 4) | (w[1] >> 4); s2 == 0x0fff)
-		d->symlen[s] = 0;
-	else {
-		const auto s1 = ((w[1] & 0xf) << 8) | w[0];
-		if (!tmp[s1]) calc_symlen(d, s1, tmp);
-		if (!tmp[s2]) calc_symlen(d, s2, tmp);
-		d->symlen[s] = static_cast<ubyte>(d->symlen[s1] + d->symlen[s2] + 1);
+	if (d != nullptr)
+	{
+		const auto* const w = d->sympat + 3 * static_cast<int>(s);
+		if (const auto s2 = (w[2] << 4) | (w[1] >> 4); s2 == 0x0fff)
+			d->symlen[s] = 0;
+		else {
+			const auto s1 = ((w[1] & 0xf) << 8) | w[0];
+			if (!tmp[s1]) calc_symlen(d, s1, tmp);
+			if (!tmp[s2]) calc_symlen(d, s2, tmp);
+			d->symlen[s] = static_cast<ubyte>(d->symlen[s1] + d->symlen[s2] + 1);
+		}
+		tmp[s] = 1;
 	}
-	tmp[s] = 1;
 }
 
 ushort read_ushort(const ubyte* d) {
@@ -941,11 +947,15 @@ static pairs_data* setup_pairs(unsigned char* data, const uint64 tb_size, uint64
 	*flags = data[0];
 	if (data[0] & 0x80) {
 		d = static_cast<pairs_data*>(malloc(sizeof(pairs_data)));
-		d->idxbits = 0;
-		if (wdl)
-			d->min_len = data[1];
-		else
-			d->min_len = 0;
+		if (d != nullptr)
+		{
+			d->idxbits = 0;
+			if (wdl)
+				d->min_len = data[1];
+			else
+				d->min_len = 0;
+		}
+
 		*next = data + 2;
 		size[0] = size[1] = size[2] = 0;
 		return d;
@@ -960,12 +970,15 @@ static pairs_data* setup_pairs(unsigned char* data, const uint64 tb_size, uint64
 	const auto h = max_len - min_len + 1;
 	const int num_syms = read_ushort(&data[10 + 2 * h]);
 	d = static_cast<pairs_data*>(malloc(sizeof(pairs_data) + (h - 1) * sizeof(base_t) + num_syms));
-	d->blocksize = blocksize;
-	d->idxbits = idxbits;
-	d->offset = reinterpret_cast<ushort*>(&data[10]);
-	d->symlen = reinterpret_cast<ubyte*>(d) + sizeof(pairs_data) + (h - 1) * sizeof(base_t);
-	d->sympat = &data[12 + 2 * h];
-	d->min_len = min_len;
+	if (d != nullptr)
+	{
+		d->blocksize = blocksize;
+		d->idxbits = idxbits;
+		d->offset = reinterpret_cast<ushort*>(&data[10]);
+		d->symlen = reinterpret_cast<ubyte*>(d) + sizeof(pairs_data) + (h - 1) * sizeof(base_t);
+		d->sympat = &data[12 + 2 * h];
+		d->min_len = min_len;
+	}
 	*next = &data[12 + 2 * h + 3 * num_syms + (num_syms & 1)];
 
 	const auto num_indices = (tb_size + (1ULL << idxbits) - 1) >> idxbits;
@@ -980,15 +993,16 @@ static pairs_data* setup_pairs(unsigned char* data, const uint64 tb_size, uint64
 	for (i = 0; i < num_syms; i++)
 		if (!tmp[i])
 			calc_symlen(d, i, tmp);
+	if (d != nullptr)
+	{
+		d->base[h - 1] = 0;
+		for (i = h - 2; i >= 0; i--)
+			d->base[i] = (d->base[i + 1] + read_ushort(reinterpret_cast<ubyte*>(d->offset + i)) - read_ushort(reinterpret_cast<ubyte*>(d->offset + i + 1))) / 2;
+		for (i = 0; i < h; i++)
+			d->base[i] <<= 64 - (min_len + i);
 
-	d->base[h - 1] = 0;
-	for (i = h - 2; i >= 0; i--)
-		d->base[i] = (d->base[i + 1] + read_ushort(reinterpret_cast<ubyte*>(d->offset + i)) - read_ushort(reinterpret_cast<ubyte*>(d->offset + i + 1))) / 2;
-	for (i = 0; i < h; i++)
-		d->base[i] <<= 64 - (min_len + i);
-
-	d->offset -= d->min_len;
-
+		d->offset -= d->min_len;
+	}
 	return d;
 }
 
@@ -1038,24 +1052,26 @@ static int init_table_wdl(tb_entry* entry, char* str)
 		else
 			ptr->precomp[1] = nullptr;
 
-		ptr->precomp[0]->indextable = reinterpret_cast<char*>(data);
+		if (ptr->precomp[0] != nullptr)
+			ptr->precomp[0]->indextable = reinterpret_cast<char*>(data);
 		data += size[0];
-		if (split) {
+		if (split && ptr->precomp[0] != nullptr) {
 			ptr->precomp[1]->indextable = reinterpret_cast<char*>(data);
 			data += size[3];
 		}
-
-		ptr->precomp[0]->sizetable = reinterpret_cast<ushort*>(data);
+		if (ptr->precomp[0] != nullptr)
+			ptr->precomp[0]->sizetable = reinterpret_cast<ushort*>(data);
 		data += size[1];
-		if (split) {
+		if (split && ptr->precomp[0] != nullptr) {
 			ptr->precomp[1]->sizetable = reinterpret_cast<ushort*>(data);
 			data += size[4];
 		}
 
 		data = reinterpret_cast<ubyte*>((reinterpret_cast<uintptr_t>(data) + 0x3f) & ~0x3f);
-		ptr->precomp[0]->data = data;
+		if (ptr->precomp[0] != nullptr)
+			ptr->precomp[0]->data = data;
 		data += size[2];
-		if (split) {
+		if (split && ptr->precomp[0] != nullptr) {
 			data = reinterpret_cast<ubyte*>((reinterpret_cast<uintptr_t>(data) + 0x3f) & ~0x3f);
 			ptr->precomp[1]->data = data;
 		}
@@ -1154,15 +1170,17 @@ static int init_table_dtz(tb_entry* entry)
 			}
 			data += reinterpret_cast<uintptr_t>(data) & 0x01;
 		}
-
-		ptr->precomp->indextable = reinterpret_cast<char*>(data);
+		if (ptr->precomp != nullptr)
+			ptr->precomp->indextable = reinterpret_cast<char*>(data);
 		data += size[0];
 
-		ptr->precomp->sizetable = reinterpret_cast<ushort*>(data);
+		if (ptr->precomp != nullptr)
+			ptr->precomp->sizetable = reinterpret_cast<ushort*>(data);
 		data += size[1];
 
 		data = reinterpret_cast<ubyte*>((reinterpret_cast<uintptr_t>(data) + 0x3f) & ~0x3f);
-		ptr->precomp->data = data;
+		if (ptr->precomp != nullptr)
+			ptr->precomp->data = data;
 		data += size[2];
 	}
 	else {
@@ -1304,25 +1322,27 @@ void load_dtz_table(const char* str, const uint64 key1, const uint64 key2)
 	auto* ptr3 = static_cast<struct tb_entry*>(malloc(ptr->has_pawns
 		? sizeof(struct dtz_entry_pawn)
 		: sizeof(struct dtz_entry_piece)));
-
-	ptr3->data = map_file(str, dtz_suffix, &ptr3->mapping);
-	ptr3->key = ptr->key;
-	ptr3->num = ptr->num;
-	ptr3->symmetric = ptr->symmetric;
-	ptr3->has_pawns = ptr->has_pawns;
-	if (ptr3->has_pawns) {
-		auto* entry = reinterpret_cast<struct dtz_entry_pawn*>(ptr3);
-		entry->pawns[0] = reinterpret_cast<tb_entry_pawn*>(ptr)->pawns[0];
-		entry->pawns[1] = reinterpret_cast<tb_entry_pawn*>(ptr)->pawns[1];
+	if (ptr3 != nullptr)
+	{
+		ptr3->data = map_file(str, dtz_suffix, &ptr3->mapping);
+		ptr3->key = ptr->key;
+		ptr3->num = ptr->num;
+		ptr3->symmetric = ptr->symmetric;
+		ptr3->has_pawns = ptr->has_pawns;
+		if (ptr3->has_pawns) {
+			auto* entry = reinterpret_cast<struct dtz_entry_pawn*>(ptr3);
+			entry->pawns[0] = reinterpret_cast<tb_entry_pawn*>(ptr)->pawns[0];
+			entry->pawns[1] = reinterpret_cast<tb_entry_pawn*>(ptr)->pawns[1];
+		}
+		else {
+			auto* const entry = reinterpret_cast<struct dtz_entry_piece*>(ptr3);
+			entry->enc_type = reinterpret_cast<tb_entry_piece*>(ptr)->enc_type;
+		}
+		if (!init_table_dtz(ptr3))
+			free(ptr3);
+		else
+			dtz_table[0].entry = ptr3;
 	}
-	else {
-		auto* const entry = reinterpret_cast<struct dtz_entry_piece*>(ptr3);
-		entry->enc_type = reinterpret_cast<tb_entry_piece*>(ptr)->enc_type;
-	}
-	if (!init_table_dtz(ptr3))
-		free(ptr3);
-	else
-		dtz_table[0].entry = ptr3;
 }
 
 static void free_wdl_entry(tb_entry* entry)
@@ -1491,24 +1511,21 @@ static int probe_wdl_table(const position& pos, int* success)
 	if (!ptr->ready)
 	{
 		lock(tb_mutex);
-		if (!ptr->ready)
+		char str[16];
+		prt_str(pos, str, ptr->key != key);
+		if (!init_table_wdl(ptr, str))
 		{
-			char str[16];
-			prt_str(pos, str, ptr->key != key);
-			if (!init_table_wdl(ptr, str))
-			{
-				ptr2[i].key = 0ULL;
-				*success = 0;
-				unlock(tb_mutex);
-				return 0;
-			}
-#ifdef _MSC_VER
-			_ReadWriteBarrier();
-#else
-			__asm__ __volatile__("" ::: "memory");
-#endif
-			ptr->ready = 1;
+			ptr2[i].key = 0ULL;
+			*success = 0;
+			unlock(tb_mutex);
+			return 0;
 		}
+#ifdef _MSC_VER
+		_ReadWriteBarrier();
+#else
+		__asm__ __volatile__("" ::: "memory");
+#endif
+		ptr->ready = 1;
 		unlock(tb_mutex);
 	}
 

@@ -44,6 +44,25 @@ namespace search
 	template <nodetype Nt>
 	int alpha_beta(position& pos, int alpha, int beta, int depth, bool cut_node)
 	{
+		// search constants (can be easily convert int global variables for tuning w/ CLOP, etc.)
+		// these values have only been roughly hand tuned
+
+		constexpr auto null_move_tempo_mult = 2;
+		constexpr auto null_move_strong_threat_mult = 8;
+		constexpr auto null_move_pos_val_less_than_beta_mult = 12;
+		constexpr auto null_move_max_depth = 8;
+
+		constexpr auto no_early_pruning_strong_threat_min_depth = 8;
+		constexpr auto no_early_pruning_non_pv_node_depth_min = 8;
+		constexpr auto no_early_pruning_position_value_margin = 102;
+
+		constexpr auto only_quiet_check_moves_max_depth = 8;
+
+		constexpr auto late_move_count_max_depth = 16;
+
+		constexpr auto quiet_moves_max_gain_base = -44;
+		constexpr auto sort_cmp_sort_value = -200;
+
 		const auto pv_node = Nt == PV;
 		constexpr auto max_quiet_moves = 64;
 
@@ -51,7 +70,7 @@ namespace search
 		assert(pv_node || alpha == beta - 1);
 		assert(depth >= plies && depth < max_depth);
 
-		uint32_t quiet_moves[max_quiet_moves]{};
+		uint32_t quiet_moves[max_quiet_moves];
 		main_hash_entry* hash_entry = nullptr;
 
 		uint64_t key64 = 0;
@@ -159,7 +178,6 @@ namespace search
 		if (!root_node && tb_number && depth >= tb_probe_depth && pos.material_or_castle_changed())
 		{
 			if (auto number_pieces = pos.total_num_pieces(); number_pieces <= tb_number
-				&& depth >= tb_probe_depth
 				&& !pos.castling_possible(all))
 			{
 				auto value = no_score;
@@ -217,7 +235,8 @@ namespace search
 			&& (pi - 1)->position_value != no_score
 			&& pi->material_key == (pi - 1)->material_key)
 		{
-			const auto max_gain = max_gain_value;
+			constexpr auto max_gain_value = 500;
+			constexpr auto max_gain = static_cast<int>(max_gain_value);
 			auto gain = -pi->position_value - (pi - 1)->position_value + 2 * value_tempo;
 			gain = std::min(max_gain, std::max(-max_gain, gain));
 			pos.thread_info()->max_gain_table.update(pi->moved_piece, pi->previous_move, gain);
@@ -226,12 +245,12 @@ namespace search
 		if (pi->no_early_pruning)
 			goto no_early_pruning;
 
-		if (!pv_node
+		if (constexpr auto razoring_min_depth = 4; !pv_node
 			&& depth < razoring_min_depth * plies
 			&& !hash_move
 			&& eval + razor_margin <= alpha)
 		{
-			if (depth < razoring_qs_min_depth * plies)
+			if (constexpr auto razoring_qs_min_depth = 2; depth < razoring_qs_min_depth * plies)
 				return q_search<nonPV, false>(pos, alpha, beta, depth_0);
 
 			auto r_alpha = alpha - razor_margin;
@@ -239,41 +258,45 @@ namespace search
 				return val;
 		}
 
-		if (!root_node
+		if (constexpr auto futility_min_depth = 7; !root_node
 			&& depth < futility_min_depth * plies
 			&& eval - futility_margin(depth) >= beta
 			&& eval < win_score
 			&& pi->non_pawn_material[pos.on_move()])
 			return eval - futility_margin(depth);
 
-		if (!pv_node
+		if (constexpr auto null_move_min_depth = 2; !pv_node
 			&& depth >= null_move_min_depth * plies
 			&& eval >= beta + null_move_tempo_mult * value_tempo
 			&& (!pi->strong_threat || depth >= null_move_strong_threat_mult * plies)
 			&& (pi->position_value >= beta || depth >= null_move_pos_val_less_than_beta_mult * plies)
 			&& pi->non_pawn_material[pos.on_move()]
-			&& (!thread_pool.analysis_mode || depth < null_move_max_depth * plies)
-			)
+			&& (!thread_pool.analysis_mode || depth < null_move_max_depth * plies))
 		{
+			constexpr auto null_move_depth_greater_than_cut_node_mult = 15;
+			constexpr auto null_move_depth_greater_than_sub = 20;
+			constexpr auto null_move_depth_greater_than_div = 204;
+			constexpr auto null_move_depth_greater_than_mult = 310;
+			constexpr auto null_move_tm_mult = 66;
+			constexpr auto null_move_tm_base = 540;
 			assert(eval - beta >= 0);
 
-			auto r = no_depth;
-			r = depth < 4 * plies ? depth : (null_move_tm_base + null_move_tm_mult * (depth / plies)
-				+ std::max(std::min(null_move_depth_greater_than_mult * (eval - beta) / null_move_depth_greater_than_div
+			auto R = no_depth;
+			R = depth < 4 * plies ? depth : (null_move_tm_base + null_move_tm_mult * (static_cast<uint32_t>(depth) / plies)
+				+ std::max(std::min(null_move_depth_greater_than_mult * (eval - beta) / static_cast<int>(null_move_depth_greater_than_div)
 				- null_move_depth_greater_than_sub - null_move_depth_greater_than_cut_node_mult
 				* cut_node - null_move_depth_greater_than_cut_node_mult * (hash_move != no_move), 3 * 256), 0)) / 256 * plies;
 
 			pi->mp_end_list = (pi - 1)->mp_end_list;
 			pos.play_null_move();
 			(pi + 1)->no_early_pruning = true;
-
-			auto value = depth - r < plies
+			auto value = depth - R < plies
 				? -q_search<nonPV, false>(pos, -beta, -beta + score_1, depth_0)
-				: -alpha_beta<nonPV>(pos, -beta, -beta + score_1, depth - r, !cut_node);
+				: -alpha_beta<nonPV>(pos, -beta, -beta + score_1, depth - R, !cut_node);
 			(pi + 1)->no_early_pruning = false;
 			pos.take_null_back();
 
-			if ((pi - 1)->lmr_reduction && (value < beta - value_less_than_beta_margin || value < -longest_mate_score))
+			if (constexpr auto value_less_than_beta_margin = 100; (pi - 1)->lmr_reduction && (value < beta - static_cast<int>(value_less_than_beta_margin) || value < -longest_mate_score))
 			{
 				if ((pi - 1)->lmr_reduction <= 2 * plies)
 					return beta - score_1;
@@ -285,20 +308,20 @@ namespace search
 				if (value >= longest_mate_score)
 					value = beta;
 
-				if (depth < value_greater_than_beta_max_depth * plies && abs(beta) < win_score)
+				if (constexpr auto value_greater_than_beta_max_depth = 12; depth < value_greater_than_beta_max_depth * plies && abs(beta) < win_score)
 					return value;
 
 				pi->no_early_pruning = true;
-				auto val = depth - r < plies
+				auto val = depth - R < plies
 					? q_search<nonPV, false>(pos, beta - score_1, beta, depth_0)
-					: alpha_beta<nonPV>(pos, beta - score_1, beta, depth - r, false);
+					: alpha_beta<nonPV>(pos, beta - score_1, beta, depth - R, false);
 				pi->no_early_pruning = false;
 
 				if (val >= beta)
 					return value;
 			}
 		}
-		else if (thread_pool.dummy_null_move_threat && depth >= dummy_null_move_threat_min_depth_mult * plies && eval >= beta && (pi - 1)->lmr_reduction)
+		else if (constexpr auto dummy_null_move_threat_min_depth_mult = 6; thread_pool.dummy_null_move_threat && depth >= dummy_null_move_threat_min_depth_mult * plies && eval >= beta && (pi - 1)->lmr_reduction)
 		{
 			pi->mp_end_list = (pi - 1)->mp_end_list;
 			pos.play_null_move();
@@ -318,12 +341,15 @@ namespace search
 
 	no_early_pruning:
 
-		if (!pv_node
+		if (constexpr auto no_early_pruning_min_depth = 5; !pv_node
 			&& depth >= no_early_pruning_min_depth * plies
 			&& (depth >= no_early_pruning_strong_threat_min_depth * plies || pi->strong_threat & pos.on_move() + 1)
 			&& abs(beta) < longest_mate_score)
 		{
-			auto pc_beta = beta + pc_beta_margin;
+			constexpr auto limit_depth_min = 8;
+			constexpr auto pc_beta_depth_margin = 4;
+			constexpr auto pc_beta_margin = 160;
+			auto pc_beta = beta + static_cast<int>(pc_beta_margin);
 			auto pc_depth = depth - pc_beta_depth_margin * plies;
 
 			assert(pc_depth >= plies);
@@ -332,7 +358,7 @@ namespace search
 			auto s_limit = depth >= limit_depth_min * plies
 				? position::see_values()[pi->captured_piece]
 				: std::max(see_0, (pc_beta - pi->position_value) / 2);
-
+			
 			movepick::init_prob_cut(pos, hash_move, s_limit);
 
 			while ((move = movepick::pick_move(pos)) != no_move)
@@ -348,9 +374,9 @@ namespace search
 			}
 		}
 
-		if (depth >= (pv_node ? no_early_pruning_pv_node_depth_min * plies : no_early_pruning_non_pv_node_depth_min * plies)
+		if (constexpr auto no_early_pruning_pv_node_depth_min = 5; depth >= (pv_node ? no_early_pruning_pv_node_depth_min * plies : no_early_pruning_non_pv_node_depth_min * plies)
 			&& !hash_move
-			&& (pv_node || cut_node || pi->position_value + no_early_pruning_position_value_margin >= beta))
+			&& (pv_node || cut_node || pi->position_value + static_cast<int>(no_early_pruning_position_value_margin) >= beta))
 		{
 			auto d = depth - 2 * plies - (pv_node ? depth_0 : static_cast<uint32_t>(depth) / plies / 4 * plies);
 			pi->no_early_pruning = true;
@@ -383,6 +409,7 @@ namespace search
 
 		while ((move = movepick::pick_move(pos)) != no_move)
 		{
+			constexpr auto excluded_move_hash_depth_reduction = 3;
 			assert(piece_color(pos.moved_piece(move)) == pos.on_move());
 
 			if (move == pi->excluded_move)
@@ -416,7 +443,7 @@ namespace search
 				&& (pi->mp_stage == good_captures || pos.see_test(move, see_0)))
 				extension = plies;
 
-			if (!root_node
+			if (constexpr auto excluded_move_min_depth = 8; !root_node
 				&& move == hash_move
 				&& depth >= excluded_move_min_depth * plies
 				&& hash_entry->bounds() & south_border
@@ -425,9 +452,11 @@ namespace search
 				&& abs(hash_value) < win_score
 				&& pos.legal_move(move))
 			{
+				constexpr auto excluded_move_r_beta_hash_value_margin_div = 5;
+				constexpr auto excluded_move_r_beta_hash_value_margin_mult = 8;
 				auto cm = pi->mp_counter_move;
 				auto r_beta = hash_value - static_cast<int>(static_cast<uint32_t>(depth) / plies * excluded_move_r_beta_hash_value_margin_mult / excluded_move_r_beta_hash_value_margin_div);
-				int r_depth = depth / plies / 2 * plies;
+				auto r_depth = static_cast<uint32_t>(depth) / plies / 2 * plies;
 				pi->excluded_move = move;
 
 				if (auto value = alpha_beta<nonPV>(pos, r_beta - score_1, r_beta, r_depth, !pv_node && cut_node); value < r_beta)
@@ -447,21 +476,23 @@ namespace search
 				&& !pos.advanced_pawn(move)
 				&& pi->non_pawn_material[pos.on_move()])
 			{
+				constexpr auto predicted_depth_see_test_mult = 20;
+				constexpr auto predicted_depth_max_depth = 7;
 				if (move_number >= late_move_count)
 					continue;
 
-				if (depth < quiet_moves_max_depth * plies
+				if (constexpr auto quiet_moves_max_depth = 6; depth < quiet_moves_max_depth * plies
 					&& pi->mp_stage >= quietmoves)
 				{
 					auto offset = counter_move_values::calculate_offset(moved_piece, to_square(move));
 
-					if (const auto sort_cmp = sort_cmp_sort_value; (!cmh || cmh->value_at_offset(offset) < sort_cmp)
+					if (constexpr auto sort_cmp = static_cast<int>(sort_cmp_sort_value); (!cmh || cmh->value_at_offset(offset) < sort_cmp)
 						&& (!fmh || fmh->value_at_offset(offset) < sort_cmp)
 						&& (cmh && fmh || !fmh2 || fmh2->value_at_offset(offset) < sort_cmp))
 						continue;
 
-					if (pos.thread_info()->max_gain_table.get(moved_piece, move) < quiet_moves_max_gain_base
-						- quiet_moves_max_gain_mult * static_cast<int>(static_cast<uint32_t>(depth) / plies))
+					if (constexpr auto quiet_moves_max_gain_mult = 12; pos.thread_info()->max_gain_table.get(moved_piece, move) < static_cast<int>(quiet_moves_max_gain_base)
+						- static_cast<int>(quiet_moves_max_gain_mult) * static_cast<int>(static_cast<uint32_t>(depth) / plies))
 						continue;
 				}
 
@@ -471,17 +502,18 @@ namespace search
 					&& pi->position_value + futility_margin_ext(predicted_depth) <= alpha)
 					continue;
 
-				if (predicted_depth < predicted_depth_max_depth * plies
+				if (constexpr auto predicted_depth_see_test_base = 300; predicted_depth < predicted_depth_max_depth * plies
 					&& !pos.see_test(move, std::min(see_0, predicted_depth_see_test_base
 					- predicted_depth_see_test_mult * predicted_depth * predicted_depth / 64)))
 					continue;
 			}
 
-			else if (!root_node
+			else if (constexpr auto non_root_node_max_depth = 7; !root_node
 				&& depth < non_root_node_max_depth * plies
 				&& best_score > -longest_mate_score)
 			{
-				if (pi->mp_stage != good_captures && extension != plies
+				constexpr auto non_root_node_see_test_mult = 20;
+				if (constexpr auto non_root_node_see_test_base = 150; pi->mp_stage != good_captures && extension != plies
 					&& !pos.see_test(move, std::min(see_knight
 					- see_bishop, non_root_node_see_test_base
 					- non_root_node_see_test_mult * depth * depth / 64)))
@@ -498,10 +530,13 @@ namespace search
 
 			auto value = score_0;
 
-			if (depth >= lmr_min_depth * plies
+			if (constexpr auto lmr_min_depth = 3; depth >= lmr_min_depth * plies
 				&& move_number > 1
 				&& !capture_or_promotion)
 			{
+				constexpr auto r_stats_value_mult_div = 8;
+				constexpr auto r_stats_value_div = 2048;
+				constexpr auto stats_value_sort_value_add = 2000;
 				auto r = lmr_reduction(pv_node, progress, depth, move_number);
 
 				if (!pv_node && cut_node)
@@ -518,7 +553,7 @@ namespace search
 					+ (cmh ? static_cast<int>(cmh->value_at_offset(offset)) : sort_zero)
 					+ (fmh ? static_cast<int>(fmh->value_at_offset(offset)) : sort_zero)
 					+ (fmh2 ? static_cast<int>(fmh2->value_at_offset(offset)) : sort_zero);
-				stats_value += stats_value_sort_value_add;
+				stats_value += static_cast<int>(stats_value_sort_value_add);
 
 				r -= stats_value / r_stats_value_div * (plies / r_stats_value_mult_div);
 
@@ -532,7 +567,7 @@ namespace search
 
 				value = -alpha_beta<nonPV>(pos, -(alpha + score_1), -alpha, d, true);
 
-				if (value > alpha && pi->lmr_reduction >= lmr_reduction_min * plies)
+				if (constexpr auto lmr_reduction_min = 5; value > alpha && pi->lmr_reduction >= lmr_reduction_min * plies)
 				{
 					pi->lmr_reduction = static_cast<uint8_t>(lmr_reduction_min * plies / 2);
 					value = -alpha_beta<nonPV>(pos, -(alpha + score_1), -alpha, new_depth - lmr_reduction_min * plies / 2, true);
@@ -556,9 +591,9 @@ namespace search
 					: -alpha_beta<nonPV>(pos, -(alpha + score_1), -alpha, new_depth, pv_node || !cut_node);
 			}
 
-			if (pv_node && (move_number == 1 || value > alpha && (root_node || value < beta)))
+				if (pv_node && (move_number == 1 || (value > alpha && (root_node || value < beta))))
 			{
-				uint32_t pv[max_ply + 1]{};
+				uint32_t pv[max_ply + 1];
 				(pi + 1)->pv = pv;
 				(pi + 1)->pv[0] = no_move;
 
@@ -652,15 +687,16 @@ namespace search
 
 		else
 		{
-			if (depth >= fail_low_counter_move_bonus_min_depth_mult * plies && pi->position_value >= alpha - fail_low_counter_move_bonus_min_depth_margin)
+			constexpr auto fail_low_counter_move_bonus_min_depth_margin = 30;
+			if (constexpr auto fail_low_counter_move_bonus_min_depth_mult = 3; depth >= fail_low_counter_move_bonus_min_depth_mult * plies && pi->position_value >= alpha - static_cast<int>(fail_low_counter_move_bonus_min_depth_margin))
 				update_stats_quiet(pos, state_check, depth, quiet_moves, quiet_move_number);
 
-			if (depth >= fail_low_counter_move_bonus_min_depth * plies
+			if (constexpr auto fail_low_counter_move_bonus_min_depth = 3; depth >= fail_low_counter_move_bonus_min_depth * plies
 				&& !state_check
 				&& !pi->captured_piece
 				&& pi->move_counter_values)
 			{
-				if (depth < counter_move_bonus_min_depth * plies)
+				if (constexpr auto counter_move_bonus_min_depth = 18; depth < counter_move_bonus_min_depth * plies)
 				{
 					auto bonus = counter_move_value(depth);
 					auto offset = counter_move_values::calculate_offset(pi->moved_piece, to_square(pi->previous_move));
@@ -806,6 +842,30 @@ namespace search
 	template <nodetype Nt, bool StateCheck>
 	int q_search(position& pos, int alpha, const int beta, const int depth)
 	{
+		constexpr auto qs_futility_value_0 = 102;
+		constexpr auto qs_futility_value_1 = 0;
+		constexpr auto qs_futility_value_2 = 308;
+		constexpr auto qs_futility_value_3 = 818;
+		constexpr auto qs_futility_value_4 = 827;
+		constexpr auto qs_futility_value_5 = 1186;
+		constexpr auto qs_futility_value_6 = 2228;
+		constexpr auto qs_futility_value_7 = 0;
+
+		constexpr int q_search_futility_value[num_pieces] =
+		{
+			qs_futility_value_0, qs_futility_value_1, qs_futility_value_2, qs_futility_value_3,
+			qs_futility_value_4, qs_futility_value_5, qs_futility_value_6, qs_futility_value_7,
+			qs_futility_value_0, qs_futility_value_1, qs_futility_value_2, qs_futility_value_3,
+			qs_futility_value_4, qs_futility_value_4, qs_futility_value_6, qs_futility_value_7
+		};
+
+		constexpr auto lazy_margin = 480; // sf uses 1400 (* 100 / 256 = 547), but 480 seems optimal here
+		constexpr auto qs_futility_basis_margin = 102;
+		constexpr auto qs_stats_value_sortvalue = -12000;
+
+		constexpr auto lazy_margin_q_search_low = static_cast<int>(lazy_margin) + score_1;
+		constexpr auto lazy_margin_q_search_high = static_cast<int>(lazy_margin);
+
 		const auto pv_node = Nt == PV;
 
 		assert(alpha >= -max_score && alpha < beta&& beta <= max_score);
@@ -843,6 +903,7 @@ namespace search
 		const auto hash_value = hash_entry ? value_from_hash(hash_entry->value(), pi->ply) : no_score;
 
 		if (!pv_node
+			&& hash_entry != nullptr
 			&& hash_value != no_score
 			&& hash_entry->depth() >= hash_depth
 			&& (hash_value >= beta ? hash_entry->bounds() & south_border : hash_entry->bounds() & north_border))
@@ -919,6 +980,7 @@ namespace search
 				&& futility_basis > -win_score
 				&& !pos.advanced_pawn(move))
 			{
+				constexpr auto qs_futility_value_capture_history_add_div = 32;
 				assert(move_type(move) != enpassant);
 
 				const auto capture = pos.piece_on_square(to_square(move));
@@ -931,11 +993,11 @@ namespace search
 					continue;
 				}
 
-				if (futility_basis + qs_futility_basis_margin <= alpha)
+				if (futility_basis + static_cast<int>(qs_futility_basis_margin) <= alpha)
 				{
 					if (!pos.see_test(move, 1))
 					{
-						best_value = std::max(best_value, futility_basis + qs_futility_basis_margin);
+						best_value = std::max(best_value, futility_basis + static_cast<int>(qs_futility_basis_margin));
 						continue;
 					}
 					goto skip_see_test;
@@ -957,7 +1019,7 @@ namespace search
 						if (const auto stats_value = static_cast<int>(pos.thread_info()->evasion_history.value_at_offset(offset))
 							+ (pi->move_counter_values ? static_cast<int>(pi->move_counter_values->value_at_offset(offset)) : sort_zero)
 							+ ((pi - 1)->move_counter_values ? static_cast<int>((pi - 1)->move_counter_values->value_at_offset(offset)) : sort_zero)
-							+ ((pi - 3)->move_counter_values ? static_cast<int>((pi - 3)->move_counter_values->value_at_offset(offset)) : sort_zero); stats_value < qs_stats_value_sortvalue)
+							+ ((pi - 3)->move_counter_values? static_cast<int>((pi - 3)->move_counter_values->value_at_offset(offset)) : sort_zero); stats_value < static_cast<int>(qs_stats_value_sortvalue))
 							continue;
 					}
 
@@ -983,6 +1045,8 @@ namespace search
 
 			if ((pi + 1)->captured_piece)
 			{
+				constexpr auto qs_skip_see_test_value_less_than_equal_to_alpha_sort_value = 2000;
+				constexpr auto qs_skip_see_test_value_greater_than_alpha_sort_value = 1000;
 				if (const auto offset = move_value_stats::calculate_offset((pi + 1)->captured_piece, to_square(move)); value > alpha)
 					pos.thread_info()->capture_history.update_plus(offset, qs_skip_see_test_value_greater_than_alpha_sort_value);
 				else
@@ -1268,6 +1332,7 @@ void mainthread::begin_search()
 	}
 	else
 	{
+		constexpr auto default_draw_value = 24;
 		search::draw[me] = draw_score - default_draw_value * root_position->game_phase() / middlegame_phase;
 		search::draw[~me] = draw_score + default_draw_value * root_position->game_phase() / middlegame_phase;
 	}
@@ -1420,6 +1485,13 @@ NO_ANALYSIS:
 
 void thread::begin_search()
 {
+	constexpr auto best_value_vp_mult = 8;
+
+	constexpr auto time_control_optimum_mult_1 = 124;
+	constexpr auto time_control_optimum_mult_2 = 420;
+
+	constexpr auto info_depth_interval = 1000;
+
 	auto alpha = score_0, delta_alpha = score_0, delta_beta = score_0;
 	auto fast_move = no_move;
 	auto* main_thread = this == thread_pool.main() ? thread_pool.main() : nullptr;
@@ -1477,6 +1549,7 @@ void thread::begin_search()
 				&& root_position->legal_move(hash_move)
 				&& abs(hash_value) < win_score)
 			{
+				constexpr auto v_singular_margin = 102;
 				const auto depth_singular = std::max(main_thread->previous_root_depth / 2, main_thread->previous_root_depth - 8 * plies);
 				const auto v_singular = hash_value - v_singular_margin;
 				pi->excluded_move = hash_move;
@@ -1512,6 +1585,11 @@ void thread::begin_search()
 
 	while (++search_iteration < 100)
 	{
+		constexpr auto root_depth_mate_value_bv_add = 10;
+		constexpr auto improvement_factor_bv_mult = 12;
+		constexpr auto improvement_factor_max_mult = 160;
+		constexpr auto improvement_factor_max_base = 652;
+		constexpr auto improvement_factor_min_base = 1304;
 		root_depth += main_thread ? main_thread_inc : other_thread_inc;
 
 		if (main_thread)
@@ -1542,6 +1620,8 @@ void thread::begin_search()
 
 			if (root_depth >= 5 * plies)
 			{
+				constexpr auto delta_beta_margin = 14;
+				constexpr auto delta_alpha_margin = 14;
 				delta_alpha = delta_alpha_margin + (thread_index_ & 7);
 				delta_beta = delta_beta_margin - (thread_index_ & 7);
 				alpha = std::max(root_moves[active_pv].previous_score - delta_alpha, -max_score);
@@ -1550,6 +1630,8 @@ void thread::begin_search()
 
 			while (true)
 			{
+				constexpr auto delta_alphabeta_value_add = 4;
+				constexpr auto value_pawn_mult = 20;
 				if (alpha < -value_pawn_mult * value_pawn)
 					alpha = -max_score;
 				if (beta > value_pawn_mult * value_pawn)
@@ -1775,7 +1857,7 @@ std::string print_pv(const position& pos, const int alpha, const int beta, const
 
 void rootmove::pv_from_hash(position& pos)
 {
-	uint64_t keys[max_ply]{};
+	uint64_t keys[max_ply];
 	auto number = 0;
 
 	assert(pv.size() == 1);

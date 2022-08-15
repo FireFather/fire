@@ -15,6 +15,7 @@
 */
 
 #pragma once
+#include "define.h"
 #include "fire.h"
 #include "position.h"
 #include "macro/square.h"

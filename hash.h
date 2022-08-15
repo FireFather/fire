@@ -130,12 +130,12 @@ public:
 	void init(size_t mb_size);
 	void clear() const;
 
-	[[nodiscard]] main_hash_entry* entry(const uint64_t key) const
+	[[nodiscard]] inline main_hash_entry* entry(const uint64_t key) const
 	{
 		return reinterpret_cast<main_hash_entry*>(reinterpret_cast<char*>(hash_mem_) + (key & bucket_mask_));
 	}
 
-	void prefetch_entry(const uint64_t key) const
+	inline void prefetch_entry(const uint64_t key) const
 	{
 		prefetch(entry(key));
 	}

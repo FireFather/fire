@@ -30,7 +30,7 @@ struct piece_square_stats;
 
 typedef piece_square_stats<24576, 24576> counter_move_values;
 
-constexpr int delayed_number{ 7 };
+constexpr int delayed_number{7};
 
 enum ptype : uint8_t
 {
@@ -313,7 +313,7 @@ inline bool position::advanced_pawn(const uint32_t move) const
 }
 
 template <uint8_t PieceType>
-uint64_t position::attack_from(const square sq) const
+inline uint64_t position::attack_from(const square sq) const
 {
 	return PieceType == pt_bishop
 		? attack_bishop_bb(sq, pieces())
@@ -368,7 +368,7 @@ inline int position::castling_possible(const  uint8_t castle) const
 
 inline int position::castling_possible(const side color) const
 {
-	return pos_info_->castle_possibilities & (white_short | white_long) << 2 * color;
+	return pos_info_->castle_possibilities & (white_short | white_long) << (2 * color);
 }
 
 inline cmhinfo* position::cmh_info() const
@@ -512,6 +512,7 @@ inline ptype position::piece_on_square(const square sq) const
 
 inline square position::piece_square(const side color, const uint8_t piece) const
 {
+	assert(piece_number_[make_piece(color, piece)] == 1);
 	return piece_list_[make_piece(color, piece)][0];
 }
 

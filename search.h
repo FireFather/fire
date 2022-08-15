@@ -71,7 +71,7 @@ namespace search
 		{
 			return key_after_two_moves == key ? pv[2] : no_move;
 		}
-
+		
 		void refresh_pv(position& pos, const principal_variation& pv_new)
 		{
 			assert(pv_new.size() >= 3);
@@ -114,91 +114,27 @@ namespace search
 	void update_stats_quiet(const position& pos, bool state_check, int depth, const uint32_t* quiet_moves, int quiet_number);
 	void update_stats_minus(const position& pos, bool state_check, uint32_t move, int depth);
 	void send_time_info();
-
+	
 	inline uint8_t lm_reductions[2][2][64 * static_cast<int>(plies)][64];
+	
+	constexpr int razor_margin = 384;
+	
+	// futility pruning values
+	constexpr auto futility_value_0 = 0;
+	constexpr auto futility_value_1 = 112;
+	constexpr auto futility_value_2 = 243;
+	constexpr auto futility_value_3 = 376;
+	constexpr auto futility_value_4 = 510;
+	constexpr auto futility_value_5 = 646;
+	constexpr auto futility_value_6 = 784;
+	constexpr auto futility_margin_ext_mult = 160;
+	constexpr auto futility_margin_ext_base = 204;
 
-	// alphabeta
-	inline int max_gain_value = 500;
-
-	inline int razor_margin = 384;
-	inline int razoring_min_depth = 4;
-	inline int razoring_qs_min_depth = 2;
-
-	inline int futility_min_depth = 7;
-	inline auto futility_value_0 = 0;
-	inline auto futility_value_1 = 112;
-	inline auto futility_value_2 = 243;
-	inline auto futility_value_3 = 376;
-	inline auto futility_value_4 = 510;
-	inline auto futility_value_5 = 646;
-	inline auto futility_value_6 = 784;
-	inline auto futility_margin_ext_mult = 160;
-	inline auto futility_margin_ext_base = 204;
-
-	inline int null_move_min_depth = 2;
-	inline int null_move_tempo_mult = 2;
-	inline int null_move_strong_threat_mult = 8;
-	inline int null_move_pos_val_less_than_beta_mult = 12;
-	inline int null_move_max_depth = 8;
-
-	inline int null_move_tm_base = 540;
-	inline int null_move_tm_mult = 66;
-
-	inline int null_move_depth_greater_than_mult = 310;
-	inline int null_move_depth_greater_than_div = 204;
-	inline int null_move_depth_greater_than_sub = 20;
-	inline int null_move_depth_greater_than_cut_node_mult = 15;
-
-	inline int value_less_than_beta_margin = 100;
-	inline int value_greater_than_beta_max_depth = 12;
-	inline int dummy_null_move_threat_min_depth_mult = 6;
-
-	inline int no_early_pruning_min_depth = 5;
-	inline int no_early_pruning_strong_threat_min_depth = 8;
-	inline int pc_beta_margin = 160;
-	inline int pc_beta_depth_margin = 4;
-	inline int limit_depth_min = 8;
-	inline int no_early_pruning_pv_node_depth_min = 5;
-	inline int no_early_pruning_non_pv_node_depth_min = 8;
-	inline int no_early_pruning_position_value_margin = 102;
-
-	inline int only_quiet_check_moves_max_depth = 8;
-	inline int excluded_move_min_depth = 8;
-	inline int excluded_move_hash_depth_reduction = 3;
-	inline int excluded_move_r_beta_hash_value_margin_mult = 8;
-	inline int excluded_move_r_beta_hash_value_margin_div = 5;
-
-	inline int late_move_count_max_depth = 16;
-
-	inline int quiet_moves_max_depth = 6;
-	inline int quiet_moves_max_gain_base = -44;
-	inline int quiet_moves_max_gain_mult = 12;
-	inline int sort_cmp_sort_value = -200;
-
-	inline int predicted_depth_max_depth = 7;
-	inline int predicted_depth_see_test_base = 300;
-	inline int predicted_depth_see_test_mult = 20;
-
-	inline int non_root_node_max_depth = 7;
-	inline int non_root_node_see_test_base = 150;
-	inline int non_root_node_see_test_mult = 20;
-
-	inline int lmr_min_depth = 3;
-	inline int stats_value_sort_value_add = 2000;
-	inline int r_stats_value_div = 2048;
-	inline int r_stats_value_mult_div = 8;
-	inline int lmr_reduction_min = 5;
-
-	inline int fail_low_counter_move_bonus_min_depth_mult = 3;
-	inline int fail_low_counter_move_bonus_min_depth_margin = 30;
-	inline int fail_low_counter_move_bonus_min_depth = 3;
-	inline int counter_move_bonus_min_depth = 18;
-
-	const int futility_values[7] =
+	constexpr int futility_values[7] =
 	{
-		futility_value_0, futility_value_1, futility_value_2,
-		futility_value_3, futility_value_4, futility_value_5,
-		futility_value_6
+		static_cast<int>(futility_value_0), static_cast<int>(futility_value_1), static_cast<int>(futility_value_2),
+		static_cast<int>(futility_value_3), static_cast<int>(futility_value_4), static_cast<int>(futility_value_5),
+		static_cast<int>(futility_value_6)
 	};
 
 	inline int futility_margin(const int d)
@@ -226,31 +162,6 @@ namespace search
 	{
 		return lm_reductions[pv][vg][std::min(d, 64 * static_cast<int>(plies) - 1)][std::min(n, 63)];
 	}
-
-	// qsearch
-	inline int qs_futility_value_0 = 102;
-	inline int qs_futility_value_1 = 0;
-	inline int qs_futility_value_2 = 308;
-	inline int qs_futility_value_3 = 818;
-	inline int qs_futility_value_4 = 827;
-	inline int qs_futility_value_5 = 1186;
-	inline int qs_futility_value_6 = 2228;
-	inline int qs_futility_value_7 = 0;
-
-	const int q_search_futility_value[num_pieces] =
-	{
-		qs_futility_value_0, qs_futility_value_1, qs_futility_value_2, qs_futility_value_3,
-		qs_futility_value_4, qs_futility_value_5, qs_futility_value_6, qs_futility_value_7,
-		qs_futility_value_0, qs_futility_value_1, qs_futility_value_2, qs_futility_value_3,
-		qs_futility_value_4, qs_futility_value_4, qs_futility_value_6, qs_futility_value_7
-	};
-
-	inline int lazy_margin = 480; // sf uses 1400 (* 100 / 256 = 547), but 480 seems optimal here
-	inline int qs_futility_basis_margin = 102;
-	inline int qs_futility_value_capture_history_add_div = 32;
-	inline int qs_stats_value_sortvalue = -12000;
-	inline int qs_skip_see_test_value_greater_than_alpha_sort_value = 1000;
-	inline int qs_skip_see_test_value_less_than_equal_to_alpha_sort_value = 2000;
 
 	struct rootmove_mc {
 
@@ -289,29 +200,6 @@ namespace search
 		int move_count;
 	};
 }
-
-// mainthread::begin_search
-inline int default_draw_value = 24;
-
-// thread::begin_search
-inline int v_singular_margin = 102;
-inline int delta_alpha_margin = 14;
-inline int delta_beta_margin = 14;
-inline int value_pawn_mult = 20;
-
-inline int improvement_factor_min_base = 1304;
-inline int improvement_factor_max_base = 652;
-inline int improvement_factor_max_mult = 160;
-inline int improvement_factor_bv_mult = 12;
-
-inline int best_value_vp_mult = 8;
-inline int delta_alphabeta_value_add = 4;
-inline int root_depth_mate_value_bv_add = 10;
-
-inline int time_control_optimum_mult_1 = 124;
-inline int time_control_optimum_mult_2 = 420;
-
-inline int info_depth_interval = 1000;
 
 template <int MaxPlus, int MaxMin>
 struct piece_square_stats;

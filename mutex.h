@@ -5,7 +5,7 @@
   which have been documented in detail at https://www.chessprogramming.org/
   and demonstrated via the very strong open-source chess engine Stockfish...
   https://github.com/official-stockfish/Stockfish.
-
+  
   Fire is free software: you can redistribute it and/or modify it under the
   terms of the GNU General Public License as published by the Free Software
   Foundation, either version 3 of the License, or any later version.
@@ -19,15 +19,7 @@
 #include <mutex>
 
 #if defined(_WIN32) && !defined(_MSC_VER)
-
-#ifndef NOMINMAX
-#  define NOMINMAX
-#endif
-
-#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
-#undef WIN32_LEAN_AND_MEAN
-#undef NOMINMAX
 
 struct Mutex
 {

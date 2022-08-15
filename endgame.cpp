@@ -30,6 +30,8 @@ namespace endgame
 {
 	square normalize_pawn_side(const position& pos, const side strong_side, square sq)
 	{
+		assert(pos.number(strong_side, pt_pawn) == 1);
+
 		if (file_of(pos.piece_square(strong_side, pt_pawn)) >= file_e)
 			sq = static_cast<square>(sq ^ 7);
 
@@ -139,9 +141,9 @@ int endgame_kxk(const position& pos)
 		+ endgame::draw_closer[distance(strong_k, weak_k)];
 
 	if (result < win_score)
-		if (pos.number(Strong, pt_queen) + pos.number(Strong, pt_rook)
-			|| pos.number(Strong, pt_bishop) && pos.number(Strong, pt_knight)
-			|| pos.pieces(Strong, pt_bishop) & dark_squares && pos.pieces(Strong, pt_bishop) & ~dark_squares)
+		if (pos.number(Strong, pt_queen) || pos.number(Strong, pt_rook)
+			|| (pos.number(Strong, pt_bishop) && pos.number(Strong, pt_knight))
+			|| (pos.pieces(Strong, pt_bishop) & dark_squares && pos.pieces(Strong, pt_bishop) & ~dark_squares))
 			result += win_score;
 
 	return Strong == pos.on_move() ? result : -result;

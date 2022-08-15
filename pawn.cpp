@@ -53,8 +53,8 @@ namespace pawn
 			files = msb(files) - lsb(files);
 		entry->file_width = std::max(files - 3, 0);
 
-		entry->conversion_difficult = !(entry->half_open_lines[white] & entry->half_open_lines[black])
-			|| entry->half_open_lines[white] & entry->half_open_lines[black] & 0x3c && !entry->asymmetry;
+		entry->conversion_difficult = !((entry->half_open_lines[white] & entry->half_open_lines[black])
+			|| entry->half_open_lines[white] & entry->half_open_lines[black] & 0x3c) && !entry->asymmetry;
 
 		auto pawns_bb = pos.pieces(pt_pawn);
 		entry->n_pawns = popcnt(pawns_bb);

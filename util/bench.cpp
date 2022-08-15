@@ -28,8 +28,8 @@
 // it can be started via command line 'bench', or via Bench button in your GUI's UCI dialog
 void bench(const int depth)
 {
-	static char file_name[256]{};
-	char buf[256]{};
+	static char file_name[64]{};
+	char buf[32]{};
 
 	uint64_t nodes = 0;
 	auto pos_num = 0;

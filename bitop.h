@@ -16,8 +16,6 @@
 
 #pragma once
 
-#include "define.h"
-
 // the C/C++ AVX intrinsic functions for x86 processors are in the header "immintrin.h".
 // the corresponding Intel® AVX2 instruction is PEXT (Parallel Bits Extract)
 #ifdef USE_PEXT

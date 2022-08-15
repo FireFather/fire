@@ -23,15 +23,17 @@ constexpr auto platform = "x64";
 
 // specify correct bit manipulation instruction set constant, as this will be appended
 // to the fully distinguished engine name after platform
-#if defined(USE_PEXT)
+#ifdef USE_PEXT
 constexpr auto bmis = "bmi2";
 constexpr bool use_pext = true;
-#elif defined(USE_AVX2)
+#else
+#ifdef USE_AVX2
 constexpr auto bmis = "avx2";
 constexpr bool use_pext = false;
 #else
-constexpr auto bmis = "popc";
+constexpr auto bmis = "sse41";
 constexpr bool use_pext = false;
+#endif
 #endif
 
 // many new instructions require data that's aligned to 16-byte boundaries, so 64-byte alignment improves performance
