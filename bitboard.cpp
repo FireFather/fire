@@ -167,7 +167,7 @@ uint64_t sliding_attacks(const int sq, const uint64_t block, const int deltas[4]
 		const auto dx = deltas[direction][0];
 		const auto dy = deltas[direction][1];
 		for (auto f = fl + dx, r = rk + dy;
-			(dx == 0 || (f >= f_min && f <= f_max)) && (dy == 0 || r >= r_min && r <= r_max);
+			(dx == 0 || f >= f_min && f <= f_max) && (dy == 0 || r >= r_min && r <= r_max);
 			f += dx, r += dy)
 		{
 			result |= square_bb[f + r * 8];

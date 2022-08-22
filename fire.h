@@ -349,11 +349,11 @@ constexpr bool is_ok(const uint32_t move)
 	return move != no_move && move != null_move;
 }
 
-template <int Capacity>
+template <int capacity>
 struct movelist
 {
 	int move_number;
-	uint32_t moves[Capacity] = {};
+	uint32_t moves[capacity] = {};
 
 	movelist() : move_number(0)
 	{
@@ -361,7 +361,7 @@ struct movelist
 
 	void add(uint32_t move)
 	{
-		if (move_number < Capacity) moves[move_number++] = move;
+		if (move_number < capacity) moves[move_number++] = move;
 	}
 
 	uint32_t& operator[](int index)

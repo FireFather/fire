@@ -49,73 +49,18 @@ namespace material
 
 	static_assert(sizeof(mat_hash_entry) == 32, "Material Entry size incorrect");
 
-	template <class Entry, int Size>
+	template <class entry, int Size>
 	struct material_hash_table
 	{
-		Entry* operator[](const uint64_t key)
+		entry* operator[](const uint64_t key)
 		{
-			static_assert(sizeof(Entry) == 32 || sizeof(Entry) == 128, "Wrong size");
-			return reinterpret_cast<Entry*>(reinterpret_cast<char*>(mat_hash_mem_) + (static_cast<uint32_t>(key) & (Size - 1) * sizeof(Entry)));
+			static_assert(sizeof(entry) == 32 || sizeof(entry) == 128, "Wrong size");
+			return reinterpret_cast<entry*>(reinterpret_cast<char*>(mat_hash_mem_) + (static_cast<uint32_t>(key) & (Size - 1) * sizeof(entry)));
 		}
 
 	private:
-		CACHE_ALIGN Entry mat_hash_mem_[Size];
+		CACHE_ALIGN entry mat_hash_mem_[Size];
 	};
-	// pawn factors
-	inline auto p_base_score = 950;
-	inline auto p_q_factor = 90;
-	inline auto p_r_factor = 28;
-	inline auto p_b_factor = 17;
-	inline auto p_n_factor = 16;
-
-	// knight factors
-	inline auto n_base_score = 3510;
-	inline auto n_q_factor = 50;
-	inline auto n_r_factor = 35;
-	inline auto n_b_factor = 7;
-	inline auto n_n_factor = 8;
-	inline auto n_p_factor = 22;
-
-	// bishop factors
-	inline auto b_base_score = 3775;
-	inline auto b_q_factor = 55;
-	inline auto b_r_factor = 27;
-	inline auto b_b_factor = 9;
-	inline auto b_n_factor = 6;
-	inline auto b_p_factor = 6;
-
-	// rook factors
-	inline auto r_base_score = 6295;
-	inline auto r_q_factor = 261;
-	inline auto r_r_factor = 217;
-	inline auto r_b_factor = 34;
-	inline auto r_n_factor = 40;
-	inline auto r_p_factor = 10;
-
-	// queen factors
-	inline auto q_base_score = 11715;
-	inline auto q_q_factor = 338;
-	inline auto q_r_factor = 169;
-	inline auto q_b_factor = 37;
-	inline auto q_n_factor = 25;
-	inline auto q_p_factor = 6;
-
-	// bishop pair factors
-	inline auto bp_base_score = 515;
-	inline auto bp_q_factor = 41;
-	inline auto bp_r_factor = 21;
-	inline auto bp_b_factor = 7;
-	inline auto bp_n_factor = 7;
-
-	// material imbalance
-	inline auto up_two_pieces_bonus = 200;
-	inline auto more_bishops_bonus = 17;
-	inline auto more_knights_bonus = 17;
-
-	// phase factors
-	inline auto max_phase = 32;
-	inline auto r_phase_factor = 3;
-	inline auto q_phase_factor = 6;
 
 	// default material hash size = 16 MB;
 	constexpr int material_hash_size = 16384;

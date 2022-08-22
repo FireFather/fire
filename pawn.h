@@ -87,17 +87,17 @@ namespace pawn
 	static_assert(offsetof(pawn_hash_entry, half_open_lines) == 72, "offset wrong");
 	static_assert(sizeof(pawn_hash_entry) == 128, "Pawn Hash Entry size incorrect");
 
-	template <class Entry, int Size>
+	template <class entry, int size>
 	struct pawn_hash_table
 	{
-		Entry* operator[](const uint64_t key)
+		entry* operator[](const uint64_t key)
 		{
-			static_assert(sizeof(Entry) == 32 || sizeof(Entry) == 128, "Wrong size");
-			return reinterpret_cast<Entry*>(reinterpret_cast<char*>(pawn_hash_mem_) + (static_cast<uint32_t>(key) & (Size - 1) * sizeof(Entry)));
+			static_assert(sizeof(entry) == 32 || sizeof(entry) == 128, "Wrong size");
+			return reinterpret_cast<entry*>(reinterpret_cast<char*>(pawn_hash_mem_) + (static_cast<uint32_t>(key) & (size - 1) * sizeof(entry)));
 		}
 
 	private:
-		CACHE_ALIGN Entry pawn_hash_mem_[Size];
+		CACHE_ALIGN entry pawn_hash_mem_[size];
 	};
 
 	pawn_hash_entry* probe(const position& pos);

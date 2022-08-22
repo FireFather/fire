@@ -20,8 +20,8 @@
 
 #include "chrono.h"
 #include "fire.h"
-#include "movepick.h"
 #include "position.h"
+#include "movepick.h"
 
 typedef movelist<max_pv> principal_variation;
 
@@ -71,7 +71,7 @@ namespace search
 		{
 			return key_after_two_moves == key ? pv[2] : no_move;
 		}
-		
+
 		void refresh_pv(position& pos, const principal_variation& pv_new)
 		{
 			assert(pv_new.size() >= 3);
@@ -101,10 +101,10 @@ namespace search
 	inline int draw[num_sides];
 	inline uint64_t previous_info_time;
 
-	template <nodetype Nt>
+	template <nodetype nt>
 	int alpha_beta(position& pos, int alpha, int beta, int depth, bool cut_node);
 
-	template <nodetype Nt, bool StateCheck>
+	template <nodetype nt, bool state_check>
 	int q_search(position& pos, int alpha, int beta, int depth);
 
 	int value_to_hash(int val, int ply);
@@ -114,11 +114,11 @@ namespace search
 	void update_stats_quiet(const position& pos, bool state_check, int depth, const uint32_t* quiet_moves, int quiet_number);
 	void update_stats_minus(const position& pos, bool state_check, uint32_t move, int depth);
 	void send_time_info();
-	
+
 	inline uint8_t lm_reductions[2][2][64 * static_cast<int>(plies)][64];
-	
+
 	constexpr int razor_margin = 384;
-	
+
 	// futility pruning values
 	constexpr auto futility_value_0 = 0;
 	constexpr auto futility_value_1 = 112;
@@ -201,7 +201,7 @@ namespace search
 	};
 }
 
-template <int MaxPlus, int MaxMin>
+template <int max_plus, int max_min>
 struct piece_square_stats;
 typedef piece_square_stats<24576, 24576> counter_move_values;
 

@@ -86,15 +86,15 @@ void endgames::add_value(const char* pieces, const endgame_value f_w, const endg
 
 // king and pawn vs lone king
 // probes the king and pawn vs king table (see kpk.cpp)
-template <side Strong>
+template <side strong>
 int endgame_kpk(const position& pos)
 {
-	const auto weak = ~Strong;
-	const auto strong_k = endgame::normalize_pawn_side(pos, Strong, pos.king(Strong));
-	const auto weak_k = endgame::normalize_pawn_side(pos, Strong, pos.king(weak));
-	const auto pawn = endgame::normalize_pawn_side(pos, Strong, pos.piece_square(Strong, pt_pawn));
+	const auto weak = ~strong;
+	const auto strong_k = endgame::normalize_pawn_side(pos, strong, pos.king(strong));
+	const auto weak_k = endgame::normalize_pawn_side(pos, strong, pos.king(weak));
+	const auto pawn = endgame::normalize_pawn_side(pos, strong, pos.piece_square(strong, pt_pawn));
 
-	if (const auto me = Strong == pos.on_move() ? white : black; !kpk::probe(strong_k, pawn, weak_k, me))
+	if (const auto me = strong == pos.on_move() ? white : black; !kpk::probe(strong_k, pawn, weak_k, me))
 	{
 		pos.info()->eval_is_exact = true;
 		return draw_score;
@@ -102,51 +102,51 @@ int endgame_kpk(const position& pos)
 
 	const auto result = win_score + 40 * static_cast<int>(rank_of(pawn));
 
-	return Strong == pos.on_move() ? result : -result;
+	return strong == pos.on_move() ? result : -result;
 }
 
 // king & queen vs king & rook
-template <side Strong>
+template <side strong>
 int endgame_kqkr(const position& pos)
 {
-	const auto weak = ~Strong;
-	const auto strong_k = pos.king(Strong);
+	const auto weak = ~strong;
+	const auto strong_k = pos.king(strong);
 	const auto weak_k = pos.king(weak);
 
 	const auto result = 4 * value_pawn
 		+ endgame::push_to_side[weak_k]
 		+ endgame::draw_closer[distance(strong_k, weak_k)];
 
-	return Strong == pos.on_move() ? result : -result;
+	return strong == pos.on_move() ? result : -result;
 }
 
 // king and mating material vs lone king
-template <side Strong>
+template <side strong>
 int endgame_kxk(const position& pos)
 {
 	if (pos.is_in_check())
 		return score_0;
 
-	const auto weak = ~Strong;
+	const auto weak = ~strong;
 
 	if (pos.on_move() == weak && !at_least_one_legal_move(pos))
 		return draw_score;
 
-	const auto strong_k = pos.king(Strong);
+	const auto strong_k = pos.king(strong);
 	const auto weak_k = pos.king(weak);
 
-	auto result = value_of_material(pos.non_pawn_material(Strong))
-		+ pos.number(Strong, pt_pawn) * value_pawn
+	auto result = value_of_material(pos.non_pawn_material(strong))
+		+ pos.number(strong, pt_pawn) * value_pawn
 		+ endgame::push_to_side[weak_k]
 		+ endgame::draw_closer[distance(strong_k, weak_k)];
 
 	if (result < win_score)
-		if (pos.number(Strong, pt_queen) || pos.number(Strong, pt_rook)
-			|| (pos.number(Strong, pt_bishop) && pos.number(Strong, pt_knight))
-			|| (pos.pieces(Strong, pt_bishop) & dark_squares && pos.pieces(Strong, pt_bishop) & ~dark_squares))
+		if (pos.number(strong, pt_queen) + pos.number(strong, pt_rook)
+			|| pos.number(strong, pt_bishop) && pos.number(strong, pt_knight)
+			|| pos.pieces(strong, pt_bishop) & dark_squares && pos.pieces(strong, pt_bishop) & ~dark_squares)
 			result += win_score;
 
-	return Strong == pos.on_move() ? result : -result;
+	return strong == pos.on_move() ? result : -result;
 }
 
 template int endgame_kxk<white>(const position& pos);
@@ -184,12 +184,12 @@ int endgames::probe_scale_factor(const uint64_t key, side& strong_side)
 	function_index_map::const_iterator iteration = map_scale_factor_.find(key);
 
 	if (iteration != map_scale_factor_.end())
-		return strong_side = white;
+		return strong_side = white, iteration->second;
 
 	iteration = map_scale_factor_.find(key ^ black_modifier);
 
 	if (iteration != map_scale_factor_.end())
-		return strong_side = black;
+		return strong_side = black, iteration->second;
 
 	return -1;
 }

@@ -36,7 +36,7 @@ void hash::init(const size_t mb_size)
 	if (hash_mem_)
 		free(hash_mem_);
 
-	hash_mem_ = static_cast<bucket*>(calloc(buckets_ * sizeof(bucket) + 63, sizeof(bucket)));
+	hash_mem_ = static_cast<bucket*>(calloc(buckets_ * sizeof(bucket) + 63, 1));
 
 	if (!hash_mem_)
 	{
@@ -45,6 +45,7 @@ void hash::init(const size_t mb_size)
 		exit(EXIT_FAILURE);
 	}
 
+	buckets_ = new_size;
 	bucket_mask_ = (buckets_ - 1) * sizeof(bucket);
 }
 
@@ -85,7 +86,7 @@ main_hash_entry* hash::replace(const uint64_t key) const
 	auto* replacement = hash_entry;
 	for (auto i = 1; i < bucket_size; ++i)
 		if (replacement->depth_ - (age_ - (replacement->flags_ & age_mask) & age_mask)
-			> hash_entry[i].depth_ - (age_ - (hash_entry[i].flags_ & age_mask) & age_mask))
+	> hash_entry[i].depth_ - (age_ - (hash_entry[i].flags_ & age_mask) & age_mask))
 			replacement = &hash_entry[i];
 
 	return replacement;

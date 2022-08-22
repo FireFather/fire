@@ -5,7 +5,7 @@
   which have been documented in detail at https://www.chessprogramming.org/
   and demonstrated via the very strong open-source chess engine Stockfish...
   https://github.com/official-stockfish/Stockfish.
-  
+
   Fire is free software: you can redistribute it and/or modify it under the
   terms of the GNU General Public License as published by the Free Software
   Foundation, either version 3 of the License, or any later version.
@@ -74,6 +74,15 @@ void threadpool::delete_counter_move_history()
 	cmh_data->counter_move_stats.clear();
 }
 
+void thread::clear() {
+
+	for (auto& to : cont_history)
+		for (auto& h : to)
+			h->fill(0);
+
+	cont_history[0][0]->fill(0 - 1);
+}
+
 void threadpool::change_thread_count(int const num_threads)
 {
 	assert(uci_threads > 0);
@@ -98,11 +107,9 @@ void thread::idle_loop()
 	cmhi = cmh_data;
 
 	auto* p = calloc(sizeof(threadinfo), true);
-	if (p != nullptr)
-	{
-		std::memset(p, 0, sizeof(threadinfo));
-		ti = new(p) threadinfo;
-	}
+	std::memset(p, 0, sizeof(threadinfo));
+	ti = new(p) threadinfo;
+
 	root_position = &ti->root_position;
 
 	while (!exit_)

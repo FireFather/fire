@@ -47,15 +47,15 @@ namespace movepick
 	void score(const position& pos);
 }
 
-template <typename Tn>
+template <typename tn>
 struct piece_square_table
 {
-	const Tn* operator[](ptype piece) const
+	const tn* operator[](ptype piece) const
 	{
 		return table_[piece];
 	}
 
-	Tn* operator[](ptype piece)
+	tn* operator[](ptype piece)
 	{
 		return table_[piece];
 	}
@@ -65,21 +65,21 @@ struct piece_square_table
 		std::memset(table_, 0, sizeof(table_));
 	}
 
-	Tn get(ptype piece, square to)
+	tn get(ptype piece, square to)
 	{
 		return table_[piece][to];
 	}
 
-	void update(ptype piece, square to, Tn val)
+	void update(ptype piece, square to, tn val)
 	{
 		table_[piece][to] = val;
 	}
 
 protected:
-	Tn table_[num_pieces][num_squares];
+	tn table_[num_pieces][num_squares];
 };
 
-template <int MaxPlus, int MaxMin>
+template <int max_plus, int max_min>
 struct piece_square_stats : piece_square_table<int16_t>
 {
 	static int calculate_offset(const ptype piece, const square to)
@@ -101,15 +101,15 @@ struct piece_square_stats : piece_square_table<int16_t>
 	void update_plus(const int offset, const int val)
 	{
 		auto& elem = *(reinterpret_cast<int16_t*>(table_) + offset);
-		elem -= elem * static_cast<int16_t>(val) / MaxPlus;
-		elem += static_cast<int16_t>(val);
+		elem -= elem * static_cast<int>(val) / max_plus;
+		elem += val;
 	}
 
 	void update_minus(const int offset, const int val)
 	{
 		auto& elem = *(reinterpret_cast<int16_t*>(table_) + offset);
-		elem -= elem * static_cast<int16_t>(val) / MaxMin;
-		elem -= static_cast<int16_t>(val);
+		elem -= elem * static_cast<int>(val) / max_min;
+		elem -= val;
 	}
 };
 
@@ -137,7 +137,7 @@ private:
 
 struct counter_move_full_stats
 {
-	[[nodiscard]] uint32_t get(const side color, const uint32_t move) const
+	uint32_t get(const side color, const uint32_t move)
 	{
 		return table_[color][move & 0xfff];
 	}
@@ -158,7 +158,7 @@ private:
 
 struct counter_follow_up_move_stats
 {
-	[[nodiscard]] uint32_t get(const ptype piece1, const square to1, const ptype piece2, const square to2) const
+	uint32_t get(const ptype piece1, const square to1, const ptype piece2, const square to2)
 	{
 		return table_[piece1][to1][piece_type(piece2)][to2];
 	}

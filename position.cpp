@@ -70,14 +70,14 @@ void position::calculate_check_pins() const
 	pos_info_->check_squares[pt_king] = 0;
 }
 
-template <side Color>
+template <side color>
 void position::calculate_pins() const
 {
 	uint64_t result = 0;
-	const auto square_k = king(Color);
+	const auto square_k = king(color);
 
-	auto pinners = (empty_attack[pt_rook][square_k] & pieces(~Color, pt_queen, pt_rook))
-		| (empty_attack[pt_bishop][square_k] & pieces(~Color, pt_queen, pt_bishop));
+	auto pinners = (empty_attack[pt_rook][square_k] & pieces(~color, pt_queen, pt_rook))
+		| (empty_attack[pt_bishop][square_k] & pieces(~color, pt_queen, pt_bishop));
 
 	while (pinners)
 	{
@@ -89,7 +89,7 @@ void position::calculate_pins() const
 			pos_info_->pin_by[lsb(b)] = sq;
 		}
 	}
-	pos_info_->x_ray[Color] = result;
+	pos_info_->x_ray[color] = result;
 }
 
 square position::calculate_threat() const
@@ -132,13 +132,8 @@ square position::calculate_threat() const
 		if (const auto b = attack_rook_bb(to, pieces()) & pieces(white, pt_queen))
 			return msb(b);
 		break;
-	case no_piece: break;
-	case w_king: break;
-	case w_queen: break;
-	case b_king: break;
-	case b_queen: break;
-	case num_pieces: break;
-	default: break;
+	default:
+		break;
 	}
 
 	return no_square;
@@ -323,7 +318,7 @@ bool position::legal_move(const uint32_t move) const
 	return !(pos_info_->x_ray[on_move_] & from) || aligned(from, to_square(move), king(me));
 }
 
-template <bool Yes>
+template <bool yes>
 void position::do_castle_move(const side me, const square from, const square to, square& from_r, square& to_r)
 {
 	from_r = castle_rook_square(to);
@@ -331,16 +326,16 @@ void position::do_castle_move(const side me, const square from, const square to,
 
 	if (!chess960_)
 	{
-		relocate_piece(me, make_piece(me, pt_king), Yes ? from : to, Yes ? to : from);
-		relocate_piece(me, make_piece(me, pt_rook), Yes ? from_r : to_r, Yes ? to_r : from_r);
+		relocate_piece(me, make_piece(me, pt_king), yes ? from : to, yes ? to : from);
+		relocate_piece(me, make_piece(me, pt_rook), yes ? from_r : to_r, yes ? to_r : from_r);
 	}
 	else
 	{
-		delete_piece(me, make_piece(me, pt_king), Yes ? from : to);
-		delete_piece(me, make_piece(me, pt_rook), Yes ? from_r : to_r);
-		board_[Yes ? from : to] = board_[Yes ? from_r : to_r] = no_piece;
-		move_piece(me, make_piece(me, pt_king), Yes ? to : from);
-		move_piece(me, make_piece(me, pt_rook), Yes ? to_r : from_r);
+		delete_piece(me, make_piece(me, pt_king), yes ? from : to);
+		delete_piece(me, make_piece(me, pt_rook), yes ? from_r : to_r);
+		board_[yes ? from : to] = board_[yes ? from_r : to_r] = no_piece;
+		move_piece(me, make_piece(me, pt_king), yes ? to : from);
+		move_piece(me, make_piece(me, pt_rook), yes ? to_r : from_r);
 	}
 }
 
@@ -761,7 +756,7 @@ position& position::set(const std::string& fen_str, const bool is_chess960, thre
 		else if (token == '/')
 			sq -= static_cast<square>(16);
 
-		else if ((idx = util::piece_to_char.find(static_cast<char>(token))) != std::string::npos)
+		else if ((idx = util::piece_to_char.find(token)) != std::string::npos)
 		{
 			move_piece(piece_color(static_cast<ptype>(idx)), static_cast<ptype>(idx), sq);
 			++sq;
@@ -835,7 +830,9 @@ void position::take_move_back(const uint32_t move)
 	const auto to = to_square(move);
 	auto piece = piece_on_square(to);
 
+	assert(empty_square(from) || move_type(move) == castle_move);
 	assert(piece_type(pos_info_->captured_piece) != pt_king);
+	assert(piece == pos_info_->moved_piece);
 
 	if (move < static_cast<uint32_t>(castle_move))
 	{

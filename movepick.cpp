@@ -107,7 +107,7 @@ namespace movepick
 	{
 		const auto& history = pos.thread_info()->history;
 
-		const auto* const pi = pos.info();
+		const auto* pi = pos.info();
 		const counter_move_values* cm = pi->move_counter_values ? pi->move_counter_values : &pos.cmh_info()->counter_move_stats[no_piece][a1];
 		const counter_move_values* fm = (pi - 1)->move_counter_values
 			? (pi - 1)->move_counter_values
@@ -150,6 +150,7 @@ namespace movepick
 			}
 		}
 	}
+
 	inline void insertion_sort(s_move* begin, const s_move* end)
 	{
 		s_move* q = nullptr;
@@ -212,7 +213,7 @@ namespace movepick
 		{
 			uint8_t x = crc >> 8 ^ *data_p++;
 			x ^= x >> 4;
-			crc = static_cast<uint16_t>(crc << 8 ^ x << 12 ^ x << 5 ^ x);
+			crc = crc << 8 ^ static_cast<uint16_t>(x << 12) ^ static_cast<uint16_t>(x << 5) ^ static_cast<uint16_t>(x);
 		}
 		return crc;
 	}

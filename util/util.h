@@ -15,11 +15,9 @@
 */
 
 #pragma once
-#include <iostream>
 #include <ostream>
-#include <sstream>
+#include <iostream>
 #include <mutex>
-#include <vector>
 
 #include "../position.h"
 
@@ -86,20 +84,5 @@ namespace util
 			return t(rand64());
 		}
 	};
-	// std::make_unique is part of c++14
-	template<typename T, typename... Args>
-	std::unique_ptr<T> make_unique(Args&&... args) {
-		return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
-	}
-
-	inline std::vector<std::string> split(const std::string& s, const char delimiter)
-	{
-		std::vector<std::string> tokens;
-		std::stringstream ss(s);
-		std::string t;
-		while (getline(ss, t, delimiter)) { tokens.push_back(t); }
-		return tokens;
-	}
-
 }
 std::ostream& operator<<(std::ostream& os, const position& pos);

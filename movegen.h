@@ -49,13 +49,13 @@ enum move_gen
 
 namespace movegen
 {
-	template <side Me, move_gen Mg>
+	template <side me, move_gen mg>
 	s_move* moves_for_pawn(const position& pos, s_move* moves, uint64_t target);
 
-	template <side Me, uint8_t Piece, bool OnlyCheckMoves>
+	template <side me, uint8_t piece, bool only_check_moves>
 	s_move* moves_for_piece(const position& pos, s_move* moves, uint64_t target);
 
-	template < uint8_t Castle, bool OnlyCheckMoves, bool Chess960>
+	template < uint8_t castle, bool only_check_moves, bool chess960>
 	s_move* get_castle(const position& pos, s_move* moves);
 }
 

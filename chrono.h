@@ -28,8 +28,8 @@ inline time_point now()
 
 struct search_param
 {
-	search_param() : moves_to_go(0), depth(0), move_time(0), mate(0), infinite(0), ponder(0),
-		nodes(time[white] = time[black] = inc[white] = inc[black] = moves_to_go = depth = move_time = mate = infinite = ponder = 0)
+	search_param() : moves_to_go(0), depth(0), move_time(0), mate(0), infinite(0), ponder(0), nodes(time[white]
+		= time[black] = inc[white] = inc[black] = moves_to_go = depth = move_time = mate = infinite = ponder = 0)
 	{
 	}
 
@@ -38,19 +38,14 @@ struct search_param
 		return !(mate | move_time | depth | nodes | infinite);
 	}
 
-	int time[num_sides]
-	{
-	},
-	inc[num_sides]
-	{
-	},
-	moves_to_go,
-	depth,
-	move_time,
-	mate,
-	infinite,
-	ponder;
-
+	int time[num_sides]{},
+		inc[num_sides]{},
+		moves_to_go,
+		depth,
+		move_time,
+		mate,
+		infinite,
+		ponder;
 	uint64_t nodes;
 	max_moves_list search_moves;
 	time_point start_time = 0;

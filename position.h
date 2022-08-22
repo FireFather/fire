@@ -25,12 +25,12 @@ struct s_move;
 struct threadinfo;
 struct cmhinfo;
 
-template <int MaxPlus, int MaxMin>
+template <int max_plus, int max_min>
 struct piece_square_stats;
 
 typedef piece_square_stats<24576, 24576> counter_move_values;
 
-constexpr int delayed_number{7};
+constexpr int delayed_number{ 7 };
 
 enum ptype : uint8_t
 {
@@ -182,7 +182,7 @@ public:
 	[[nodiscard]] uint64_t discovered_check_possible() const;
 	[[nodiscard]] uint64_t pinned_pieces() const;
 	void calculate_check_pins() const;
-	template <side Color>
+	template <side color>
 	void calculate_pins() const;
 
 	[[nodiscard]] uint64_t attack_to(square sq) const;
@@ -252,7 +252,7 @@ private:
 	void move_piece(side color, ptype piece, square sq);
 	void delete_piece(side color, ptype piece, square sq);
 	void relocate_piece(side color, ptype piece, square from, square to);
-	template <bool Yes>
+	template <bool yes>
 	void do_castle_move(side me, square from, square to, square& from_r, square& to_r);
 	[[nodiscard]] bool is_draw() const;
 
@@ -312,16 +312,16 @@ inline bool position::advanced_pawn(const uint32_t move) const
 		&& relative_rank(on_move_, to_square(move)) >= rank_6;
 }
 
-template <uint8_t PieceType>
+template <uint8_t piece_type>
 inline uint64_t position::attack_from(const square sq) const
 {
-	return PieceType == pt_bishop
+	return piece_type == pt_bishop
 		? attack_bishop_bb(sq, pieces())
-		: PieceType == pt_rook
+		: piece_type == pt_rook
 		? attack_rook_bb(sq, pieces())
-		: PieceType == pt_queen
+		: piece_type == pt_queen
 		? attack_from<pt_rook>(sq) | attack_from<pt_bishop>(sq)
-		: empty_attack[PieceType][sq];
+		: empty_attack[piece_type][sq];
 }
 
 template <>

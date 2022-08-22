@@ -14,10 +14,9 @@
   this program: copying.txt.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "../search.h"
 #include "tbprobe.h"
-#include "../thread.h"
 #include "../util/util.h"
-
 
 // syzygy initialization and probe functions
 namespace egtb

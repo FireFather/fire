@@ -41,7 +41,7 @@ namespace search
 
 	// alpha-beta pruning utilizing minimax algorithm, effectively eliminating 'unpromising' branches of the search tree...
 	// search time is consequently limited to a 'more promising' subtree, resulting in deeper searches
-	template <nodetype Nt>
+	template <nodetype nt>
 	int alpha_beta(position& pos, int alpha, int beta, int depth, bool cut_node)
 	{
 		// search constants (can be easily convert int global variables for tuning w/ CLOP, etc.)
@@ -63,7 +63,7 @@ namespace search
 		constexpr auto quiet_moves_max_gain_base = -44;
 		constexpr auto sort_cmp_sort_value = -200;
 
-		const auto pv_node = Nt == PV;
+		const auto pv_node = nt == PV;
 		constexpr auto max_quiet_moves = 64;
 
 		assert(-max_score <= alpha && alpha < beta&& beta <= max_score);
@@ -178,6 +178,7 @@ namespace search
 		if (!root_node && tb_number && depth >= tb_probe_depth && pos.material_or_castle_changed())
 		{
 			if (auto number_pieces = pos.total_num_pieces(); number_pieces <= tb_number
+				&& depth >= tb_probe_depth
 				&& !pos.castling_possible(all))
 			{
 				auto value = no_score;
@@ -212,7 +213,7 @@ namespace search
 			pi->strong_threat = hash_entry->threat();
 
 			if (hash_value != no_score)
-				if ((hash_entry->bounds() && (hash_value > eval) ? south_border : north_border))
+				if (hash_entry->bounds() & (hash_value > eval ? south_border : north_border))
 					eval = hash_value;
 		}
 		else
@@ -358,7 +359,7 @@ namespace search
 			auto s_limit = depth >= limit_depth_min * plies
 				? position::see_values()[pi->captured_piece]
 				: std::max(see_0, (pc_beta - pi->position_value) / 2);
-			
+
 			movepick::init_prob_cut(pos, hash_move, s_limit);
 
 			while ((move = movepick::pick_move(pos)) != no_move)
@@ -380,7 +381,7 @@ namespace search
 		{
 			auto d = depth - 2 * plies - (pv_node ? depth_0 : static_cast<uint32_t>(depth) / plies / 4 * plies);
 			pi->no_early_pruning = true;
-			alpha_beta<Nt>(pos, alpha, beta, d, !pv_node && cut_node);
+			alpha_beta<nt>(pos, alpha, beta, d, !pv_node && cut_node);
 			pi->no_early_pruning = false;
 
 			hash_entry = main_hash.probe(key64);
@@ -471,7 +472,7 @@ namespace search
 			}
 
 			new_depth = depth - plies + extension;
-			if (!(root_node || capture_or_promotion || gives_check)
+			if (!(root_node | capture_or_promotion | gives_check)
 				&& best_score > -longest_mate_score
 				&& !pos.advanced_pawn(move)
 				&& pi->non_pawn_material[pos.on_move()])
@@ -591,7 +592,7 @@ namespace search
 					: -alpha_beta<nonPV>(pos, -(alpha + score_1), -alpha, new_depth, pv_node || !cut_node);
 			}
 
-				if (pv_node && (move_number == 1 || (value > alpha && (root_node || value < beta))))
+			if (pv_node && (move_number == 1 || value > alpha && (root_node || value < beta)))
 			{
 				uint32_t pv[max_ply + 1];
 				(pi + 1)->pv = pv;
@@ -839,7 +840,7 @@ namespace search
 	// start at the leaf nodes of the main search and resolve all tactics/capture moves in "quiet" positions.
 	// extend search at all unstable nodes & perform an extension of the evaluation function in order to obtain a static
 	// evaluation ... greatly mitigating the effect of the horizon problem.
-	template <nodetype Nt, bool StateCheck>
+	template <nodetype nt, bool state_check>
 	int q_search(position& pos, int alpha, const int beta, const int depth)
 	{
 		constexpr auto qs_futility_value_0 = 102;
@@ -866,7 +867,7 @@ namespace search
 		constexpr auto lazy_margin_q_search_low = static_cast<int>(lazy_margin) + score_1;
 		constexpr auto lazy_margin_q_search_high = static_cast<int>(lazy_margin);
 
-		const auto pv_node = Nt == PV;
+		const auto pv_node = nt == PV;
 
 		assert(alpha >= -max_score && alpha < beta&& beta <= max_score);
 		assert(pv_node || alpha == beta - 1);
@@ -888,13 +889,13 @@ namespace search
 		auto best_move = no_move;
 
 		if (pi->move_repetition || pi->ply >= max_ply)
-			return pi->ply >= max_ply && !StateCheck
+			return pi->ply >= max_ply && !state_check
 			? evaluate::eval(pos)
 			: draw[pos.on_move()];
 
 		assert(0 <= pi->ply && pi->ply < max_ply);
 
-		const auto hash_depth = StateCheck || depth == depth_0 ? depth_0 : -plies;
+		const auto hash_depth = state_check || depth == depth_0 ? depth_0 : -plies;
 
 		auto key64 = pi->key;
 		key64 ^= pos.draw50_key();
@@ -903,7 +904,6 @@ namespace search
 		const auto hash_value = hash_entry ? value_from_hash(hash_entry->value(), pi->ply) : no_score;
 
 		if (!pv_node
-			&& hash_entry != nullptr
 			&& hash_value != no_score
 			&& hash_entry->depth() >= hash_depth
 			&& (hash_value >= beta ? hash_entry->bounds() & south_border : hash_entry->bounds() & north_border))
@@ -920,7 +920,7 @@ namespace search
 				return value;
 		}
 
-		if (StateCheck)
+		if (state_check)
 		{
 			pi->position_value = no_score;
 			best_value = futility_basis = -max_score;
@@ -933,7 +933,7 @@ namespace search
 				pi->strong_threat = hash_entry->threat();
 
 				if (hash_value != no_score)
-					if ((hash_entry->bounds() && (hash_value > best_value) ? south_border : north_border))
+					if (hash_entry->bounds() & (hash_value > best_value ? south_border : north_border))
 						best_value = hash_value;
 
 				if (best_value >= beta)
@@ -975,7 +975,7 @@ namespace search
 				? pi->check_squares[piece_type(pos.moved_piece(move))] & to_square(move)
 				: pos.give_check(move);
 
-			if (!StateCheck
+			if (!state_check
 				&& !gives_check
 				&& futility_basis > -win_score
 				&& !pos.advanced_pawn(move))
@@ -1004,7 +1004,7 @@ namespace search
 				}
 			}
 
-			if (StateCheck)
+			if (state_check)
 			{
 				if (best_value > -longest_mate_score
 					&& !pos.is_capture_move(move)
@@ -1019,7 +1019,7 @@ namespace search
 						if (const auto stats_value = static_cast<int>(pos.thread_info()->evasion_history.value_at_offset(offset))
 							+ (pi->move_counter_values ? static_cast<int>(pi->move_counter_values->value_at_offset(offset)) : sort_zero)
 							+ ((pi - 1)->move_counter_values ? static_cast<int>((pi - 1)->move_counter_values->value_at_offset(offset)) : sort_zero)
-							+ ((pi - 3)->move_counter_values? static_cast<int>((pi - 3)->move_counter_values->value_at_offset(offset)) : sort_zero); stats_value < static_cast<int>(qs_stats_value_sortvalue))
+							+ ((pi - 3)->move_counter_values ? static_cast<int>((pi - 3)->move_counter_values->value_at_offset(offset)) : sort_zero); stats_value < static_cast<int>(qs_stats_value_sortvalue))
 							continue;
 					}
 
@@ -1039,8 +1039,8 @@ namespace search
 				continue;
 
 			pos.play_move(move, gives_check);
-			const int value = gives_check ? -q_search<Nt, true>(pos, -beta, -alpha, depth - plies)
-				: -q_search<Nt, false>(pos, -beta, -alpha, depth - plies);
+			const int value = gives_check ? -q_search<nt, true>(pos, -beta, -alpha, depth - plies)
+				: -q_search<nt, false>(pos, -beta, -alpha, depth - plies);
 			pos.take_move_back(move);
 
 			if ((pi + 1)->captured_piece)
@@ -1079,7 +1079,7 @@ namespace search
 			}
 		}
 
-		if (StateCheck && best_value == -max_score)
+		if (state_check && best_value == -max_score)
 			return gets_mated(pi->ply);
 
 		hash_entry = main_hash.replace(key64);
@@ -1113,7 +1113,6 @@ namespace search
 		thread_pool.main()->previous_root_score = max_score;
 		thread_pool.main()->previous_root_depth = 999 * plies;
 		thread_pool.main()->quick_move_allow = false;
-		//thread_pool.clear();
 	}
 
 	void send_time_info()
@@ -1144,6 +1143,9 @@ namespace search
 	void update_stats(const position& pos, const bool state_check, const uint32_t move,
 		const int depth, const uint32_t* quiet_moves, const int quiet_number)
 	{
+		constexpr auto update_stats_max_depth = 18;
+		constexpr auto update_stats_move_1_max_depth = 18;
+
 		auto* pi = pos.info();
 
 		auto* cmh = pi->move_counter_values;
@@ -1161,13 +1163,13 @@ namespace search
 			}
 
 			if (cmh)
-				ti->counter_moves.update(pi->moved_piece, to_square(pi->previous_move), static_cast<uint8_t>(move));
+				ti->counter_moves.update(pi->moved_piece, to_square(pi->previous_move), static_cast<unsigned short>(move));
 
 			if (cmh && fmh)
 				ti->counter_followup_moves.update((pi - 1)->moved_piece, to_square((pi - 1)->previous_move),
 					pi->moved_piece, to_square(pi->previous_move), move);
 
-			if (constexpr auto update_stats_max_depth = 18; depth < update_stats_max_depth * plies)
+			if (depth < update_stats_max_depth * plies)
 			{
 				const auto bonus = counter_move_value(depth);
 				const auto hist_bonus = history_bonus(depth);
@@ -1200,7 +1202,7 @@ namespace search
 
 		if ((pi - 1)->move_number == 1 && !pi->captured_piece)
 		{
-			if (constexpr auto update_stats_move_1_max_depth = 18; depth < update_stats_move_1_max_depth * plies)
+			if (depth < update_stats_move_1_max_depth * plies)
 			{
 				const auto bonus = counter_move_value(depth + plies);
 				const auto offset = move_value_stats::calculate_offset(pi->moved_piece, to_square(pi->previous_move));
@@ -1219,7 +1221,9 @@ namespace search
 
 	void update_stats_minus(const position& pos, const bool state_check, const uint32_t move, const int depth)
 	{
-		const auto* const pi = pos.info();
+		constexpr auto update_stats_minus_max_depth = 18;
+
+		const auto* pi = pos.info();
 		auto* cmh = pi->move_counter_values;
 		auto* fmh = (pi - 1)->move_counter_values;
 		auto* fmh2 = (pi - 3)->move_counter_values;
@@ -1228,7 +1232,7 @@ namespace search
 
 		if (!pos.capture_or_promotion(move))
 		{
-			if (constexpr auto update_stats_minus_max_depth = 18; depth < update_stats_minus_max_depth * plies)
+			if (depth < update_stats_minus_max_depth * plies)
 			{
 				const auto bonus = counter_move_value(depth);
 				const auto hist_bonus = history_bonus(depth);
@@ -1248,14 +1252,16 @@ namespace search
 
 	void update_stats_quiet(const position& pos, const bool state_check, const int depth, const uint32_t* quiet_moves, const int quiet_number)
 	{
-		const auto* const pi = pos.info();
+		constexpr auto update_stats_quiet_max_depth = 18;
+
+		const auto* pi = pos.info();
 		auto* cmh = pi->move_counter_values;
 		auto* fmh = (pi - 1)->move_counter_values;
 		auto* fmh2 = (pi - 3)->move_counter_values;
 		auto* ti = pos.thread_info();
 		auto& history = state_check ? ti->evasion_history : ti->history;
 
-		if (constexpr auto update_stats_quiet_max_depth = 18; depth < update_stats_quiet_max_depth * plies)
+		if (depth < update_stats_quiet_max_depth * plies)
 		{
 			const auto bonus = static_cast<int>(depth);
 			const auto hist_bonus = static_cast<int>(depth);
@@ -1466,7 +1472,7 @@ NO_ANALYSIS:
 	previous_root_score = best_thread->root_moves[0].score;
 	previous_root_depth = best_thread->root_moves[0].depth;
 
-	if (best_thread != this || search::signals.stop_if_ponder_hit)
+	if (best_thread != this)
 		best_thread->root_moves[0].depth = root_moves[0].depth;
 
 	if (!bench_active)
@@ -1539,7 +1545,7 @@ void thread::begin_search()
 	if (main_thread && !tb_root_in_tb && !search::param.ponder && !thread_pool.analysis_mode
 		&& main_thread->quick_move_allow && main_thread->previous_root_depth >= 12 * plies && thread_pool.multi_pv == 1)
 	{
-		if (const auto* const hash_entry = main_hash.probe(root_position->key()); hash_entry && hash_entry->bounds() == exact_value)
+		if (const auto* hash_entry = main_hash.probe(root_position->key()); hash_entry && hash_entry->bounds() == exact_value)
 		{
 			const auto hash_value = search::value_from_hash(hash_entry->value(), pi->ply);
 			const auto hash_move = hash_entry->move();
@@ -1551,7 +1557,7 @@ void thread::begin_search()
 			{
 				constexpr auto v_singular_margin = 102;
 				const auto depth_singular = std::max(main_thread->previous_root_depth / 2, main_thread->previous_root_depth - 8 * plies);
-				const auto v_singular = hash_value - v_singular_margin;
+				const auto v_singular = hash_value - static_cast<int>(v_singular_margin);
 				pi->excluded_move = hash_move;
 				pi->position_value = evaluate::eval(*root_position);
 				main_thread->quick_move_evaluation_busy = true;
@@ -1686,8 +1692,8 @@ void thread::begin_search()
 				else
 					break;
 
-				delta_alpha += delta_alpha / 4 + delta_alphabeta_value_add;
-				delta_beta += delta_beta / 4 + delta_alphabeta_value_add;
+				delta_alpha += delta_alpha / 4 + static_cast<int>(delta_alphabeta_value_add);
+				delta_beta += delta_beta / 4 + static_cast<int>(delta_alphabeta_value_add);
 
 				assert(alpha >= -max_score && beta <= max_score);
 			}
@@ -1785,7 +1791,7 @@ bool rootmove::ponder_move_from_hash(position& pos)
 
 	pos.play_move(pv[0]);
 
-	if (const auto* const hash_entry = main_hash.probe(pos.key() ^ pos.draw50_key()); hash_entry)
+	if (const auto* hash_entry = main_hash.probe(pos.key() ^ pos.draw50_key()); hash_entry)
 	{
 		if (const auto move = hash_entry->move(); legal_moves_list_contains_move(pos, move))
 			pv.add(move);
@@ -1822,7 +1828,7 @@ std::string print_pv(const position& pos, const int alpha, const int beta, const
 			ss << "\n";
 
 		auto sel_depth = 0;
-		const auto* const pi = thread_pool.main()->root_position->info();
+		const auto* pi = thread_pool.main()->root_position->info();
 		for (sel_depth = 0; sel_depth < max_ply; sel_depth++)
 			if ((pi + sel_depth)->pawn_key == 0)
 				break;

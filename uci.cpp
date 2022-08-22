@@ -142,18 +142,18 @@ void uci_loop(const int argc, char* argv[])
 		else if (token == "perft")
 		{
 			auto depth = 7;
-			auto &fen = startpos;
-			
+			auto& fen = startpos;
+
 			is >> depth;
 			is >> fen;
-			
+
 			perft(depth, fen);
 		}
 		else if (token == "divide")
 		{
 			auto depth = 7;
-			auto &fen = startpos;
-			
+			auto& fen = startpos;
+
 			is >> depth;
 			is >> fen;
 
@@ -161,7 +161,7 @@ void uci_loop(const int argc, char* argv[])
 		}
 		else if (token == "bench")
 		{	//bench depth = 14 unless specified on command line
-			auto bench_depth = is >> token ? token : "16";	
+			auto bench_depth = is >> token ? token : "14";
 			// to suppress extraneous output			
 			bench_active = true;
 			bench(stoi(bench_depth));

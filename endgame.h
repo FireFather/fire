@@ -100,19 +100,19 @@ namespace endgame
 	};
 }
 
-template <side Strong>
+template <side strong>
 int endgame_kxk(const position& pos);
 
-template <side Strong>
+template <side strong>
 sfactor endgame_kbpk(const position& pos);
 
-template <side Strong>
+template <side strong>
 sfactor endgame_kqkrp(const position& pos);
 
-template <side Strong>
+template <side strong>
 sfactor endgame_kpk(const position& pos);
 
-template <side Strong>
+template <side strong>
 sfactor endgame_kpkp(const position& pos);
 
 inline int value_of_material(int val);
