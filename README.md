@@ -42,3 +42,7 @@ fire 8.2 self-play nnue
 - improving the NNUE with supervised & reinforcement learning
   - [improving-the-nnue.md](docs/improving-the-nnue.md)
 
+
+PGNs used are available for download here:
+
+https://drive.google.com/drive/folders/1047piVwcYW7yDV4TbX0qpSgcd9zph2Nr?usp=sharing
