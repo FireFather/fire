@@ -2,7 +2,7 @@
 
 # fire-zero
 
-A strong UCI NNUE chess engine utilizing self-play position evaluation data
+A strong UCI chess engine including a unique NNUE evaluation from self-play position evaluation data
 
 - Fire without NNUE can be found here: https://github.com/FireFather/fire
 - Fire w/ NNUE from shared SF & LC0 data can be found here: https://github.com/FireFather/fire-NN
