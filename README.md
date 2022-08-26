@@ -4,6 +4,9 @@
 
 A strong UCI NNUE chess engine utilizing self-play position evaluation data
 
+- Fire without NNUE can be found here: https://github.com/FireFather/fire
+- Fire w/ NNUE from shared SF & LC0 data can be found here: https://github.com/FireFather/fire-NN
+
 ## tools used:
 
 - engine for generation of self-play games
