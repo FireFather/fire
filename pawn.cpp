@@ -34,7 +34,7 @@ namespace pawn
 
 		entry->key = key;
 
-		constexpr uint64_t pawn_files_bb[2]{};
+		const uint64_t pawn_files_bb[2]{};
 
 		const auto w_pawn = pos.pieces(white, pt_pawn);
 		const auto b_pawn = pos.pieces(black, pt_pawn);

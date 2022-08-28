@@ -861,7 +861,6 @@ namespace search
 		};
 
 		constexpr auto lazy_margin = 480; // sf uses 1400 (* 100 / 256 = 547), but 480 seems optimal here
-		constexpr auto qs_futility_basis_margin = 102;
 		constexpr auto qs_stats_value_sortvalue = -12000;
 
 		constexpr auto lazy_margin_q_search_low = static_cast<int>(lazy_margin) + score_1;
@@ -993,7 +992,7 @@ namespace search
 					continue;
 				}
 
-				if (futility_basis + static_cast<int>(qs_futility_basis_margin) <= alpha)
+				if (constexpr auto qs_futility_basis_margin = 102; futility_basis + static_cast<int>(qs_futility_basis_margin) <= alpha)
 				{
 					if (!pos.see_test(move, 1))
 					{
@@ -1143,9 +1142,6 @@ namespace search
 	void update_stats(const position& pos, const bool state_check, const uint32_t move,
 		const int depth, const uint32_t* quiet_moves, const int quiet_number)
 	{
-		constexpr auto update_stats_max_depth = 18;
-		constexpr auto update_stats_move_1_max_depth = 18;
-
 		auto* pi = pos.info();
 
 		auto* cmh = pi->move_counter_values;
@@ -1169,7 +1165,7 @@ namespace search
 				ti->counter_followup_moves.update((pi - 1)->moved_piece, to_square((pi - 1)->previous_move),
 					pi->moved_piece, to_square(pi->previous_move), move);
 
-			if (depth < update_stats_max_depth * plies)
+			if (constexpr auto update_stats_max_depth = 18; depth < update_stats_max_depth * plies)
 			{
 				const auto bonus = counter_move_value(depth);
 				const auto hist_bonus = history_bonus(depth);
@@ -1202,7 +1198,7 @@ namespace search
 
 		if ((pi - 1)->move_number == 1 && !pi->captured_piece)
 		{
-			if (depth < update_stats_move_1_max_depth * plies)
+			if (constexpr auto update_stats_move_1_max_depth = 18; depth < update_stats_move_1_max_depth * plies)
 			{
 				const auto bonus = counter_move_value(depth + plies);
 				const auto offset = move_value_stats::calculate_offset(pi->moved_piece, to_square(pi->previous_move));
@@ -1221,8 +1217,6 @@ namespace search
 
 	void update_stats_minus(const position& pos, const bool state_check, const uint32_t move, const int depth)
 	{
-		constexpr auto update_stats_minus_max_depth = 18;
-
 		const auto* pi = pos.info();
 		auto* cmh = pi->move_counter_values;
 		auto* fmh = (pi - 1)->move_counter_values;
@@ -1232,7 +1226,7 @@ namespace search
 
 		if (!pos.capture_or_promotion(move))
 		{
-			if (depth < update_stats_minus_max_depth * plies)
+			if (constexpr auto update_stats_minus_max_depth = 18; depth < update_stats_minus_max_depth * plies)
 			{
 				const auto bonus = counter_move_value(depth);
 				const auto hist_bonus = history_bonus(depth);
@@ -1252,8 +1246,6 @@ namespace search
 
 	void update_stats_quiet(const position& pos, const bool state_check, const int depth, const uint32_t* quiet_moves, const int quiet_number)
 	{
-		constexpr auto update_stats_quiet_max_depth = 18;
-
 		const auto* pi = pos.info();
 		auto* cmh = pi->move_counter_values;
 		auto* fmh = (pi - 1)->move_counter_values;
@@ -1261,7 +1253,7 @@ namespace search
 		auto* ti = pos.thread_info();
 		auto& history = state_check ? ti->evasion_history : ti->history;
 
-		if (depth < update_stats_quiet_max_depth * plies)
+		if (constexpr auto update_stats_quiet_max_depth = 18; depth < update_stats_quiet_max_depth * plies)
 		{
 			const auto bonus = static_cast<int>(depth);
 			const auto hist_bonus = static_cast<int>(depth);
@@ -1431,7 +1423,7 @@ void mainthread::begin_search()
 
 			mc->search();
 			delete mc;
-			mcts.clear();
+			mcts.clear(); 
 		}
 		else
 			thread::begin_search();
@@ -1472,7 +1464,7 @@ NO_ANALYSIS:
 	previous_root_score = best_thread->root_moves[0].score;
 	previous_root_depth = best_thread->root_moves[0].depth;
 
-	if (best_thread != this)
+	if (best_thread != this || search::signals.stop_if_ponder_hit)
 		best_thread->root_moves[0].depth = root_moves[0].depth;
 
 	if (!bench_active)
@@ -1491,13 +1483,6 @@ NO_ANALYSIS:
 
 void thread::begin_search()
 {
-	constexpr auto best_value_vp_mult = 8;
-
-	constexpr auto time_control_optimum_mult_1 = 124;
-	constexpr auto time_control_optimum_mult_2 = 420;
-
-	constexpr auto info_depth_interval = 1000;
-
 	auto alpha = score_0, delta_alpha = score_0, delta_beta = score_0;
 	auto fast_move = no_move;
 	auto* main_thread = this == thread_pool.main() ? thread_pool.main() : nullptr;
@@ -1613,7 +1598,7 @@ void thread::begin_search()
 			main_thread->failed_low = false;
 		}
 
-		if (!bench_active && main_thread && time_control.elapsed() > info_depth_interval)
+		if (constexpr auto info_depth_interval = 1000; !bench_active && main_thread && time_control.elapsed() > info_depth_interval)
 			acout() << "info depth " << search_iteration << std::endl;
 
 		for (auto i = 0; i < root_moves.move_number; i++)
@@ -1652,7 +1637,7 @@ void thread::begin_search()
 
 				bool fail_high_resolve = main_thread;
 
-				if (main_thread && best_value >= beta
+				if (constexpr auto time_control_optimum_mult_1 = 124; main_thread && best_value >= beta
 					&& root_moves[active_pv].pv[0] == prev_best_move
 					&& !thread_pool.analysis_mode
 					&& time_control.elapsed() > time_control.optimum() * time_control_optimum_mult_1 / 1024)
@@ -1660,7 +1645,7 @@ void thread::begin_search()
 					if (const auto play_easy_move = root_moves[0].pv[0] == fast_move && main_thread->best_move_changed < 31; play_easy_move)
 						fail_high_resolve = false;
 
-					else if (time_control.elapsed() > time_control.optimum() * time_control_optimum_mult_2 / 1024)
+					else if (constexpr auto time_control_optimum_mult_2 = 420; time_control.elapsed() > time_control.optimum() * time_control_optimum_mult_2 / 1024)
 					{
 						const auto improvement_factor = std::max(420, std::min(improvement_factor_min_base,
 							improvement_factor_max_base + improvement_factor_max_mult
@@ -1683,7 +1668,7 @@ void thread::begin_search()
 						search::signals.stop_if_ponder_hit = false;
 					}
 				}
-				else if (best_value >= beta && (fail_high_resolve || best_value >= value_pawn * best_value_vp_mult))
+				else if (constexpr auto best_value_vp_mult = 8; best_value >= beta && (fail_high_resolve || best_value >= value_pawn * best_value_vp_mult))
 				{
 					alpha = (alpha + beta) / 2;
 					beta = std::min(best_value + delta_beta, max_score);

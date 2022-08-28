@@ -5,7 +5,7 @@
   which have been documented in detail at https://www.chessprogramming.org/
   and demonstrated via the very strong open-source chess engine Stockfish...
   https://github.com/official-stockfish/Stockfish.
-
+  
   Fire is free software: you can redistribute it and/or modify it under the
   terms of the GNU General Public License as published by the Free Software
   Foundation, either version 3 of the License, or any later version.
@@ -23,5 +23,5 @@ class position;
 namespace evaluate
 {
 	int eval(const position& pos);
-	int eval_after_null_move(int eval);
+	int eval_after_null_move(int eval);	
 }

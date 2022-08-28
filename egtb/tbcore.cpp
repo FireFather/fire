@@ -18,7 +18,6 @@
 #include <sys/mman.h>
 #endif
 
-#include "../define.h"
 #include "tbcore.h"
 
 #include <string>
@@ -27,7 +26,7 @@
 
 constexpr auto tb_max_piece = 254;
 constexpr auto tb_max_pawn = 256;
-constexpr auto hash_max = 5;
+constexpr auto hash_max = 7;
 
 #define SWAP(a,b) {int tmp=a;(a)=b;(b)=tmp;}
 
@@ -66,9 +65,9 @@ static void free_dtz_entry(struct tb_entry* entry);
 static FD open_tb(const char* str, const char* suffix)
 {
 	FD fd;
-	char file[256];
 
 	for (auto i = 0; i < num_paths; i++) {
+		char file[256];
 		strcpy(file, paths[i]);
 		strcat(file, "/");
 		strcat(file, str);
@@ -163,7 +162,7 @@ static char pchr[] = { 'K', 'Q', 'R', 'B', 'N', 'P' };
 static void init_tb(char* str)
 {
 	struct tb_entry* entry = nullptr;
-	int i = 0, j = 0, pcs[16]{};
+	int i = 0, pcs[16]{};
 
 	FD fd = open_tb(str, wdl_suffix);
 	if (fd == FD_ERR) return;
@@ -237,6 +236,7 @@ static void init_tb(char* str)
 		}
 	}
 	else {
+		int j = 0;
 		auto* const ptr = reinterpret_cast<struct tb_entry_piece*>(entry);
 		for (i = 0, j = 0; i < 16; i++)
 			if (pcs[i] == 1) j++;
@@ -370,7 +370,7 @@ void syzygy_path_init(const std::string& path)
 				}
 }
 
-static const signed char offdiag[] = {
+static constexpr signed char offdiag[] = {
   0,-1,-1,-1,-1,-1,-1,-1,
   1, 0,-1,-1,-1,-1,-1,-1,
   1, 1, 0,-1,-1,-1,-1,-1,
@@ -381,7 +381,7 @@ static const signed char offdiag[] = {
   1, 1, 1, 1, 1, 1, 1, 0
 };
 
-static const ubyte triangle[] = {
+static constexpr ubyte triangle[] = {
   6, 0, 1, 2, 2, 1, 0, 6,
   0, 7, 3, 4, 4, 3, 7, 0,
   1, 3, 8, 5, 5, 8, 3, 1,
@@ -392,7 +392,7 @@ static const ubyte triangle[] = {
   6, 0, 1, 2, 2, 1, 0, 6
 };
 
-static const ubyte flipdiag[] = {
+static constexpr ubyte flipdiag[] = {
    0,  8, 16, 24, 32, 40, 48, 56,
    1,  9, 17, 25, 33, 41, 49, 57,
    2, 10, 18, 26, 34, 42, 50, 58,
@@ -403,7 +403,7 @@ static const ubyte flipdiag[] = {
    7, 15, 23, 31, 39, 47, 55, 63
 };
 
-static const ubyte lower[] = {
+static constexpr ubyte lower[] = {
   28,  0,  1,  2,  3,  4,  5,  6,
    0, 29,  7,  8,  9, 10, 11, 12,
    1,  7, 30, 13, 14, 15, 16, 17,
@@ -414,7 +414,7 @@ static const ubyte lower[] = {
    6, 12, 17, 21, 24, 26, 27, 35
 };
 
-static const ubyte diag[] = {
+static constexpr ubyte diag[] = {
    0,  0,  0,  0,  0,  0,  0,  8,
    0,  1,  0,  0,  0,  0,  9,  0,
    0,  0,  2,  0,  0, 10,  0,  0,
@@ -425,7 +425,7 @@ static const ubyte diag[] = {
   15,  0,  0,  0,  0,  0,  0,  7
 };
 
-static const ubyte flap[] = {
+static constexpr ubyte flap[] = {
   0, 0, 0, 0, 0, 0, 0, 0,
   0, 6, 12, 18, 18, 12, 6, 0,
   1, 7, 13, 19, 19, 13, 7, 1,
@@ -436,7 +436,7 @@ static const ubyte flap[] = {
   0, 0, 0, 0, 0, 0, 0, 0
 };
 
-static const ubyte ptwist[] = {
+static constexpr ubyte ptwist[] = {
   0, 0, 0, 0, 0, 0, 0, 0,
   47, 35, 23, 11, 10, 22, 34, 46,
   45, 33, 21, 9, 8, 20, 32, 44,
@@ -447,18 +447,18 @@ static const ubyte ptwist[] = {
   0, 0, 0, 0, 0, 0, 0, 0
 };
 
-static const ubyte invflap[] = {
+static constexpr ubyte invflap[] = {
   8, 16, 24, 32, 40, 48,
   9, 17, 25, 33, 41, 49,
   10, 18, 26, 34, 42, 50,
   11, 19, 27, 35, 43, 51
 };
 
-static const ubyte file_to_file[] = {
+static constexpr ubyte file_to_file[] = {
   0, 1, 2, 3, 3, 2, 1, 0
 };
 
-static const short kk_idx[10][64] = {
+static constexpr short kk_idx[10][64] = {
   { -1, -1, -1,  0,  1,  2,  3,  4,
 	-1, -1, -1,  5,  6,  7,  8,  9,
 	10, 11, 12, 13, 14, 15, 16, 17,
@@ -589,7 +589,7 @@ static void init_indices()
 	}
 }
 
-static uint64 encode_piece(struct tb_entry_piece* ptr, const ubyte* norm, int* pos, const int* factor)
+static uint64 encode_piece(const tb_entry_piece* ptr, const ubyte* norm, int* pos, const int* factor)
 {
 	uint64 idx = 0;
 	auto i = 0, j = 0, l = 0;
@@ -621,7 +621,7 @@ static uint64 encode_piece(struct tb_entry_piece* ptr, const ubyte* norm, int* p
 		else if (offdiag[pos[1]])
 			idx = static_cast<uint64_t>(6 * 63 * 62) + static_cast<uint64_t>(diag[pos[0]]) * static_cast<uint64_t>(28 * 62) + static_cast<uint64_t>(lower[pos[1]]) * static_cast<uint64_t>(62) + static_cast<uint64_t>(pos[2]) - static_cast<uint64_t>(j);
 		else if (offdiag[pos[2]])
-			idx =  static_cast<uint64_t>(6 * 63 * 62 + 4 * 28 * 62) +  static_cast<uint64_t>(diag[pos[0]]) *  static_cast<uint64_t>(7 * 28) +  (static_cast<uint64_t>(diag[pos[1]]) - static_cast<uint64_t>(i)) *  static_cast<uint64_t>(28) + lower[pos[2]];
+			idx = static_cast<uint64_t>(6 * 63 * 62 + 4 * 28 * 62) + static_cast<uint64_t>(diag[pos[0]]) * static_cast<uint64_t>(7 * 28) + (static_cast<uint64_t>(diag[pos[1]]) - static_cast<uint64_t>(i)) * static_cast<uint64_t>(28) + lower[pos[2]];
 		else
 			idx = static_cast<uint64_t>(6 * 63 * 62 + 4 * 28 * 62 + 4 * 7 * 28) + (static_cast<uint64_t>(diag[pos[0]]) * static_cast<uint64_t>(7 * 6)) + (static_cast<uint64_t>(diag[pos[1]]) - static_cast<uint64_t>(i)) * static_cast<uint64_t>(6) + (static_cast<uint64_t>(diag[pos[2]]) - static_cast<uint64_t>(j));
 		i = 3;
@@ -668,7 +668,7 @@ static uint64 encode_piece(struct tb_entry_piece* ptr, const ubyte* norm, int* p
 }
 
 // determine file of leftmost pawn and sort pawns
-static int pawn_file(struct tb_entry_pawn* ptr, int* pos)
+static int pawn_file(const tb_entry_pawn* ptr, int* pos)
 {
 	for (auto i = 1; i < ptr->pawns[0]; i++)
 		if (flap[pos[0]] > flap[pos[i]])
@@ -677,7 +677,7 @@ static int pawn_file(struct tb_entry_pawn* ptr, int* pos)
 	return file_to_file[pos[0] & 0x07];
 }
 
-static uint64 encode_pawn(struct tb_entry_pawn* ptr, const ubyte* norm, int* pos, const int* factor)
+static uint64 encode_pawn(const tb_entry_pawn* ptr, const ubyte* norm, int* pos, const int* factor)
 {
 	auto i = 0, j = 0, k = 0, m = 0, s = 0;
 	const int n = ptr->num;
@@ -747,7 +747,7 @@ static int subfactor(const int k, const int n)
 	return f / l;
 }
 
-static uint64 calc_factors_piece(int* factor, const int num, const int order, ubyte* norm, const ubyte enc_type)
+static uint64 calc_factors_piece(int* factor, const int num, const int order, const ubyte* norm, const ubyte enc_type)
 {
 	auto i = 0, k = 0;
 	static int pivfac[] = { 31332, 28056, 462 };
@@ -771,7 +771,7 @@ static uint64 calc_factors_piece(int* factor, const int num, const int order, ub
 	return f;
 }
 
-static uint64 calc_factors_pawn(int* factor, const int num, const int order, const int order2, ubyte* norm, const int file)
+static uint64 calc_factors_pawn(int* factor, const int num, const int order, const int order2, const ubyte* norm, const int file)
 {
 	int i = norm[0];
 	if (order2 < 0x0f) i += norm[i];
@@ -798,7 +798,7 @@ static uint64 calc_factors_pawn(int* factor, const int num, const int order, con
 	return f;
 }
 
-static void set_norm_piece(struct tb_entry_piece* ptr, ubyte* norm, const ubyte* pieces)
+static void set_norm_piece(const tb_entry_piece* ptr, ubyte* norm, const ubyte* pieces)
 {
 	auto i = 0;
 
@@ -822,7 +822,7 @@ static void set_norm_piece(struct tb_entry_piece* ptr, ubyte* norm, const ubyte*
 			norm[i]++;
 }
 
-static void set_norm_pawn(struct tb_entry_pawn* ptr, ubyte* norm, const ubyte* pieces)
+static void set_norm_pawn(const tb_entry_pawn* ptr, ubyte* norm, const ubyte* pieces)
 {
 	auto i = 0;
 
@@ -897,8 +897,7 @@ static void setup_pieces_pawn_dtz(struct dtz_entry_pawn* ptr, const unsigned cha
 static void calc_symlen(struct pairs_data* d, const int s, char* tmp)
 {
 	auto* const w = d->sympat + 3 * static_cast<int>(s);
-	const auto s2 = (w[2] << 4) | (w[1] >> 4);
-	if (s2 == 0x0fff)
+	if (const auto s2 = (w[2] << 4) | (w[1] >> 4); s2 == 0x0fff)
 		d->symlen[s] = 0;
 	else {
 		const auto s1 = ((w[1] & 0xf) << 8) | w[0];
@@ -938,16 +937,16 @@ static struct pairs_data* setup_pairs(unsigned char* data, const uint64 tb_size,
 	const int blocksize = data[1];
 	const int idxbits = data[2];
 	const int real_num_blocks = read_uint32(&data[4]);
-	const auto num_blocks = real_num_blocks + *static_cast<ubyte*>(&data[3]);
+	const auto num_blocks = real_num_blocks + *&data[3];
 	const int max_len = data[8];
 	const int min_len = data[9];
 	const auto h = max_len - min_len + 1;
 	const int num_syms = read_ushort(&data[10 + 2 * h]);
-	d = static_cast<struct pairs_data*>(malloc(sizeof(struct pairs_data) + (h - static_cast<int>(1)) * sizeof(base_t) + num_syms));
+	d = static_cast<struct pairs_data*>(malloc(sizeof(struct pairs_data) + (h - 1) * sizeof(base_t) + num_syms));
 	d->blocksize = blocksize;
 	d->idxbits = idxbits;
 	d->offset = reinterpret_cast<ushort*>(&data[10]);
-	d->symlen = reinterpret_cast<ubyte*>(d) + sizeof(struct pairs_data) + (h - static_cast<int>(1)) * sizeof(base_t);
+	d->symlen = reinterpret_cast<ubyte*>(d) + sizeof(struct pairs_data) + (h - 1) * sizeof(base_t);
 	d->sympat = &data[12 + 2 * h];
 	d->min_len = min_len;
 	*next = &data[12 + 2 * h + 3 * num_syms + (num_syms & 1)];
@@ -969,7 +968,7 @@ static struct pairs_data* setup_pairs(unsigned char* data, const uint64 tb_size,
 	for (i = h - 2; i >= 0; i--)
 		d->base[i] = (d->base[i + 1] + read_ushort(reinterpret_cast<ubyte*>(d->offset + i)) - read_ushort(reinterpret_cast<ubyte*>(d->offset + i + 1))) / 2;
 	for (i = 0; i < h; i++)
-		d->base[i] <<= 64 - static_cast<int>(min_len + i);
+		d->base[i] <<= 64 - (min_len + i);
 
 	d->offset -= d->min_len;
 
@@ -979,7 +978,6 @@ static struct pairs_data* setup_pairs(unsigned char* data, const uint64 tb_size,
 static int init_table_wdl(struct tb_entry* entry, char* str)
 {
 	ubyte* next = nullptr;
-	auto f = 0;
 	uint64 tb_size[8]{};
 	uint64 size[8 * 3]{};
 	ubyte flags = 0;
@@ -1011,7 +1009,7 @@ static int init_table_wdl(struct tb_entry* entry, char* str)
 	if (!entry->has_pawns) {
 		auto* ptr = reinterpret_cast<struct tb_entry_piece*>(entry);
 		setup_pieces_piece(ptr, data, &tb_size[0]);
-		data += ptr->num + static_cast<int>(1);
+		data += ptr->num + 1;
 		data += reinterpret_cast<uintptr_t>(data) & 0x01;
 
 		ptr->precomp[0] = setup_pairs(data, tb_size[0], &size[0], &next, &flags, 1);
@@ -1046,10 +1044,11 @@ static int init_table_wdl(struct tb_entry* entry, char* str)
 		}
 	}
 	else {
+		auto f = 0;
 		auto* ptr = reinterpret_cast<struct tb_entry_pawn*>(entry);
 		const auto s = 1 + (ptr->pawns[1] > 0);
 		for (f = 0; f < 4; f++) {
-			setup_pieces_pawn(static_cast<struct tb_entry_pawn*>(ptr), data, &tb_size[2 * f], f);
+			setup_pieces_pawn(ptr, data, &tb_size[2 * f], f);
 			data += ptr->num + static_cast<int>(s);
 		}
 		data += reinterpret_cast<uintptr_t>(data) & 0x01;
@@ -1102,7 +1101,6 @@ static int init_table_dtz(struct tb_entry* entry)
 {
 	auto* data = reinterpret_cast<ubyte*>(entry->data);
 	ubyte* next = nullptr;
-	auto f = 0;
 	uint64 tb_size[4]{};
 	uint64 size[4 * 3]{};
 
@@ -1124,7 +1122,7 @@ static int init_table_dtz(struct tb_entry* entry)
 	if (!entry->has_pawns) {
 		auto* ptr = reinterpret_cast<struct dtz_entry_piece*>(entry);
 		setup_pieces_piece_dtz(ptr, data, &tb_size[0]);
-		data += ptr->num + static_cast<int>(1);
+		data += ptr->num + 1;
 		data += reinterpret_cast<uintptr_t>(data) & 0x01;
 
 		ptr->precomp = setup_pairs(data, tb_size[0], &size[0], &next, &(ptr->flags), 0);
@@ -1151,6 +1149,7 @@ static int init_table_dtz(struct tb_entry* entry)
 		data += size[2];
 	}
 	else {
+		auto f = 0;
 		auto* ptr = reinterpret_cast<struct dtz_entry_pawn*>(entry);
 		const auto s = 1 + (ptr->pawns[1] > 0);
 		for (f = 0; f < 4; f++) {
@@ -1202,12 +1201,12 @@ static ubyte decompress_pairs(struct pairs_data* d, const uint64 idx)
 		return static_cast<ubyte>(d->min_len);
 
 	const auto mainidx = static_cast<uint32>(idx >> d->idxbits);
-	int litidx = (idx & ((1ULL << d->idxbits) - 1)) - (1ULL << (d->idxbits - 1));
+	int litidx = static_cast<int>((idx & ((1ULL << d->idxbits) - 1)) - (1ULL << (d->idxbits - 1)));
 	auto block = *reinterpret_cast<uint32*>(d->indextable + 6 * static_cast<int>(mainidx));
 	if (!LittleEndian)
 		block = B_SWAP32(block);
 
-	auto idx_offset = *reinterpret_cast<ushort*>(d->indextable + 6 * static_cast<int>(mainidx) + static_cast<int>(4));
+	auto idx_offset = *reinterpret_cast<ushort*>(d->indextable + 6 * static_cast<int>(mainidx) + 4);
 	if (!LittleEndian)
 		idx_offset = static_cast<ushort>((idx_offset << 8) | (idx_offset >> 8));
 	litidx += idx_offset;
@@ -1225,9 +1224,9 @@ static ubyte decompress_pairs(struct pairs_data* d, const uint64 idx)
 	auto* ptr = reinterpret_cast<uint32*>(d->data + (block << static_cast<unsigned>(d->blocksize)));
 
 	const auto m = d->min_len;
-	auto* const offset = d->offset;
-	auto* const base = d->base - m;
-	auto* const symlen = d->symlen;
+	const auto* const offset = d->offset;
+	const auto* const base = d->base - m;
+	const auto* const symlen = d->symlen;
 	auto sym = 0;
 
 	auto code = *reinterpret_cast<uint64*>(ptr);
@@ -1258,9 +1257,8 @@ static ubyte decompress_pairs(struct pairs_data* d, const uint64 idx)
 
 	auto* const sympat = d->sympat;
 	while (symlen[sym] != 0) {
-		auto* const w = sympat + (3 * static_cast<int>(sym));
-		const auto s1 = ((w[1] & 0xf) << 8) | w[0];
-		if (litidx < static_cast<int>(symlen[s1]) + 1)
+		auto* const w = sympat + (3 * sym);
+		if (const auto s1 = ((w[1] & 0xf) << 8) | w[0]; litidx < static_cast<int>(symlen[s1]) + 1)
 			sym = s1;
 		else {
 			litidx -= static_cast<int>(symlen[s1]) + 1;
@@ -1271,7 +1269,7 @@ static ubyte decompress_pairs(struct pairs_data* d, const uint64 idx)
 	return sympat[3 * sym];
 }
 
-void load_dtz_table(char* str, const uint64 key1, const uint64 key2)
+void load_dtz_table(const char* str, const uint64 key1, const uint64 key2)
 {
 	auto i = 0;
 
@@ -1280,7 +1278,7 @@ void load_dtz_table(char* str, const uint64 key1, const uint64 key2)
 	dtz_table[0].entry = nullptr;
 
 	// find corresponding WDL entry
-	auto* const ptr2 = tb_hash[key1 >> (64 - tb_hash_bits)];
+	const auto* const ptr2 = tb_hash[key1 >> (64 - tb_hash_bits)];
 	for (i = 0; i < hash_max; i++)
 		if (ptr2[i].key == key1) break;
 	if (i == hash_max) return;
@@ -1314,18 +1312,18 @@ static void free_wdl_entry(struct tb_entry* entry)
 {
 	unmap_file(entry->data, entry->mapping);
 	if (!entry->has_pawns) {
-		auto* ptr = reinterpret_cast<struct tb_entry_piece*>(entry);
+		const auto* ptr = reinterpret_cast<struct tb_entry_piece*>(entry);
 		free(ptr->precomp[0]);
 		if (ptr->precomp[1])
 			free(ptr->precomp[1]);
 	}
 	else {
 		auto* ptr = reinterpret_cast<struct tb_entry_pawn*>(entry);
-		for (auto& f : ptr->file)
+		for (const auto& [precomp, factor, pieces, norm] : ptr->file)
 		{
-			free(f.precomp[0]);
-			if (f.precomp[1])
-				free(f.precomp[1]);
+			free(precomp[0]);
+			if (precomp[1])
+				free(precomp[1]);
 		}
 	}
 }
@@ -1334,13 +1332,13 @@ static void free_dtz_entry(struct tb_entry* entry)
 {
 	unmap_file(entry->data, entry->mapping);
 	if (!entry->has_pawns) {
-		auto* const ptr = reinterpret_cast<struct dtz_entry_piece*>(entry);
+		const auto* const ptr = reinterpret_cast<struct dtz_entry_piece*>(entry);
 		free(ptr->precomp);
 	}
 	else {
 		auto* ptr = reinterpret_cast<struct dtz_entry_pawn*>(entry);
-		for (auto& f : ptr->file)
-			free(f.precomp);
+		for (const auto& [precomp, factor, pieces, norm] : ptr->file)
+			free(precomp);
 	}
 	free(entry);
 }

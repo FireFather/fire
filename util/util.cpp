@@ -32,26 +32,27 @@
 
 namespace util
 {
+	const std::string months("Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec");
+	std::string month, day, year;
+	std::stringstream ei, bd, date(__DATE__);
+
 	// return string with 'program' 'version' 'platform' and 'instruction set'
-	// see fire.h
+
 	std::string engine_info()
 	{
-		std::stringstream ei;
-		ei << program << " " << version << " ";
+		ei << "Fire Zero" << " ";
+		date >> month >> day >> year;
+		ei << (1 + months.find(month) / 4) << day << year << " ";
 		ei << platform << " " << bmis;
-		ei << std::endl;
+		version = ei.str();
 		return ei.str();
 	}
 
 	// return string with 'build date'
 	std::string build_date()
 	{
-		const std::string months("Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec");
-		std::string month, day, year;
-		std::stringstream bd, date(__DATE__);
-
 		date >> month >> day >> year;
-		bd << "\nBuild timestamp  : " << year << '-' << std::setw(2) << std::setfill('0') << month << '-' << std::setw(2) << std::setfill('0') << day << ' ' << __TIME__ << std::endl;
+		bd << "\nBuild timestamp  : " << month << ' ' << std::setw(2) << std::setfill('0') << day << ' ' << year << ' ' << std::setw(2) << std::setfill('0') << __TIME__ << std::endl;
 		return bd.str();
 	}
 
@@ -75,7 +76,7 @@ namespace util
 		ci << "info string " << sys_info.dwNumberOfProcessors << " available cores" << std::endl;
 #else
 		// if linux
-		ss << "info string " << sysconf(_SC_NPROCESSORS_ONLN) << " available cores" << std::endl;
+		ci << "info string " << sysconf(_SC_NPROCESSORS_ONLN) << " available cores" << std::endl;
 #endif
 
 		return ci.str();

@@ -4,12 +4,11 @@ bitboard.o: bitboard.cpp bitboard.h fire.h bitop.h macro/side.h \
  macro/square.h macro/file.h macro/rank.h pragma.h
 chrono.o: chrono.cpp chrono.h fire.h uci.h position.h bitboard.h bitop.h
 egtb.o: egtb/egtb.cpp egtb/../search.h egtb/../chrono.h egtb/../fire.h \
- egtb/../position.h egtb/../bitboard.h egtb/../bitop.h egtb/../movepick.h \
- egtb/../movegen.h egtb/tbprobe.h egtb/../util/util.h
+ egtb/../movepick.h egtb/../movegen.h egtb/../position.h \
+ egtb/../bitboard.h egtb/../bitop.h egtb/tbprobe.h egtb/../util/util.h
 tbprobe.o: egtb/tbprobe.cpp egtb/../position.h egtb/../bitboard.h \
  egtb/../fire.h egtb/../bitop.h egtb/../zobrist.h egtb/../movegen.h \
- egtb/tbprobe.h egtb/tbcore.h egtb/tbcore.cpp egtb/../define.h \
- egtb/../pragma.h
+ egtb/tbprobe.h egtb/tbcore.h egtb/tbcore.cpp egtb/../pragma.h
 endgame.o: endgame.cpp bitboard.h fire.h bitop.h endgame.h position.h \
  movegen.h pragma.h thread.h material.h define.h movepick.h mutex.h \
  pawn.h macro/square.h search.h chrono.h
@@ -71,8 +70,8 @@ pst.o: pst.cpp fire.h position.h bitboard.h bitop.h
 random.o: random/random.cpp random/../position.h random/../bitboard.h \
  random/../fire.h random/../bitop.h random/../movepick.h \
  random/../movegen.h random/../pragma.h random/../util/util.h
-search.o: search.cpp search.h chrono.h fire.h position.h bitboard.h \
- bitop.h movepick.h movegen.h evaluate.h hash.h define.h mcts/mcts.h \
+search.o: search.cpp search.h chrono.h fire.h movepick.h movegen.h \
+ position.h bitboard.h bitop.h evaluate.h hash.h define.h mcts/mcts.h \
  mcts/../thread.h mcts/../endgame.h mcts/../material.h mcts/../mutex.h \
  mcts/../pawn.h mcts/../macro/square.h pragma.h uci.h util/util.h
 sfactor.o: sfactor.cpp bitboard.h fire.h bitop.h endgame.h position.h \

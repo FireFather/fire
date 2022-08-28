@@ -5,7 +5,7 @@
   which have been documented in detail at https://www.chessprogramming.org/
   and demonstrated via the very strong open-source chess engine Stockfish...
   https://github.com/official-stockfish/Stockfish.
-
+  
   Fire is free software: you can redistribute it and/or modify it under the
   terms of the GNU General Public License as published by the Free Software
   Foundation, either version 3 of the License, or any later version.
@@ -20,8 +20,8 @@
 
 #include "chrono.h"
 #include "fire.h"
-#include "position.h"
 #include "movepick.h"
+#include "position.h"
 
 typedef movelist<max_pv> principal_variation;
 

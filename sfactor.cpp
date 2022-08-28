@@ -94,7 +94,7 @@ sfactor endgame_kbpk(const position& pos)
 		&& black_pawns & bb(a7)
 		&& king_cover_bb & bb(b8)
 		&& (!(black_pawns & file_b_bb)
-			|| rank_of(lsb(white_pawns & file_a_bb)) >= rank_of(msb(black_pawns & file_b_bb))))
+		|| rank_of(lsb(white_pawns & file_a_bb)) >= rank_of(msb(black_pawns & file_b_bb))))
 		return draw_factor;
 
 	if (!(white_pawns & ~file_g_bb)

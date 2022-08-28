@@ -49,15 +49,15 @@ void init(const int hash_size)
 	thread_pool.init();
 	search::reset();
 	main_hash.init(hash_size);
-	const char* filename = uci_nnue_evalfile.c_str();
-	nnue_init(filename);
+	const char *filename = uci_nnue_evalfile.c_str();
+	nnue_init(filename);	
 }
 
 // initialize system
 void init_nnue()
 {
-	const char* filename = uci_nnue_evalfile.c_str();
-	nnue_init(filename);
+	const char *filename = uci_nnue_evalfile.c_str();
+	nnue_init(filename);	
 }
 
 // create infinite loop while parsing for UCI input stream tokens (words)
@@ -89,7 +89,7 @@ void uci_loop(const int argc, char* argv[])
 		// check for significant UCI tokens
 		if (token == "uci")
 		{
-			acout() << "id name " << program << " " << version << " " << platform << " " << bmis << std::endl;
+			acout() << "id name " << version << std::endl;
 			acout() << "id author " << author << std::endl;
 			acout() << "option name Hash type spin default 64 min 16 max 1048576" << std::endl;
 			acout() << "option name Threads type spin default 1 min 1 max 128" << std::endl;
@@ -101,13 +101,13 @@ void uci_loop(const int argc, char* argv[])
 			acout() << "option name SyzygyProbeLimit type spin default 6 min 0 max 6" << std::endl;
 			acout() << "option name EngineMode type combo default nnue var nnue var random" << std::endl;
 			acout() << "option name ClearHash type button" << std::endl;
-			acout() << "option name MCTS type check default false" << std::endl;
+			acout() << "option name MCTS type check default false" << std::endl;			
 			acout() << "option name Ponder type check default false" << std::endl;
 			acout() << "option name UCI_Chess960 type check default false" << std::endl;
 			acout() << "option name ClearHash type button" << std::endl;
 			acout() << "option name Syzygy50MoveRule type check default true" << std::endl;
 			acout() << "option name SyzygyPath type string default <empty>" << std::endl;
-			acout() << "option name NnueEvalFile type string default " << uci_nnue_evalfile << std::endl;
+			acout() << "option name NnueEvalFile type string default " << uci_nnue_evalfile << std::endl;			
 			acout() << "uciok" << std::endl;
 		}
 		else if (token == "isready")
@@ -160,8 +160,8 @@ void uci_loop(const int argc, char* argv[])
 			divide(depth, fen);
 		}
 		else if (token == "bench")
-		{	//bench depth = 14 unless specified on command line
-			auto bench_depth = is >> token ? token : "14";
+		{	//bench depth = 16 unless specified on command line
+			auto bench_depth = is >> token ? token : "16";
 			// to suppress extraneous output			
 			bench_active = true;
 			bench(stoi(bench_depth));
@@ -202,7 +202,7 @@ void set_option(std::istringstream& is)
 				//hack to bypass 1 thread mcts
 				if (uci_threads == 1 && uci_mcts == true)
 					uci_threads = 2;
-
+				
 				thread_pool.change_thread_count(uci_threads);
 				if (uci_threads == 1)
 					acout() << "info string Threads " << uci_threads << " thread" << std::endl;
@@ -282,7 +282,7 @@ void set_option(std::istringstream& is)
 					uci_mcts = false;
 				acout() << "info string MCTS " << uci_mcts << std::endl;
 				break;
-			}
+			}	
 			if (token == "Ponder")
 			{
 				is >> token;
@@ -350,10 +350,10 @@ void go(position& pos, std::istringstream& is)
 {
 	if (uci_threads == 1 && uci_mcts == true)
 	{
-		acout() << "info string MCTS requires > 1 thread " << std::endl;
-		exit(EXIT_SUCCESS);
+		acout() << "info string MCTS requires > 1 thread " << std::endl;			
+		exit (EXIT_SUCCESS);
 	}
-
+	
 	search_param param;
 	std::string token;
 	param.infinite = 1;

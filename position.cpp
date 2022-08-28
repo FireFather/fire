@@ -132,8 +132,13 @@ square position::calculate_threat() const
 		if (const auto b = attack_rook_bb(to, pieces()) & pieces(white, pt_queen))
 			return msb(b);
 		break;
-	default:
-		break;
+	case no_piece: break;
+	case w_king: break;
+	case w_queen: break;
+	case b_king: break;
+	case b_queen: break;
+	case num_pieces: break;
+	default: break;
 	}
 
 	return no_square;

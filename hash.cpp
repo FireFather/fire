@@ -86,7 +86,7 @@ main_hash_entry* hash::replace(const uint64_t key) const
 	auto* replacement = hash_entry;
 	for (auto i = 1; i < bucket_size; ++i)
 		if (replacement->depth_ - (age_ - (replacement->flags_ & age_mask) & age_mask)
-	> hash_entry[i].depth_ - (age_ - (hash_entry[i].flags_ & age_mask) & age_mask))
+			> hash_entry[i].depth_ - (age_ - (hash_entry[i].flags_ & age_mask) & age_mask))
 			replacement = &hash_entry[i];
 
 	return replacement;

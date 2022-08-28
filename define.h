@@ -15,9 +15,10 @@
 */
 
 #pragma once
+#include <string>
 
 constexpr auto program = "Fire";
-constexpr auto version = "Zero";
+inline std::string version = "";
 constexpr auto author = "N. Schmidt";
 constexpr auto platform = "x64";
 

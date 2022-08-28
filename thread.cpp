@@ -74,15 +74,6 @@ void threadpool::delete_counter_move_history()
 	cmh_data->counter_move_stats.clear();
 }
 
-void thread::clear() {
-
-	for (auto& to : cont_history)
-		for (auto& h : to)
-			h->fill(0);
-
-	cont_history[0][0]->fill(0 - 1);
-}
-
 void threadpool::change_thread_count(int const num_threads)
 {
 	assert(uci_threads > 0);

@@ -197,7 +197,7 @@ static int probe_wdl_table(const position& pos, int* success)
 
 	if (uint64 idx = 0; !ptr->has_pawns)
 	{
-		auto* entry = reinterpret_cast<struct tb_entry_piece*>(ptr);
+		const auto* entry = reinterpret_cast<struct tb_entry_piece*>(ptr);
 		const auto* pc = entry->pieces[b_side];
 		for (i = 0; i < entry->num;)
 		{
@@ -213,7 +213,7 @@ static int probe_wdl_table(const position& pos, int* success)
 	}
 	else
 	{
-		auto* entry = reinterpret_cast<struct tb_entry_pawn*>(ptr);
+		const auto* entry = reinterpret_cast<struct tb_entry_pawn*>(ptr);
 		const auto k = entry->file[0].pieces[0][0] ^ c_mirror;
 		auto bb = pos.pieces(static_cast<side>(k >> 3), pt_from_syz[k & 0x07]);
 		i = 0;

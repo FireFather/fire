@@ -20,7 +20,7 @@
 int main(const int argc, char* argv[])
 {
 	// display engine name, version, platform, and bmis
-	acout() << util::engine_info();
+	acout() << util::engine_info() << std::endl;
 
 	// display build date/time
 	acout() << util::build_date();

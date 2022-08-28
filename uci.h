@@ -30,6 +30,7 @@ inline bool uci_chess960 = false;
 inline bool uci_syzygy_50_move_rule = false;
 inline int uci_syzygy_probe_depth = 1;
 inline int uci_syzygy_probe_limit = 6;
+
 inline std::string uci_syzygy_path;
 inline std::string uci_nnue_evalfile = "nn.bin";
 

@@ -79,7 +79,7 @@ void perft(int depth, std::string& fen)
 			perft_log.open(file_name);
 
 			// write system info to log file
-			perft_log << program << " " << version << " " << platform << " " << bmis << std::endl;
+			perft_log << version << std::endl;
 
 			std::string fen_pos;
 
@@ -170,7 +170,7 @@ void perft(int depth, std::string& fen)
 		perft_log.open(file_name);
 
 		// write formatted results to time stamped log file
-		perft_log << program << " " << version << " " << platform << " " << bmis << std::endl;
+		perft_log << version << std::endl;
 		perft_log << "perft " << depth << std::endl;
 		perft_log << fen.c_str() << std::endl;
 		perft_log << "nodes " << std::fixed << std::setprecision(0) << nodes << std::endl;
@@ -250,7 +250,7 @@ void divide(int depth, std::string& fen)
 				acout() << std::endl;
 
 				// write formatted results to time stamped log file
-				divide_log << program << " " << version << " " << platform << " " << bmis << std::endl;
+				divide_log << version << std::endl;
 				divide_log << "divide " << depth << std::endl;
 				divide_log << fen.c_str() << std::endl;
 				divide_log << "nodes " << std::fixed << std::setprecision(0) << nodes << std::endl;
@@ -312,7 +312,7 @@ void divide(int depth, std::string& fen)
 		divide_log.open(file_name);
 
 		// write formatted results to time stamped log file
-		divide_log << program << " " << version << " " << platform << " " << bmis << std::endl;
+		divide_log << version << std::endl;
 		divide_log << "divide " << depth << std::endl;
 		divide_log << fen.c_str() << std::endl;
 		divide_log << "nodes " << std::fixed << std::setprecision(0) << nodes << std::endl;

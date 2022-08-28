@@ -2,8 +2,7 @@
   Copyright (c) 2011-2013 Ronald de Man
 */
 
-#ifndef TBCORE_H
-#define TBCORE_H
+#pragma once
 
 #ifndef _WIN32
 #include <pthread.h>
@@ -25,16 +24,23 @@ constexpr auto SEP_CHAR = ';';
 #else
 #define LOCK_T HANDLE
 #define LOCK_INIT(x) do { (x) = CreateMutex(NULL, FALSE, NULL); } while (0)
-#define LOCK(x) WaitForSingleObject(x, INFINITE)
-#define UNLOCK(x) ReleaseMutex(x)
+
+template<typename T>
+constexpr auto LOCK(T x) { return WaitForSingleObject(x, INFINITE); }
+
+template<typename T>
+constexpr auto UNLOCK(T x) { return ReleaseMutex(x); }
 #endif
 
 #ifndef _MSC_VER
 #define B_SWAP32(v) __builtin_bswap32(v)
 #define B_SWAP64(v) __builtin_bswap64(v)
 #else
-#define B_SWAP32(v) _byteswap_ulong(v)
-#define B_SWAP64(v) _byteswap_uint64(v)
+template<typename T>
+constexpr auto B_SWAP32(T v) { return _byteswap_ulong(v); }
+
+template<typename T>
+constexpr auto B_SWAP64(T v) { return _byteswap_uint64(v); }
 #endif
 
 constexpr auto wdl_suffix = ".rtbw";
@@ -48,8 +54,15 @@ typedef unsigned int uint32;
 typedef unsigned char ubyte;
 typedef unsigned short ushort;
 
-constexpr ubyte wdl_magic[4] = { 0x71, 0xe8, 0x23, 0x5d };
-constexpr ubyte dtz_magic[4] = { 0xd7, 0x66, 0x0c, 0xa5 };
+constexpr ubyte wdl_magic[4] =
+{
+	0x71, 0xe8, 0x23, 0x5d
+};
+
+constexpr ubyte dtz_magic[4] =
+{
+	0xd7, 0x66, 0x0c, 0xa5
+};
 
 constexpr auto tb_hash_bits = 10;
 
@@ -57,7 +70,8 @@ struct tb_hash_entry;
 
 typedef uint64 base_t;
 
-struct pairs_data {
+struct pairs_data
+{
 	char* indextable;
 	ushort* sizetable;
 	ubyte* data;
@@ -70,7 +84,8 @@ struct pairs_data {
 	base_t base[1]; // C++ complains about base[]...
 };
 
-struct tb_entry {
+struct tb_entry
+{
 	char* data;
 	uint64 key;
 	uint64 mapping;
@@ -84,7 +99,8 @@ __attribute__((__may_alias__))
 #endif
 ;
 
-struct tb_entry_piece {
+struct tb_entry_piece
+{
 	char* data;
 	uint64 key;
 	uint64 mapping;
@@ -99,7 +115,8 @@ struct tb_entry_piece {
 	ubyte norm[2][tb_pieces];
 };
 
-struct tb_entry_pawn {
+struct tb_entry_pawn
+{
 	char* data;
 	uint64 key;
 	uint64 mapping;
@@ -108,7 +125,8 @@ struct tb_entry_pawn {
 	ubyte symmetric;
 	ubyte has_pawns;
 	ubyte pawns[2];
-	struct {
+	struct
+	{
 		pairs_data* precomp[2];
 		int factor[2][tb_pieces];
 		ubyte pieces[2][tb_pieces];
@@ -116,7 +134,8 @@ struct tb_entry_pawn {
 	} file[4];
 };
 
-struct dtz_entry_piece {
+struct dtz_entry_piece
+{
 	char* data;
 	uint64 key;
 	uint64 mapping;
@@ -134,7 +153,8 @@ struct dtz_entry_piece {
 	ubyte* map;
 };
 
-struct dtz_entry_pawn {
+struct dtz_entry_pawn
+{
 	char* data;
 	uint64 key;
 	uint64 mapping;
@@ -143,27 +163,30 @@ struct dtz_entry_pawn {
 	ubyte symmetric;
 	ubyte has_pawns;
 	ubyte pawns[2];
-	struct {
+	struct
+	{
 		pairs_data* precomp;
 		int factor[tb_pieces];
 		ubyte pieces[tb_pieces];
 		ubyte norm[tb_pieces];
-	} file[4];
+	}
+	file[4];
 	ubyte flags[4];
 	ushort map_idx[4][4];
 	ubyte* map;
 };
 
-struct tb_hash_entry {
+struct tb_hash_entry
+{
 	uint64 key;
 	tb_entry* ptr;
 };
 
-struct dtz_table_entry {
+struct dtz_table_entry
+{
 	uint64 key1;
 	uint64 key2;
 	tb_entry* entry;
 };
 
-#endif
 

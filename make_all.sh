@@ -10,6 +10,9 @@
 # You should have received a copy of the GNU General Public License with
 # this program: copying.txt.  If not, see <http://www.gnu.org/licenses/>.
 
+# cpu architecture set to x86 64-bit w/ Intel's avx2 (Advanced Vector Extensions 2)
+# also known as Haswell New Instructions
+
 arch_cpu=x86-64-avx2
 make --no-print-directory -j profile-build ARCH=${arch_cpu} COMP=mingw
 strip fire.exe

@@ -1,16 +1,12 @@
 ![alt tag](https://raw.githubusercontent.com/FireFather/fire-zero/master/bitmaps/nnue-gui.png)
 
 # fire-zero
-
-A strong UCI chess engine including a unique NNUE evaluation from self-play position evaluation data
-
-- Fire without NNUE can be found here: https://github.com/FireFather/fire
-- Fire w/ NNUE from shared SF & LC0 data can be found here: https://github.com/FireFather/fire-NN
+fire 8.2 self-play nnue
 
 ## tools used:
 
 - engine for generation of self-play games
-  - fire 8.2 & 8.3 https://github.com/FireFather/fire
+  - fire 8.2 https://github.com/FireFather/fire
 - application to run self-play games
   - cutechess-cli https://github.com/cutechess/cutechess
 - application to obtain fen positions and evaluation data from pgn files & convert to plain text
@@ -46,7 +42,3 @@ A strong UCI chess engine including a unique NNUE evaluation from self-play posi
 - improving the NNUE with supervised & reinforcement learning
   - [improving-the-nnue.md](docs/improving-the-nnue.md)
 
-
-PGNs used are available for download here:
-
-https://drive.google.com/drive/folders/1047piVwcYW7yDV4TbX0qpSgcd9zph2Nr?usp=sharing

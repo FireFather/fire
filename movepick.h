@@ -101,15 +101,15 @@ struct piece_square_stats : piece_square_table<int16_t>
 	void update_plus(const int offset, const int val)
 	{
 		auto& elem = *(reinterpret_cast<int16_t*>(table_) + offset);
-		elem -= elem * static_cast<int>(val) / max_plus;
-		elem += val;
+		elem -= elem * static_cast<int16_t>(val) / max_plus;
+		elem += static_cast<int16_t>(val);
 	}
 
 	void update_minus(const int offset, const int val)
 	{
 		auto& elem = *(reinterpret_cast<int16_t*>(table_) + offset);
-		elem -= elem * static_cast<int>(val) / max_min;
-		elem -= val;
+		elem -= elem * static_cast<int16_t>(val) / max_min;
+		elem -= static_cast<int16_t>(val);
 	}
 };
 
@@ -137,7 +137,7 @@ private:
 
 struct counter_move_full_stats
 {
-	uint32_t get(const side color, const uint32_t move)
+	[[nodiscard]] uint32_t get(const side color, const uint32_t move) const
 	{
 		return table_[color][move & 0xfff];
 	}
@@ -158,7 +158,7 @@ private:
 
 struct counter_follow_up_move_stats
 {
-	uint32_t get(const ptype piece1, const square to1, const ptype piece2, const square to2)
+	[[nodiscard]] uint32_t get(const ptype piece1, const square to1, const ptype piece2, const square to2) const
 	{
 		return table_[piece1][to1][piece_type(piece2)][to2];
 	}
@@ -233,57 +233,57 @@ inline stage& operator++(stage& d)
 	return d = static_cast<stage>(static_cast<int>(d) + 1);
 }
 
-template<typename T, int D>
+template<typename t, int d>
 class pi_entry {
 
-	T entry_;
+	t entry;
 
 public:
-	void operator=(const T& v)
+	void operator=(const t& v)
 	{
-		entry_ = v;
+		entry = v;
 	}
-	T* operator&()
+	t* operator&()
 	{
-		return &entry_;
+		return &entry;
 	}
-	T* operator->()
+	t* operator->()
 	{
-		return &entry_;
+		return &entry;
 	}
-	explicit operator const T& () const
+	explicit operator const t& () const
 	{
-		return entry_;
+		return entry;
 	}
 
 	void operator<<(int bonus)
 	{
 		assert(abs(bonus) <= D);
-		static_assert(D <= std::numeric_limits<T>::max(), "D overflows T");
+		static_assert(d <= std::numeric_limits<t>::max(), "D overflows T");
 
-		entry_ += bonus - entry_ * abs(bonus) / D;
+		entry += bonus - entry * abs(bonus) / d;
 
 		assert(abs(entry) <= D);
 	}
 };
 
-template <typename T, int D, int Size, int... Sizes>
-struct pos_info : std::array<pos_info<T, D, Sizes...>, Size>
+template <typename t, int d, int Size, int... sizes>
+struct pos_info : std::array<pos_info<t, d, sizes...>, Size>
 {
-	typedef pos_info<T, D, Size, Sizes...> stats;
+	typedef pos_info<t, d, Size, sizes...> stats;
 
-	void fill(const T& v)
+	void fill(const t& v)
 	{
 		assert(std::is_standard_layout<stats>::value);
 
-		typedef pi_entry<T, D> entry;
+		typedef pi_entry<t, d> entry;
 		entry* p = reinterpret_cast<entry*>(this);
 		std::fill(p, p + sizeof(*this) / sizeof(entry), v);
 	}
 };
 
-template <typename T, int D, int Size>
-struct pos_info<T, D, Size> : std::array<pi_entry<T, D>, Size> {};
+template <typename t, int d, int Size>
+struct pos_info<t, d, Size> : std::array<pi_entry<t, d>, Size> {};
 typedef pos_info<int16_t, 29952, 16, 64> piece_to_history;
 typedef pos_info<piece_to_history, 0, 16, 64> continuation_history;
 
