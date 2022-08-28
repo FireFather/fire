@@ -26,7 +26,7 @@ fire 8.2 self-play nnue
 - asychronous cout (acout) class using std::unique_lock<std::mutex>
 - uci option searchtype random w/ uniform_real_distribution & mesenne_twister_engine
 - reads engine.conf on startup for search, eval, pawn, and material parameters
-- uses a NNUE evaluation
+- uses a unique NNUE evaluation (halfkp_256x2-32-32)
 - fast alpha-beta search
 
 ## tools used:
