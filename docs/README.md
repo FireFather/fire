@@ -42,3 +42,16 @@ fire 8.2 self-play nnue
 - improving the NNUE with supervised & reinforcement learning
   - [improving-the-nnue.md](docs/improving-the-nnue.md)
 
+## available Windows binaries
+- **x64 bmi2** = fast pgo binary (for modern 64-bit systems w/ BMI2 instruction set) if you own a Intel Haswell or newer cpu, this compile should be faster.
+- **x64 avx2** = fast pgo binary (for modern 64-bit systems w/ AVX2 instruction set) if you own a modern AMD cpu, this compile should be the fastest.
+
+run 'bench' at command line to determine which binary runs best/fastest on your system. for greater accuracy, run it twice and calculate the average of both results.
+
+## compile it yourself
+- **windows** (visual studio) use included project files Fire.vcxproj or Fire.sln
+- **minGW** run included bash scripts make_sse41.sh, make_bmi2.sh, make_avx2.sh, or make_all.sh 
+- **ubuntu** type 'make profile-build ARCH=x86-64-bmi2', 'make profile-build ARCH=x86-64-avx2', etc.
+
+
+please see **http://chesslogik.wix.com/fire** for more info
