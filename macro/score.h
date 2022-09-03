@@ -16,6 +16,8 @@
 
 #pragma once
 
+enum score : int;
+
 // these macros specify basic arithmetic operations on enumerated score values
 inline score operator+(const score s1, const score s2)
 {

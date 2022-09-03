@@ -77,7 +77,7 @@ const void* map_file(const FD fd, map_t* map)
 #endif
 }
 
-void unmap_file(const void* data, const map_t map)
+void unmap_file(const void* data, map_t map)
 {
 	if (!data) return;
 

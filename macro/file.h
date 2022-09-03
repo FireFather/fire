@@ -15,7 +15,6 @@
 */
 
 #pragma once
-#include "../fire.h"
 
 // these macros specify basic arithmetic operations + (addition), - (subtraction), and ++ (post-increment) on enumerated file values
 inline file operator+(const file f1, const file f2)

@@ -15,7 +15,7 @@
 */
 
 #pragma once
-#include "../fire.h"
+
 // these macros specify basic arithmetic operations: + (addition), - (subtraction), ++ (post-increment) and -- (post-decrement) on enumerated rank values
 inline rank operator+(const rank r1, const rank r2)
 {
