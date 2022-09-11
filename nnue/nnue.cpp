@@ -145,7 +145,7 @@ static_assert(k_half_dimensions % 256 == 0, "k_half_dimensions should be a multi
 #define VECTOR
 
 #ifdef USE_AVX512
-#define SIMD_WIDTH 512
+#define simd_width 512
 typedef __m512i vec16_t;
 typedef __m512i vec8_t;
 typedef __mmask64 mask_t;
@@ -153,7 +153,7 @@ typedef __mmask64 mask_t;
 #define vec_sub_16(a,b) _mm512_sub_epi16(a,b)
 #define vec_packs(a,b) _mm512_packs_epi16(a,b)
 #define vec_mask_pos(a) _mm512_cmpgt_epi8_mask(a,_mm512_setzero_si512())
-#define NUM_REGS 8 // only 8 are needed
+#define num_regs 8 // only 8 are needed
 
 #elif USE_AVX2
 constexpr auto simd_width = 256;
@@ -176,7 +176,7 @@ template<typename T>
 constexpr auto vec_mask_pos(T a) { return _mm256_movemask_epi8(_mm256_cmpgt_epi8(a, _mm256_setzero_si256())); }
 
 #elif USE_SSE2
-#define SIMD_WIDTH 128
+#define simd_width 128
 typedef __m128i vec16_t;
 typedef __m128i vec8_t;
 typedef uint16_t mask_t;
@@ -184,14 +184,14 @@ typedef uint16_t mask_t;
 #define vec_sub_16(a,b) _mm_sub_epi16(a,b)
 #define vec_packs(a,b) _mm_packs_epi16(a,b)
 #define vec_mask_pos(a) _mm_movemask_epi8(_mm_cmpgt_epi8(a,_mm_setzero_si128()))
-#ifdef IS_64BIT
-#define NUM_REGS 16
+#ifdef IS_64_BIT
+#define num_regs 16
 #else
-#define NUM_REGS 8
+#define num_regs 8
 #endif
 
 #elif USE_MMX
-#define SIMD_WIDTH 64
+#define simd_width 64
 typedef __m64 vec16_t;
 typedef __m64 vec8_t;
 typedef uint8_t mask_t;
@@ -199,10 +199,10 @@ typedef uint8_t mask_t;
 #define vec_sub_16(a,b) _mm_sub_pi16(a,b)
 #define vec_packs(a,b) _mm_packs_pi16(a,b)
 #define vec_mask_pos(a) _mm_movemask_pi8(_mm_cmpgt_pi8(a,_mm_setzero_si64()))
-#define NUM_REGS 8
+#define num_regs 8
 
 #elif USE_NEON
-#define SIMD_WIDTH 128
+#define simd_width 128
 typedef int16x8_t vec16_t;
 typedef int8x16_t vec8_t;
 typedef uint16_t mask_t;
@@ -210,15 +210,15 @@ typedef uint16_t mask_t;
 #define vec_sub_16(a,b) vsubq_s16(a,b)
 #define vec_packs(a,b) vcombine_s8(vqmovn_s16(a),vqmovn_s16(b))
 #define vec_mask_pos(a) neon_movemask(vcgtq_s8(a,vdupq_n_u8(0)))
-#ifdef IS_64BIT
-#define NUM_REGS 16
+#ifdef IS_64_BIT
+#define num_regs 16
 #else
-#define NUM_REGS 8
+#define num_regs 8
 #endif
 
 #else
 #undef VECTOR
-#define SIMD_WIDTH 16 // dummy
+#define simd_width 16 // dummy
 typedef uint8_t mask_t; // dummy
 
 #endif
