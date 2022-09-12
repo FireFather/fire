@@ -107,7 +107,7 @@ void bench(const int depth)
 	bench_log.open(file_name);
 
 	// write formatted system info and bench results to log file
-	bench_log << version;
+	bench_log << version << std::endl;
 	bench_log << "depth " << depth << std::endl;
 	bench_log << "nodes " << nodes << std::endl;
 	bench_log << "time " << std::fixed << std::setprecision(2) << elapsed_time << " secs" << std::endl;

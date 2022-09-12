@@ -42,16 +42,6 @@ sse41 = no
 avx2 = no
 bmi2 = no
 
-ifeq ($(ARCH),x86-64-sse41)
-	arch = x86_64
-	bits = 64
-	popcnt = yes
-	sse = yes
-	sse2 = yes
-	ssse3 = yes
-	sse41 = yes
-endif
-
 ifeq ($(ARCH),x86-64-avx2)
 	arch = x86_64
 	bits = 64
@@ -241,7 +231,6 @@ help:
 	@echo "clean                   > Clean up"
 	@echo ""
 	@echo "Supported architectures:"
-	@echo "x86-64-sse41            > x86 64-bit with sse41 support"
 	@echo "x86-64-avx2             > x86 64-bit with avx2 support"	
 	@echo "x86-64-bmi2             > x86 64-bit with bmi2 support"
 	@echo ""
@@ -249,11 +238,9 @@ help:
 	@echo "gcc                     > Gnu compiler (default)"
 	@echo "mingw                   > Gnu compiler with MinGW under Windows"
 	@echo ""	
-	@echo "make build ARCH=x86-64-sse41"
 	@echo "make build ARCH=x86-64-avx2"	
 	@echo "make build ARCH=x86-64-bmi2"
 	@echo ""
-	@echo "make profile-build ARCH=x86-64-sse41"	
 	@echo "make profile-build ARCH=x86-64-avx2"
 	@echo "make profile-build ARCH=x86-64-bmi2"	
 	@echo ""
