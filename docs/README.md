@@ -5,7 +5,7 @@
 fire 8.2 self-play nnue
 
 - fire without NNUE can be found here: https://github.com/FireFather/fire
-- fire w/ NNUE from self-play can be found here: https://github.com/FireFather/fire-zero
+- fire w/ NNUE from shared SF & LC0 data can be found here: https://github.com/FireFather/fire-NN
 
 ## features
 - c++17
