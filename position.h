@@ -30,7 +30,7 @@ struct piece_square_stats;
 
 typedef piece_square_stats<24576, 24576> counter_move_values;
 
-constexpr int delayed_number{ 7 };
+inline constexpr int delayed_number{ 7 };
 
 enum ptype : uint8_t
 {
@@ -50,35 +50,35 @@ enum ptype : uint8_t
 	num_pieces = 16
 };
 
-constexpr uint8_t piece_type(const ptype piece)
+static constexpr uint8_t piece_type(const ptype piece)
 {
 	return static_cast<uint8_t>(piece & 7);
 }
 
-constexpr side piece_color(const ptype piece)
+static constexpr side piece_color(const ptype piece)
 {
 	assert(piece != no_piece);
 	return static_cast<side>(piece >> 3);
 }
 
-constexpr ptype make_piece(const side color, const uint8_t piece)
+static constexpr ptype make_piece(const side color, const uint8_t piece)
 {
 	return static_cast<ptype>((color << 3) + piece);
 }
 
-constexpr int material_value[num_pieces] =
+static constexpr int material_value[num_pieces] =
 {
 	mat_0, mat_0, mat_0, mat_knight, mat_bishop, mat_rook, mat_queen, mat_0,
 	mat_0, mat_0, mat_0, mat_knight, mat_bishop, mat_rook, mat_queen, mat_0
 };
 
-constexpr int piece_phase[num_pieces] =
+static constexpr int piece_phase[num_pieces] =
 {
 	0, 0, 0, 1, 1, 3, 6, 0,
 	0, 0, 0, 1, 1, 3, 6, 0
 };
 
-constexpr int see_value_simple[num_pieces] =
+static constexpr int see_value_simple[num_pieces] =
 {
 	see_0, see_0, see_pawn, see_knight, see_bishop, see_rook, see_queen, see_0,
 	see_0, see_0, see_pawn, see_knight, see_bishop, see_rook, see_queen, see_0

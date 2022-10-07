@@ -17,7 +17,7 @@
 #pragma once
 
 // search positions taken from ECO, ECE, etc for use in bench utility
-static const char* bench_positions[] =
+inline const char* bench_positions[] =
 {
 	// start position
 	"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -",
@@ -87,7 +87,7 @@ static const char* bench_positions[] =
 };
 
 // opening positions from Fisher Random etc for use in bench utility
-static const char* frc_bench_positions[] =
+inline const char* frc_bench_positions[] =
 {
 	// 3 chess960 start positions
 	"rbqnknbr/pppppppp/8/8/8/8/PPPPPPPP/RBQNKNBR w KQkq -",

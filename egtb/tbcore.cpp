@@ -1221,7 +1221,7 @@ static ubyte decompress_pairs(struct pairs_data* d, const uint64 idx)
 			litidx -= d->sizetable[block++] + 1;
 	}
 
-	auto* ptr = reinterpret_cast<uint32*>(d->data + (block << static_cast<unsigned>(d->blocksize)));
+	auto* ptr = reinterpret_cast<uint32*>(d->data + (block << static_cast<uint32>(d->blocksize)));
 
 	const auto m = d->min_len;
 	const auto* const offset = d->offset;

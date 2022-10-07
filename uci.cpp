@@ -14,6 +14,8 @@
   this program: copying.txt.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "uci.h"
+
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -26,7 +28,6 @@
 #include "random/random.h"
 #include "search.h"
 #include "thread.h"
-#include "uci.h"
 #include "util/perft.h"
 #include "util/util.h"
 
@@ -49,13 +50,6 @@ void init(const int hash_size)
 	thread_pool.init();
 	search::reset();
 	main_hash.init(hash_size);
-	const char *filename = uci_nnue_evalfile.c_str();
-	nnue_init(filename);	
-}
-
-// initialize system
-void init_nnue()
-{
 	const char *filename = uci_nnue_evalfile.c_str();
 	nnue_init(filename);	
 }
@@ -107,7 +101,6 @@ void uci_loop(const int argc, char* argv[])
 			acout() << "option name ClearHash type button" << std::endl;
 			acout() << "option name Syzygy50MoveRule type check default true" << std::endl;
 			acout() << "option name SyzygyPath type string default <empty>" << std::endl;
-			acout() << "option name NnueEvalFile type string default " << uci_nnue_evalfile << std::endl;			
 			acout() << "uciok" << std::endl;
 		}
 		else if (token == "isready")
@@ -331,15 +324,6 @@ void set_option(std::istringstream& is)
 				acout() << "info string SyzygyPath " << uci_syzygy_path << std::endl;
 				break;
 			}
-			if (token == "NnueEvalFile")
-			{
-				is >> token;
-				is >> token;
-				uci_nnue_evalfile = token;
-				init_nnue();
-				acout() << "info string NnueEvalFile " << uci_nnue_evalfile << std::endl;
-				break;
-			}
 		}
 	}
 }
@@ -412,7 +396,7 @@ void go(position& pos, std::istringstream& is)
 // convert fen to internal position representation
 void set_position(position& pos, std::istringstream& is)
 {
-	auto move = no_move;
+	uint32_t move;
 	std::string token, fen;
 
 	is >> token;

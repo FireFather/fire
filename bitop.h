@@ -16,6 +16,12 @@
 
 #pragma once
 
+#include "fire.h"
+
+#if defined(_MSC_VER) || defined(__INTEL_COMPILER)
+#include <bit>
+#endif
+
 // the C/C++ AVX intrinsic functions for x86 processors are in the header "immintrin.h".
 // the corresponding Intel® AVX2 instruction is PEXT (Parallel Bits Extract)
 #ifdef USE_PEXT
@@ -26,47 +32,66 @@ inline uint64_t pext(const uint64_t occupied, const uint64_t mask)
 }
 #endif
 
-#if defined(__INTEL_COMPILER) || defined(_MSC_VER)
-#include <nmmintrin.h>
-#endif
 // calculate the number of bits set to 1
 inline int popcnt(const uint64_t b)
 {
 #if defined(_MSC_VER) || defined(__INTEL_COMPILER)
-	return static_cast<int>(_mm_popcnt_u64(b));
-#else
+	return std::popcount(b);
+#elif defined(__GNUC__)
 	return __builtin_popcountll(b);
 #endif
 }
 
-#if defined(_WIN64) && defined(_MSC_VER)
-#include <intrin.h>
 // search the mask data from least significant bit (LSB) to the most significant bit (MSB) for a set bit (1)
-// this is a 64-bit Microsoft specific intrinsic
 inline square lsb(const uint64_t b)
 {
-	unsigned long idx;
-	_BitScanForward64(&idx, b);
-	return static_cast<square>(idx);
+#if defined(_WIN64) && defined(_MSC_VER)
+	return static_cast<square>(std::countr_zero(b));
+#elif defined(__GNUC__)
+	return square(__builtin_ctzll(b));
+#endif
 }
+
 // search the mask data from most significant bit (MSB) to least significant bit (LSB) for a set bit (1)
-// this is a 64-bit Microsoft specific intrinsic
 inline square msb(const uint64_t b)
 {
+#if defined(_WIN64) && defined(_MSC_VER)
 	unsigned long idx;
 	_BitScanReverse64(&idx, b);
 	return static_cast<square>(idx);
-}
 #elif defined(__GNUC__)
-// corresponding intrinsic to _BitScanForward64 for linux
-inline square lsb(uint64_t b)
-{
-	return square(__builtin_ctzll(b));
-}
-// corresponding intrinsic to _BitScanReverse64 for linux
-// __builtin_ctzll calculated XOR (bitwise exclusive OR)
-inline square msb(uint64_t b)
-{
 	return square(63 ^ __builtin_clzll(b));
-}
 #endif
+}
+
+// many new instructions require data that's aligned to 16-byte boundaries, so 64-byte alignment improves performance
+#ifdef _MSC_VER
+#define CACHE_ALIGN __declspec(align(64))
+#else
+#define CACHE_ALIGN __attribute__ ((aligned(64)))
+#endif
+
+#if defined(_MSC_VER) || defined(__INTEL_COMPILER)
+#include <xmmintrin.h>
+#endif
+
+// increase speed by having the compiler prefetch data from memory
+inline void prefetch(void* address)
+{
+#if defined(_MSC_VER) || defined(__INTEL_COMPILER)
+	_mm_prefetch(static_cast<char*>(address), _MM_HINT_T0);
+#elif defined(__GNUC__)
+	__builtin_prefetch(address);
+#endif
+}
+
+inline void prefetch2(void* address)
+{
+#if defined(_MSC_VER) || defined(__INTEL_COMPILER)
+	_mm_prefetch(static_cast<char*>(address), _MM_HINT_T0);
+	_mm_prefetch(static_cast<char*>(address) + 64, _MM_HINT_T0);
+#elif defined(__GNUC__)
+	__builtin_prefetch(address);
+	__builtin_prefetch((char*)address + 64);
+#endif
+}

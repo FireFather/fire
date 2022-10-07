@@ -43,28 +43,28 @@ template<typename T>
 constexpr auto B_SWAP64(T v) { return _byteswap_uint64(v); }
 #endif
 
-constexpr auto wdl_suffix = ".rtbw";
-constexpr auto dtz_suffix = ".rtbz";
-constexpr auto wdl_dir = "RTBWDIR";
-constexpr auto dtz_dir = "RTBZDIR";
-constexpr auto tb_pieces = 6;
+inline constexpr auto wdl_suffix = ".rtbw";
+inline constexpr auto dtz_suffix = ".rtbz";
+inline constexpr auto wdl_dir = "RTBWDIR";
+inline constexpr auto dtz_dir = "RTBZDIR";
+inline constexpr auto tb_pieces = 6;
 
 typedef unsigned long long uint64;
 typedef unsigned int uint32;
 typedef unsigned char ubyte;
 typedef unsigned short ushort;
 
-constexpr ubyte wdl_magic[4] =
+inline constexpr ubyte wdl_magic[4] =
 {
 	0x71, 0xe8, 0x23, 0x5d
 };
 
-constexpr ubyte dtz_magic[4] =
+inline constexpr ubyte dtz_magic[4] =
 {
 	0xd7, 0x66, 0x0c, 0xa5
 };
 
-constexpr auto tb_hash_bits = 10;
+inline constexpr auto tb_hash_bits = 10;
 
 struct tb_hash_entry;
 
@@ -101,18 +101,18 @@ __attribute__((__may_alias__))
 
 struct tb_entry_piece
 {
-	char* data;
-	uint64 key;
-	uint64 mapping;
-	ubyte ready;
-	ubyte num;
-	ubyte symmetric;
-	ubyte has_pawns;
-	ubyte enc_type;
-	pairs_data* precomp[2];
-	int factor[2][tb_pieces];
-	ubyte pieces[2][tb_pieces];
-	ubyte norm[2][tb_pieces];
+	char* data{};
+	uint64 key{};
+	uint64 mapping{};
+	ubyte ready{};
+	ubyte num{};
+	ubyte symmetric{};
+	ubyte has_pawns{};
+	ubyte enc_type{};
+	pairs_data* precomp[2]{};
+	int factor[2][tb_pieces]{};
+	ubyte pieces[2][tb_pieces]{};
+	ubyte norm[2][tb_pieces]{};
 };
 
 struct tb_entry_pawn
@@ -136,21 +136,21 @@ struct tb_entry_pawn
 
 struct dtz_entry_piece
 {
-	char* data;
-	uint64 key;
-	uint64 mapping;
-	ubyte ready;
-	ubyte num;
-	ubyte symmetric;
-	ubyte has_pawns;
-	ubyte enc_type;
-	pairs_data* precomp;
-	int factor[tb_pieces];
-	ubyte pieces[tb_pieces];
-	ubyte norm[tb_pieces];
-	ubyte flags; // accurate, mapped, side
-	ushort map_idx[4];
-	ubyte* map;
+	char* data{};
+	uint64 key{};
+	uint64 mapping{};
+	ubyte ready{};
+	ubyte num{};
+	ubyte symmetric{};
+	ubyte has_pawns{};
+	ubyte enc_type{};
+	pairs_data* precomp{};
+	int factor[tb_pieces]{};
+	ubyte pieces[tb_pieces]{};
+	ubyte norm[tb_pieces]{};
+	ubyte flags{}; // accurate, mapped, side
+	ushort map_idx[4]{};
+	ubyte* map{};
 };
 
 struct dtz_entry_pawn

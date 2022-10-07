@@ -17,10 +17,10 @@
 #include "material.h"
 
 #include "bitboard.h"
-#include "macro/side.h"
 #include "fire.h"
 #include "pragma.h"
 #include "thread.h"
+#include "macro/side.h"
 
 namespace material
 {
@@ -31,60 +31,60 @@ namespace material
 		const int bp, const int bn, const int bb, const int bbl, const int bbd, const int br, const int bq)
 	{
 		// pawn factors
-		constexpr auto p_base_score = 950;
-		constexpr auto p_q_factor = 90;
-		constexpr auto p_r_factor = 28;
-		constexpr auto p_b_factor = 17;
-		constexpr auto p_n_factor = 16;
+		static constexpr auto p_base_score = 950;
+		static constexpr auto p_q_factor = 90;
+		static constexpr auto p_r_factor = 28;
+		static constexpr auto p_b_factor = 17;
+		static constexpr auto p_n_factor = 16;
 
 		// knight factors
-		constexpr auto n_base_score = 3510;
-		constexpr auto n_q_factor = 50;
-		constexpr auto n_r_factor = 35;
-		constexpr auto n_b_factor = 7;
-		constexpr auto n_n_factor = 8;
-		constexpr auto n_p_factor = 22;
+		static constexpr auto n_base_score = 3510;
+		static constexpr auto n_q_factor = 50;
+		static constexpr auto n_r_factor = 35;
+		static constexpr auto n_b_factor = 7;
+		static constexpr auto n_n_factor = 8;
+		static constexpr auto n_p_factor = 22;
 
 		// bishop factors
-		constexpr auto b_base_score = 3775;
-		constexpr auto b_q_factor = 55;
-		constexpr auto b_r_factor = 27;
-		constexpr auto b_b_factor = 9;
-		constexpr auto b_n_factor = 6;
-		constexpr auto b_p_factor = 6;
+		static constexpr auto b_base_score = 3775;
+		static constexpr auto b_q_factor = 55;
+		static constexpr auto b_r_factor = 27;
+		static constexpr auto b_b_factor = 9;
+		static constexpr auto b_n_factor = 6;
+		static constexpr auto b_p_factor = 6;
 
 		// rook factors
-		constexpr auto r_base_score = 6295;
-		constexpr auto r_q_factor = 261;
-		constexpr auto r_r_factor = 217;
-		constexpr auto r_b_factor = 34;
-		constexpr auto r_n_factor = 40;
-		constexpr auto r_p_factor = 10;
+		static constexpr auto r_base_score = 6295;
+		static constexpr auto r_q_factor = 261;
+		static constexpr auto r_r_factor = 217;
+		static constexpr auto r_b_factor = 34;
+		static constexpr auto r_n_factor = 40;
+		static constexpr auto r_p_factor = 10;
 
 		// queen factors
-		constexpr auto q_base_score = 11715;
-		constexpr auto q_q_factor = 338;
-		constexpr auto q_r_factor = 169;
-		constexpr auto q_b_factor = 37;
-		constexpr auto q_n_factor = 25;
-		constexpr auto q_p_factor = 6;
+		static constexpr auto q_base_score = 11715;
+		static constexpr auto q_q_factor = 338;
+		static constexpr auto q_r_factor = 169;
+		static constexpr auto q_b_factor = 37;
+		static constexpr auto q_n_factor = 25;
+		static constexpr auto q_p_factor = 6;
 
 		// bishop pair factors
-		constexpr auto bp_base_score = 515;
-		constexpr auto bp_q_factor = 41;
-		constexpr auto bp_r_factor = 21;
-		constexpr auto bp_b_factor = 7;
-		constexpr auto bp_n_factor = 7;
+		static constexpr auto bp_base_score = 515;
+		static constexpr auto bp_q_factor = 41;
+		static constexpr auto bp_r_factor = 21;
+		static constexpr auto bp_b_factor = 7;
+		static constexpr auto bp_n_factor = 7;
 
 		// material imbalance
-		constexpr auto up_two_pieces_bonus = 200;
-		constexpr auto more_bishops_bonus = 17;
-		constexpr auto more_knights_bonus = 17;
+		static constexpr auto up_two_pieces_bonus = 200;
+		static constexpr auto more_bishops_bonus = 17;
+		static constexpr auto more_knights_bonus = 17;
 
 		// phase factors
-		constexpr auto max_phase = 32;
-		constexpr auto r_phase_factor = 3;
-		constexpr auto q_phase_factor = 6;
+		static constexpr auto max_phase = 32;
+		static constexpr auto r_phase_factor = 3;
+		static constexpr auto q_phase_factor = 6;
 
 		auto score = 0;
 

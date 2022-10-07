@@ -20,15 +20,15 @@
 #include <unistd.h>
 #endif
 
+#include "../util/util.h"
+
 #include <sstream> // std::stringstream
 
-#include "../define.h"
 #include "../fire.h"
-#include "../macro/file.h"
-#include "../position.h"
 #include "../movegen.h"
+#include "../position.h"
+#include "../macro/file.h"
 #include "../macro/rank.h"
-#include "../util/util.h"
 
 namespace util
 {
@@ -40,7 +40,19 @@ namespace util
 
 	std::string engine_info()
 	{
-		ei << "Fire Zero" << " ";
+		// specify correct bit manipulation instruction set constant, as this will be appended
+		// to the fully distinguished engine name after platform
+		#ifdef USE_PEXT
+				static constexpr auto bmis = "bmi2";
+		#else
+		#ifdef USE_AVX2
+				static constexpr auto bmis = "avx2";
+		#else
+				static constexpr auto bmis = "sse41";
+		#endif
+		#endif
+
+		ei << "Fire" << " ";
 		date >> month >> day >> year;
 		ei << (1 + months.find(month) / 4) << day << year << " ";
 		ei << platform << " " << bmis;

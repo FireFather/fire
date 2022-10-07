@@ -32,7 +32,7 @@ inline int uci_syzygy_probe_depth = 1;
 inline int uci_syzygy_probe_limit = 6;
 
 inline std::string uci_syzygy_path;
-inline std::string uci_nnue_evalfile = "nn.bin";
+inline std::string uci_nnue_evalfile = "10072022-021546.bin";
 
 inline std::string engine_mode = "nnue";
 inline bool bench_active = false;

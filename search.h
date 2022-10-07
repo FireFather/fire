@@ -117,20 +117,20 @@ namespace search
 
 	inline uint8_t lm_reductions[2][2][64 * static_cast<int>(plies)][64];
 
-	constexpr int razor_margin = 384;
+	inline constexpr int razor_margin = 384;
 
 	// futility pruning values
-	constexpr auto futility_value_0 = 0;
-	constexpr auto futility_value_1 = 112;
-	constexpr auto futility_value_2 = 243;
-	constexpr auto futility_value_3 = 376;
-	constexpr auto futility_value_4 = 510;
-	constexpr auto futility_value_5 = 646;
-	constexpr auto futility_value_6 = 784;
-	constexpr auto futility_margin_ext_mult = 160;
-	constexpr auto futility_margin_ext_base = 204;
+	inline constexpr auto futility_value_0 = 0;
+	inline constexpr auto futility_value_1 = 112;
+	inline constexpr auto futility_value_2 = 243;
+	inline constexpr auto futility_value_3 = 376;
+	inline constexpr auto futility_value_4 = 510;
+	inline constexpr auto futility_value_5 = 646;
+	inline constexpr auto futility_value_6 = 784;
+	inline constexpr auto futility_margin_ext_mult = 160;
+	inline constexpr auto futility_margin_ext_base = 204;
 
-	constexpr int futility_values[7] =
+	inline constexpr int futility_values[7] =
 	{
 		static_cast<int>(futility_value_0), static_cast<int>(futility_value_1), static_cast<int>(futility_value_2),
 		static_cast<int>(futility_value_3), static_cast<int>(futility_value_4), static_cast<int>(futility_value_5),
@@ -147,7 +147,7 @@ namespace search
 		return futility_margin_ext_base + futility_margin_ext_mult * static_cast<int>(static_cast<uint32_t>(d) / plies);
 	}
 
-	constexpr int late_move_number_values[2][32] =
+	inline constexpr int late_move_number_values[2][32] =
 	{
 		{0, 0, 3, 3, 4, 5, 6, 7, 8, 10, 12, 15, 17, 20, 23, 26, 30, 33, 37, 40, 44, 49, 53, 58, 63, 68, 73, 78, 83, 88, 94, 100},
 		{0, 0, 5, 5, 6, 7, 9, 11, 14, 17, 20, 23, 27, 31, 35, 40, 45, 50, 55, 60, 65, 71, 77, 84, 91, 98, 105, 112, 119, 127, 135, 143}
@@ -205,8 +205,8 @@ template <int max_plus, int max_min>
 struct piece_square_stats;
 typedef piece_square_stats<24576, 24576> counter_move_values;
 
-constexpr int egtb_helpful = 0 * plies;
-constexpr int egtb_not_helpful = 10 * plies;
+inline constexpr int egtb_helpful = 0 * plies;
+inline constexpr int egtb_not_helpful = 10 * plies;
 
 inline int tb_number;
 inline bool tb_root_in_tb;

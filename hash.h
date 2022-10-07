@@ -15,7 +15,7 @@
 */
 
 #pragma once
-#include "define.h"
+#include "bitop.h"
 #include "fire.h"
 
 enum hashflags : uint8_t
@@ -29,10 +29,10 @@ enum hashflags : uint8_t
 	exact_value = north_border | south_border
 };
 
-constexpr uint8_t age_mask = 0x38;
-constexpr uint8_t flags_mask = 0xc7;
-constexpr uint8_t threat_mask = 0x03;
-constexpr uint8_t use_mask = 0xfb;
+inline constexpr uint8_t age_mask = 0x38;
+inline constexpr uint8_t flags_mask = 0xc7;
+inline constexpr uint8_t threat_mask = 0x03;
+inline constexpr uint8_t use_mask = 0xfb;
 
 struct main_hash_entry
 {

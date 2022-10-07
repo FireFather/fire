@@ -19,26 +19,26 @@
 #include "fire.h"
 #include "bitop.h"
 
-constexpr uint64_t file_a_bb = 0x0101010101010101ULL;
-constexpr uint64_t file_b_bb = file_a_bb << 1;
-constexpr uint64_t file_c_bb = file_a_bb << 2;
-constexpr uint64_t file_d_bb = file_a_bb << 3;
-constexpr uint64_t file_e_bb = file_a_bb << 4;
-constexpr uint64_t file_f_bb = file_a_bb << 5;
-constexpr uint64_t file_g_bb = file_a_bb << 6;
-constexpr uint64_t file_h_bb = file_a_bb << 7;
+inline constexpr uint64_t file_a_bb = 0x0101010101010101ULL;
+inline constexpr uint64_t file_b_bb = file_a_bb << 1;
+inline constexpr uint64_t file_c_bb = file_a_bb << 2;
+inline constexpr uint64_t file_d_bb = file_a_bb << 3;
+inline constexpr uint64_t file_e_bb = file_a_bb << 4;
+inline constexpr uint64_t file_f_bb = file_a_bb << 5;
+inline constexpr uint64_t file_g_bb = file_a_bb << 6;
+inline constexpr uint64_t file_h_bb = file_a_bb << 7;
 
-constexpr uint64_t rank_1_bb = 0xFF;
-constexpr uint64_t rank_2_bb = rank_1_bb << 8;
-constexpr uint64_t rank_3_bb = rank_1_bb << 16;
-constexpr uint64_t rank_4_bb = rank_1_bb << 24;
-constexpr uint64_t rank_5_bb = rank_1_bb << 32;
-constexpr uint64_t rank_6_bb = rank_1_bb << 40;
-constexpr uint64_t rank_7_bb = rank_1_bb << 48;
-constexpr uint64_t rank_8_bb = rank_1_bb << 56;
+inline constexpr uint64_t rank_1_bb = 0xFF;
+inline constexpr uint64_t rank_2_bb = rank_1_bb << 8;
+inline constexpr uint64_t rank_3_bb = rank_1_bb << 16;
+inline constexpr uint64_t rank_4_bb = rank_1_bb << 24;
+inline constexpr uint64_t rank_5_bb = rank_1_bb << 32;
+inline constexpr uint64_t rank_6_bb = rank_1_bb << 40;
+inline constexpr uint64_t rank_7_bb = rank_1_bb << 48;
+inline constexpr uint64_t rank_8_bb = rank_1_bb << 56;
 
-constexpr uint64_t light_squares = 0x55AA55AA55AA55AAULL;
-constexpr uint64_t dark_squares = 0xAA55AA55AA55AA55ULL;
+inline constexpr uint64_t light_squares = 0x55AA55AA55AA55AAULL;
+inline constexpr uint64_t dark_squares = 0xAA55AA55AA55AA55ULL;
 
 namespace bitboard
 {
@@ -183,13 +183,13 @@ namespace kpk
 }
 
 // array of file bitboards
-constexpr uint64_t file_bb[num_files] =
+inline constexpr uint64_t file_bb[num_files] =
 {
 	file_a_bb, file_b_bb, file_c_bb, file_d_bb, file_e_bb, file_f_bb, file_g_bb, file_h_bb
 };
 
 // array of rank bitboards
-constexpr uint64_t rank_bb[num_ranks] =
+inline constexpr uint64_t rank_bb[num_ranks] =
 {
 	rank_1_bb, rank_2_bb, rank_3_bb, rank_4_bb, rank_5_bb, rank_6_bb, rank_7_bb, rank_8_bb
 };
@@ -206,7 +206,7 @@ uint64_t shift_bb(const uint64_t b)
 		: 0;
 }
 
-constexpr int kp_delta[][8] =
+inline constexpr int kp_delta[][8] =
 {
 {},
 {
@@ -218,7 +218,7 @@ constexpr int kp_delta[][8] =
 }
 };
 
-constexpr int rook_deltas[4][2] =
+inline constexpr int rook_deltas[4][2] =
 {
 	{0, 1},
 	{0, -1},
@@ -226,7 +226,7 @@ constexpr int rook_deltas[4][2] =
 	{-1, 0}
 };
 
-constexpr int bishop_deltas[4][2] =
+inline constexpr int bishop_deltas[4][2] =
 {
 	{1, 1},
 	{-1, 1},
@@ -235,7 +235,7 @@ constexpr int bishop_deltas[4][2] =
 };
 
 // bitboard representations of multiple squares
-inline uint64_t bb(const square s)
+constexpr uint64_t bb(const square s)
 {
 	return 1ULL << s;
 }

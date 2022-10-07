@@ -18,8 +18,9 @@
 */
 
 #include <random>
-#include "../position.h"
+
 #include "../movepick.h"
+#include "../position.h"
 #include "../pragma.h"
 #include "../util/util.h"
 

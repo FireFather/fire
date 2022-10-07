@@ -15,6 +15,7 @@
 */
 
 #include "zobrist.h"
+
 #include "position.h"
 
 uint64_t position::exception_key(const uint32_t move)

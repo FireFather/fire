@@ -14,9 +14,9 @@
   this program: copying.txt.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <iostream>
-
 #include "hash.h"
+
+#include <iostream>
 
 #include "bitboard.h"
 #include "fire.h"

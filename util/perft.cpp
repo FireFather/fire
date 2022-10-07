@@ -15,16 +15,16 @@
 */
 
 #include <cinttypes>
+#include <fstream>
 #include <iostream>
 #include <sstream>
-#include <fstream>
 #include <string>
 
+#include "util.h"
 #include "../fire.h"
 #include "../position.h"
 #include "../thread.h"
 #include "../uci.h"
-#include "util.h"
 
 // count leaf nodes for all legal moves at a specific depth
 static uint64_t perft(position& pos, const int depth) {

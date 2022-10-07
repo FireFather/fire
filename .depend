@@ -1,100 +1,102 @@
 kpk.o: bitbase/kpk.cpp bitbase/../bitboard.h bitbase/../fire.h \
  bitbase/../bitop.h bitbase/../macro/rank.h
-bitboard.o: bitboard.cpp bitboard.h fire.h bitop.h macro/side.h \
- macro/square.h macro/file.h macro/rank.h pragma.h
+bitboard.o: bitboard.cpp bitboard.h fire.h bitop.h pragma.h macro/file.h \
+ macro/rank.h macro/side.h macro/square.h
 chrono.o: chrono.cpp chrono.h fire.h uci.h position.h bitboard.h bitop.h
-egtb.o: egtb/egtb.cpp egtb/../search.h egtb/../chrono.h egtb/../fire.h \
- egtb/../movepick.h egtb/../movegen.h egtb/../position.h \
- egtb/../bitboard.h egtb/../bitop.h egtb/tbprobe.h egtb/../util/util.h
-tbprobe.o: egtb/tbprobe.cpp egtb/../position.h egtb/../bitboard.h \
- egtb/../fire.h egtb/../bitop.h egtb/../zobrist.h egtb/../movegen.h \
- egtb/tbprobe.h egtb/tbcore.h egtb/tbcore.cpp egtb/../pragma.h
+egtb.o: egtb/egtb.cpp egtb/tbprobe.h egtb/../position.h \
+ egtb/../bitboard.h egtb/../fire.h egtb/../bitop.h egtb/../search.h \
+ egtb/../chrono.h egtb/../movepick.h egtb/../movegen.h \
+ egtb/../util/util.h
+tbprobe.o: egtb/tbprobe.cpp egtb/tbprobe.h egtb/../position.h \
+ egtb/../bitboard.h egtb/../fire.h egtb/../bitop.h egtb/tbcore.cpp \
+ egtb/tbcore.h egtb/../pragma.h egtb/../movegen.h egtb/../zobrist.h
 endgame.o: endgame.cpp bitboard.h fire.h bitop.h endgame.h position.h \
- movegen.h pragma.h thread.h material.h define.h movepick.h mutex.h \
- pawn.h macro/square.h search.h chrono.h
+ movegen.h pragma.h thread.h material.h movepick.h mutex.h pawn.h \
+ macro/square.h search.h chrono.h
 evaluate.o: evaluate.cpp evaluate.h position.h bitboard.h fire.h bitop.h \
  endgame.h nnue/nnue.h pragma.h
-hash.o: hash.cpp hash.h define.h fire.h bitboard.h bitop.h
+hash.o: hash.cpp hash.h bitop.h fire.h bitboard.h
 main.o: main.cpp util/util.h util/../position.h util/../bitboard.h \
  util/../fire.h util/../bitop.h uci.h
-material.o: material.cpp material.h define.h endgame.h fire.h position.h \
- bitboard.h bitop.h macro/side.h pragma.h thread.h movepick.h movegen.h \
- mutex.h pawn.h macro/square.h search.h chrono.h
+material.o: material.cpp material.h endgame.h fire.h position.h \
+ bitboard.h bitop.h pragma.h thread.h movepick.h movegen.h mutex.h pawn.h \
+ macro/square.h search.h chrono.h macro/side.h
 mcts.o: mcts/mcts.cpp mcts/node.h mcts/mcts.h mcts/../position.h \
  mcts/../bitboard.h mcts/../fire.h mcts/../bitop.h mcts/../thread.h \
- mcts/../endgame.h mcts/../material.h mcts/../define.h mcts/../movepick.h \
+ mcts/../endgame.h mcts/../material.h mcts/../movepick.h \
  mcts/../movegen.h mcts/../mutex.h mcts/../pawn.h mcts/../macro/square.h \
  mcts/../search.h mcts/../chrono.h mcts/../pragma.h mcts/../evaluate.h
 moves.o: mcts/moves.cpp mcts/mcts.h mcts/../position.h mcts/../bitboard.h \
  mcts/../fire.h mcts/../bitop.h mcts/../thread.h mcts/../endgame.h \
- mcts/../material.h mcts/../define.h mcts/../movepick.h mcts/../movegen.h \
- mcts/../mutex.h mcts/../pawn.h mcts/../macro/square.h mcts/../search.h \
- mcts/../chrono.h mcts/node.h mcts/../pragma.h
+ mcts/../material.h mcts/../movepick.h mcts/../movegen.h mcts/../mutex.h \
+ mcts/../pawn.h mcts/../macro/square.h mcts/../search.h mcts/../chrono.h \
+ mcts/node.h mcts/../pragma.h
 node.o: mcts/node.cpp mcts/mcts.h mcts/../position.h mcts/../bitboard.h \
  mcts/../fire.h mcts/../bitop.h mcts/../thread.h mcts/../endgame.h \
- mcts/../material.h mcts/../define.h mcts/../movepick.h mcts/../movegen.h \
- mcts/../mutex.h mcts/../pawn.h mcts/../macro/square.h mcts/../search.h \
- mcts/../chrono.h mcts/node.h mcts/../pragma.h mcts/../uci.h \
- mcts/../util/util.h
+ mcts/../material.h mcts/../movepick.h mcts/../movegen.h mcts/../mutex.h \
+ mcts/../pawn.h mcts/../macro/square.h mcts/../search.h mcts/../chrono.h \
+ mcts/node.h mcts/../pragma.h mcts/../uci.h mcts/../util/util.h
 output.o: mcts/output.cpp mcts/mcts.h mcts/../position.h \
  mcts/../bitboard.h mcts/../fire.h mcts/../bitop.h mcts/../thread.h \
- mcts/../endgame.h mcts/../material.h mcts/../define.h mcts/../movepick.h \
+ mcts/../endgame.h mcts/../material.h mcts/../movepick.h \
  mcts/../movegen.h mcts/../mutex.h mcts/../pawn.h mcts/../macro/square.h \
  mcts/../search.h mcts/../chrono.h mcts/node.h mcts/../pragma.h \
  mcts/../hash.h mcts/../uci.h mcts/../util/util.h
 policy.o: mcts/policy.cpp mcts/mcts.h mcts/../position.h \
  mcts/../bitboard.h mcts/../fire.h mcts/../bitop.h mcts/../thread.h \
- mcts/../endgame.h mcts/../material.h mcts/../define.h mcts/../movepick.h \
+ mcts/../endgame.h mcts/../material.h mcts/../movepick.h \
  mcts/../movegen.h mcts/../mutex.h mcts/../pawn.h mcts/../macro/square.h \
  mcts/../search.h mcts/../chrono.h mcts/node.h mcts/../pragma.h
 ucb.o: mcts/ucb.cpp mcts/mcts.h mcts/../position.h mcts/../bitboard.h \
  mcts/../fire.h mcts/../bitop.h mcts/../thread.h mcts/../endgame.h \
- mcts/../material.h mcts/../define.h mcts/../movepick.h mcts/../movegen.h \
- mcts/../mutex.h mcts/../pawn.h mcts/../macro/square.h mcts/../search.h \
- mcts/../chrono.h mcts/../pragma.h
-movegen.o: movegen.cpp movegen.h fire.h pawn.h define.h position.h \
- bitboard.h bitop.h macro/square.h pragma.h
+ mcts/../material.h mcts/../movepick.h mcts/../movegen.h mcts/../mutex.h \
+ mcts/../pawn.h mcts/../macro/square.h mcts/../search.h mcts/../chrono.h \
+ mcts/../pragma.h
+movegen.o: movegen.cpp movegen.h fire.h pawn.h position.h bitboard.h \
+ bitop.h macro/square.h pragma.h
 movepick.o: movepick.cpp movepick.h fire.h movegen.h position.h \
- bitboard.h bitop.h pragma.h thread.h endgame.h material.h define.h \
- mutex.h pawn.h macro/square.h search.h chrono.h
-nnue.o: nnue/nnue.cpp nnue/misc.h nnue/nnue.h
+ bitboard.h bitop.h pragma.h thread.h endgame.h material.h mutex.h pawn.h \
+ macro/square.h search.h chrono.h
+nnue.o: nnue/nnue.cpp nnue/../evaluate.h nnue/../position.h \
+ nnue/../bitboard.h nnue/../fire.h nnue/../bitop.h nnue/misc.h \
+ nnue/nnue.h nnue/../incbin/incbin.h
 misc.o: nnue/misc.cpp nnue/misc.h
-pawn.o: pawn.cpp pawn.h define.h fire.h position.h bitboard.h bitop.h \
+pawn.o: pawn.cpp pawn.h fire.h position.h bitboard.h bitop.h \
  macro/square.h thread.h endgame.h material.h movepick.h movegen.h \
- mutex.h search.h chrono.h
-position.o: position.cpp position.h bitboard.h fire.h bitop.h define.h \
- macro/side.h macro/square.h macro/file.h hash.h movegen.h pragma.h \
- thread.h endgame.h material.h movepick.h mutex.h pawn.h search.h \
- chrono.h util/util.h zobrist.h
+ mutex.h search.h chrono.h macro/file.h macro/rank.h macro/score.h
+position.o: position.cpp position.h bitboard.h fire.h bitop.h hash.h \
+ movegen.h pragma.h thread.h endgame.h material.h movepick.h mutex.h \
+ pawn.h macro/square.h search.h chrono.h zobrist.h macro/file.h \
+ macro/side.h util/util.h
 pst.o: pst.cpp fire.h position.h bitboard.h bitop.h
-random.o: random/random.cpp random/../position.h random/../bitboard.h \
- random/../fire.h random/../bitop.h random/../movepick.h \
- random/../movegen.h random/../pragma.h random/../util/util.h
+random.o: random/random.cpp random/../movepick.h random/../fire.h \
+ random/../movegen.h random/../position.h random/../bitboard.h \
+ random/../bitop.h random/../pragma.h random/../util/util.h
 search.o: search.cpp search.h chrono.h fire.h movepick.h movegen.h \
- position.h bitboard.h bitop.h evaluate.h hash.h define.h mcts/mcts.h \
+ position.h bitboard.h bitop.h evaluate.h hash.h mcts/mcts.h \
  mcts/../thread.h mcts/../endgame.h mcts/../material.h mcts/../mutex.h \
  mcts/../pawn.h mcts/../macro/square.h pragma.h uci.h util/util.h
 sfactor.o: sfactor.cpp bitboard.h fire.h bitop.h endgame.h position.h \
- pawn.h define.h macro/square.h
+ pawn.h macro/square.h
 thread.o: thread.cpp thread.h fire.h endgame.h position.h bitboard.h \
- bitop.h material.h define.h movepick.h movegen.h mutex.h pawn.h \
- macro/square.h search.h chrono.h
-uci.o: uci.cpp bitboard.h fire.h bitop.h chrono.h hash.h define.h \
- nnue/nnue.h random/random.h random/../position.h search.h movepick.h \
- movegen.h thread.h endgame.h material.h mutex.h pawn.h macro/square.h \
- uci.h util/perft.h util/util.h
+ bitop.h material.h movepick.h movegen.h mutex.h pawn.h macro/square.h \
+ search.h chrono.h
+uci.o: uci.cpp uci.h position.h bitboard.h fire.h bitop.h chrono.h hash.h \
+ nnue/nnue.h random/random.h search.h movepick.h movegen.h thread.h \
+ endgame.h material.h mutex.h pawn.h macro/square.h util/perft.h \
+ util/util.h
 bench.o: util/bench.cpp util/bench.h util/../thread.h util/../fire.h \
  util/../endgame.h util/../position.h util/../bitboard.h util/../bitop.h \
- util/../material.h util/../define.h util/../movepick.h util/../movegen.h \
- util/../mutex.h util/../pawn.h util/../macro/square.h util/../search.h \
- util/../chrono.h util/../uci.h util/util.h
-perft.o: util/perft.cpp util/../fire.h util/../position.h \
- util/../bitboard.h util/../bitop.h util/../thread.h util/../endgame.h \
- util/../material.h util/../define.h util/../movepick.h util/../movegen.h \
- util/../mutex.h util/../pawn.h util/../macro/square.h util/../search.h \
- util/../chrono.h util/../uci.h util/util.h
-util.o: util/util.cpp util/../define.h util/../fire.h \
- util/../macro/file.h util/../position.h util/../bitboard.h \
- util/../bitop.h util/../movegen.h util/../macro/rank.h \
- util/../util/util.h
+ util/../material.h util/../movepick.h util/../movegen.h util/../mutex.h \
+ util/../pawn.h util/../macro/square.h util/../search.h util/../chrono.h \
+ util/../uci.h util/util.h
+perft.o: util/perft.cpp util/util.h util/../position.h util/../bitboard.h \
+ util/../fire.h util/../bitop.h util/../thread.h util/../endgame.h \
+ util/../material.h util/../movepick.h util/../movegen.h util/../mutex.h \
+ util/../pawn.h util/../macro/square.h util/../search.h util/../chrono.h \
+ util/../uci.h
+util.o: util/util.cpp util/../util/util.h util/../util/../position.h \
+ util/../util/../bitboard.h util/../util/../fire.h \
+ util/../util/../bitop.h util/../movegen.h util/../macro/file.h \
+ util/../macro/rank.h
 zobrist.o: zobrist.cpp zobrist.h fire.h position.h bitboard.h bitop.h

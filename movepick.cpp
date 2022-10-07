@@ -153,7 +153,7 @@ namespace movepick
 
 	inline void insertion_sort(s_move* begin, const s_move* end)
 	{
-		s_move* q = nullptr;
+		s_move* q;
 
 		for (auto* p = begin + 1; p < end; ++p)
 		{

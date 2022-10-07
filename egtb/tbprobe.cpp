@@ -11,15 +11,14 @@
 #define NOMINMAX
 #endif
 
-#include "../position.h"
-#include "../zobrist.h"
-#include "../movegen.h"
-#include "../bitboard.h"
-
 #include "tbprobe.h"
-#include "tbcore.h"
 
 #include "tbcore.cpp"
+#include "tbcore.h"
+#include "../bitboard.h"
+#include "../movegen.h"
+#include "../position.h"
+#include "../zobrist.h"
 
 #if !defined(_MSC_VER)
 #pragma GCC diagnostic ignored "-Warray-bounds"
@@ -58,8 +57,8 @@ constexpr syzygy_piece_type syz_from_pt[num_piecetypes] = {
 
 static void prt_str(const position& pos, char* str, const int mirror)
 {
-	auto pt = syz_none;
-	auto i = 0;
+	syzygy_piece_type pt;
+	int i;
 
 	auto color = !mirror ? white : black;
 	for (pt = syz_king; pt >= syz_pawn; --pt)
@@ -75,8 +74,8 @@ static void prt_str(const position& pos, char* str, const int mirror)
 
 static uint64 calc_key(const position& pos, const int mirror)
 {
-	auto pt = syz_none;
-	auto i = 0;
+	syzygy_piece_type pt;
+	int i;
 	uint64 key = 0;
 
 	auto color = !mirror ? white : black;
@@ -93,8 +92,8 @@ static uint64 calc_key(const position& pos, const int mirror)
 
 static uint64 calc_key_from_pcs(const int* pcs, const int mirror)
 {
-	auto pt = syz_none;
-	auto i = 0;
+	syzygy_piece_type pt;
+	int i;
 	uint64 key = 0;
 
 	auto color = !mirror ? 0 : 8;
@@ -115,7 +114,7 @@ bool is_little_endian()
 	{
 		int i;
 		char c[sizeof(int)];
-	} x;
+	} x{};
 	x.i = 1;
 	return x.c[0] == 1;
 }
@@ -130,8 +129,8 @@ static ubyte decompress_pairs(pairs_data* d, const uint64 idx)
 
 static int probe_wdl_table(const position& pos, int* success)
 {
-	auto i = 0;
-	ubyte res = 0;
+	int i;
+	ubyte res;
 	int p[tb_pieces];
 
 	const auto key = pos.material_key();
@@ -173,7 +172,10 @@ static int probe_wdl_table(const position& pos, int* success)
 		UNLOCK(tb_mutex);
 	}
 
-	auto b_side = 0, mirror = 0, c_mirror = 0;
+	int b_side;
+	int mirror;
+	int c_mirror;
+
 	if (!ptr->symmetric)
 	{
 		if (key != ptr->key)
@@ -195,7 +197,7 @@ static int probe_wdl_table(const position& pos, int* success)
 		b_side = 0;
 	}
 
-	if (uint64 idx = 0; !ptr->has_pawns)
+	if (uint64 idx; !ptr->has_pawns)
 	{
 		const auto* entry = reinterpret_cast<struct tb_entry_piece*>(ptr);
 		const auto* pc = entry->pieces[b_side];
@@ -241,8 +243,10 @@ static int probe_wdl_table(const position& pos, int* success)
 
 static int probe_dtz_table(const position& pos, const int wdl, int* success)
 {
-	tb_entry* ptr = nullptr;
-	auto i = 0, res = 0;
+	tb_entry* ptr;
+	int i;
+	int res;
+
 	int p[tb_pieces];
 
 	const auto key = pos.material_key();
@@ -287,7 +291,10 @@ static int probe_dtz_table(const position& pos, const int wdl, int* success)
 		return 0;
 	}
 
-	auto b_side = 0, mirror = 0, c_mirror = 0;
+	int b_side;
+	int mirror;
+	int c_mirror;
+
 	if (!ptr->symmetric)
 	{
 		if (key != ptr->key)
@@ -309,7 +316,7 @@ static int probe_dtz_table(const position& pos, const int wdl, int* success)
 		b_side = 0;
 	}
 
-	if (uint64 idx = 0; !ptr->has_pawns)
+	if (uint64 idx; !ptr->has_pawns)
 	{
 		auto* entry = reinterpret_cast<struct dtz_entry_piece*>(ptr);
 		if ((entry->flags & 1) != b_side && !entry->symmetric)
@@ -394,9 +401,9 @@ static s_move* add_underprom_caps(const position& pos, s_move* stack, s_move* en
 
 static int probe_ab(position& pos, int alpha, const int beta, int* success)
 {
-	auto val = 0;
+	int val;
 	s_move stack[64];
-	s_move* end = nullptr;
+	s_move* end;
 
 	if (!pos.is_in_check())
 	{
@@ -449,7 +456,8 @@ int syzygy_probe_wdl(position& pos, int* success)
 
 	auto v1 = -3;
 	s_move stack[192];
-	s_move* moves = nullptr, * end = nullptr;
+	s_move * moves;
+	s_move * end;
 
 	if (!pos.is_in_check())
 		end = generate_moves<captures_promotions>(pos, stack);
@@ -507,7 +515,7 @@ static int probe_dtz_no_ep(position& pos, int* success)
 		return wdl == 2 ? 1 : 101;
 
 	s_move stack[192];
-	s_move* moves = nullptr;
+	s_move* moves;
 	const s_move* end = nullptr;
 
 	if (wdl > 0)
@@ -564,7 +572,7 @@ static int probe_dtz_no_ep(position& pos, int* success)
 		end = generate_moves<evade_check>(pos, stack);
 	for (moves = stack; moves < end; moves++)
 	{
-		auto val = 0;
+		int val;
 		const auto move = moves->move;
 		if (!pos.legal_move(move))
 			continue;
@@ -606,7 +614,8 @@ int syzygy_probe_dtz(position& pos, int* success)
 	auto v1 = -3;
 
 	s_move stack[192];
-	s_move* moves = nullptr, * end = nullptr;
+	s_move * moves;
+	s_move * end;
 
 	if (!pos.is_in_check())
 		end = generate_moves<captures_promotions>(pos, stack);

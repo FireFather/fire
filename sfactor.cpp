@@ -15,8 +15,8 @@
 */
 
 #include "bitboard.h"
-#include "fire.h"
 #include "endgame.h"
+#include "fire.h"
 #include "pawn.h"
 #include "position.h"
 

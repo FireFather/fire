@@ -107,7 +107,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <WarningLevel>Level4</WarningLevel>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
       <PreprocessorDefinitions>NDEBUG;_CRT_SECURE_NO_WARNINGS;USE_PEXT;USE_AVX2;USE_SSE41;USE_SSSE3;USE_SSE2;USE_POPCNT</PreprocessorDefinitions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
     </ClCompile>
@@ -153,13 +153,13 @@
     <ClInclude Include="bitboard.h" />
     <ClInclude Include="bitop.h" />
     <ClInclude Include="chrono.h" />
-    <ClInclude Include="define.h" />
     <ClInclude Include="egtb\tbcore.h" />
     <ClInclude Include="egtb\tbprobe.h" />
     <ClInclude Include="endgame.h" />
     <ClInclude Include="evaluate.h" />
     <ClInclude Include="fire.h" />
     <ClInclude Include="hash.h" />
+    <ClInclude Include="incbin\incbin.h" />
     <ClInclude Include="macro\file.h" />
     <ClInclude Include="macro\rank.h" />
     <ClInclude Include="macro\score.h" />

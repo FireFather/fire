@@ -65,11 +65,18 @@
 #endif
 
 //-------------------
+#include "../evaluate.h"
 #include "misc.h"
+
 //#define DLL_EXPORT
 #include "nnue.h"
 #include <iostream>
-#undef DLL_EXPORT
+//#undef DLL_EXPORT
+
+#ifdef NNUE_EMBEDDED
+#include "../incbin/incbin.h"
+INCBIN(Network, NNUE_EVAL_FILE);
+#endif
 
 #define KING(c)    ( (c) ? bking : wking )
 #define IS_KING(p) ( ((p) == wking) || ((p) == bking) )
@@ -1363,21 +1370,28 @@ static void init_weights(const void* eval_data)
 #endif
 }
 
+
 static bool load_eval_file(const char* eval_file)
 {
 	const void* eval_data;
 	map_t mapping;
 	size_t size;
 
-	{
-		const FD fd = open_file(eval_file);
-		if (fd == FD_ERR)
-			return false;
-
-		eval_data = map_file(fd, &mapping);
-		size = file_size(fd);
-		close_file(fd);
-	}
+#if !defined(_MSC_VER) && defined(NNUE_EMBEDDED)
+  if (strcmp(eval_file, NNUE_EVAL_FILE) == 0) {
+    eval_data = gNetworkData;
+    mapping = 0;
+    size = gNetworkSize;
+  } else
+#endif
+  {
+    FD fd = open_file(eval_file);
+    if (fd == FD_ERR)
+		return false;
+    eval_data = map_file(fd, &mapping);
+    size = file_size(fd);
+    close_file(fd);
+  }
 
 	const bool success = verify_net(eval_data, size);
 	if (success)

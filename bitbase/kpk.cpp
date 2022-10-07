@@ -15,8 +15,8 @@
 */
 
 #include "../bitboard.h"
-#include "../macro/rank.h"
 #include "../fire.h"
+#include "../macro/rank.h"
 
 namespace kpk
 {

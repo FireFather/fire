@@ -20,7 +20,7 @@ else
 	EXE = fire
 endif
 
-PGOBENCH = ./$(EXE) bench
+PGOBENCH = ./$(EXE) bench 12
 
 OBJS =
 	OBJS += bitbase/kpk.o bitboard.o chrono.o egtb/egtb.o egtb/tbprobe.o endgame.o evaluate.o \
@@ -229,6 +229,7 @@ help:
 	@echo "profile-build           > PGO build"
 	@echo "strip                   > Strip executable"
 	@echo "clean                   > Clean up"
+	@echo "gcc-profile-clean       > Clean up after PGO build"
 	@echo ""
 	@echo "Supported architectures:"
 	@echo "x86-64-avx2             > x86 64-bit with avx2 support"	
@@ -237,7 +238,7 @@ help:
 	@echo "Supported compilers:"
 	@echo "gcc                     > Gnu compiler (default)"
 	@echo "mingw                   > Gnu compiler with MinGW under Windows"
-	@echo ""	
+	@echo ""
 	@echo "make build ARCH=x86-64-avx2"	
 	@echo "make build ARCH=x86-64-bmi2"
 	@echo ""

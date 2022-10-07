@@ -21,11 +21,11 @@
 #include "position.h"
 
 enum sfactor : int;
-constexpr sfactor draw_factor = static_cast<sfactor>(0);
-constexpr sfactor one_pawn_factor = static_cast<sfactor>(75);
-constexpr sfactor normal_factor = static_cast<sfactor>(100);
-constexpr sfactor max_factor = static_cast<sfactor>(200);
-constexpr sfactor no_factor = static_cast<sfactor>(255);
+inline constexpr sfactor draw_factor = static_cast<sfactor>(0);
+inline constexpr sfactor one_pawn_factor = static_cast<sfactor>(75);
+inline constexpr sfactor normal_factor = static_cast<sfactor>(100);
+inline constexpr sfactor max_factor = static_cast<sfactor>(200);
+inline constexpr sfactor no_factor = static_cast<sfactor>(255);
 
 typedef int (*endgame_value)(const position& pos);
 typedef sfactor(*endgame_scale_factor)(const position& pos);
@@ -54,9 +54,9 @@ public:
 	endgame_scale_factor factor_functions[32] = {};
 };
 
-constexpr int value_tempo = 24;
-constexpr uint64_t black_modifier = 0xa4489c56;
-constexpr uint64_t averbakh_rule = 0xfff7e3c180000000;
+inline constexpr int value_tempo = 24;
+inline constexpr uint64_t black_modifier = 0xa4489c56;
+inline constexpr uint64_t averbakh_rule = 0xfff7e3c180000000;
 
 namespace endgame
 {
@@ -64,7 +64,7 @@ namespace endgame
 	uint64_t attack_king_inc(square s);
 
 
-	constexpr int push_to_side[num_squares] =
+	inline constexpr int push_to_side[num_squares] =
 	{
 		 80, 72, 64, 56, 56, 64, 72, 80,
 		 72, 56, 48, 40, 40, 48, 56, 72,
@@ -76,7 +76,7 @@ namespace endgame
 		 80, 72, 64, 56, 56, 64, 72, 80
 	};
 
-	constexpr int push_to_corner[num_squares] =
+	inline constexpr int push_to_corner[num_squares] =
 	{
 		 80, 72, 64, 56, 48, 40, 32, 24,
 		 72, 64, 56, 48, 40, 32, 24, 32,
@@ -88,13 +88,13 @@ namespace endgame
 		 24, 32, 40, 48, 56, 64, 72, 80
 	};
 
-	constexpr int draw_closer[8] =
+	inline constexpr int draw_closer[8] =
 	{
 		0, 0, 80, 64, 48, 32, 16, 8
 
 	};
 
-	constexpr int krppkrp_scale_factors[num_ranks] =
+	inline constexpr int krppkrp_scale_factors[num_ranks] =
 	{
 		0, 14, 16, 22, 33, 69, 0, 0
 	};
