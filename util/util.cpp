@@ -52,7 +52,7 @@ namespace util
 		#endif
 		#endif
 
-		ei << "Fire" << " ";
+		ei << program << " ";
 		date >> month >> day >> year;
 		ei << (1 + months.find(month) / 4) << day << year << " ";
 		ei << platform << " " << bmis;
