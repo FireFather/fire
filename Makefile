@@ -42,6 +42,17 @@ sse41 = no
 avx2 = no
 bmi2 = no
 
+ifeq ($(ARCH),x86-64-popc)
+	arch = x86_64
+	bits = 64
+	prefetch = yes
+	popcnt = yes
+	sse = yes
+	sse2 = yes
+	ssse3 = yes
+	sse41 = yes
+endif
+
 ifeq ($(ARCH),x86-64-avx2)
 	arch = x86_64
 	bits = 64
@@ -161,20 +172,6 @@ ifeq ($(popcnt),yes)
 	endif
 endif
 
-ifeq ($(sse2),yes)
-	CXXFLAGS += -DUSE_SSE2
-	ifeq ($(comp),$(filter $(comp),gcc clang mingw))
-		CXXFLAGS += -msse2
-	endif
-endif
-
-ifeq ($(ssse3),yes)
-	CXXFLAGS += -DUSE_SSSE3
-	ifeq ($(comp),$(filter $(comp),gcc clang mingw))
-		CXXFLAGS += -mssse3
-	endif
-endif
-
 ifeq ($(sse41),yes)
 	CXXFLAGS += -DUSE_SSE41
 	ifeq ($(comp),$(filter $(comp),gcc clang mingw))
@@ -232,6 +229,7 @@ help:
 	@echo "gcc-profile-clean       > Clean up after PGO build"
 	@echo ""
 	@echo "Supported architectures:"
+	@echo "x86-64-popc             > x86 64-bit with popcnt support"
 	@echo "x86-64-avx2             > x86 64-bit with avx2 support"	
 	@echo "x86-64-bmi2             > x86 64-bit with bmi2 support"
 	@echo ""
@@ -239,9 +237,11 @@ help:
 	@echo "gcc                     > Gnu compiler (default)"
 	@echo "mingw                   > Gnu compiler with MinGW under Windows"
 	@echo ""
+	@echo "make build ARCH=x86-64-popc"	
 	@echo "make build ARCH=x86-64-avx2"	
 	@echo "make build ARCH=x86-64-bmi2"
 	@echo ""
+	@echo "make profile-build ARCH=x86-64-popc"	
 	@echo "make profile-build ARCH=x86-64-avx2"
 	@echo "make profile-build ARCH=x86-64-bmi2"	
 	@echo ""
