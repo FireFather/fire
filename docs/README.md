@@ -52,7 +52,7 @@ fire 8.2 self-play nnue
 
 ## instructions to create an efficiently-updatable neural network (nnue) for any engine:
 - setting up a suitable Windows environment
-  - [windows-environment.md](docs/windows-environment.md)
+  - [windows-environment.md](windows-environment.md)
 - creating an efficient opening book using cutechess-cli
   - [cutechess-opening-books.md](docs/cutechess-opening-books.md)
 - running selfplay games for a 'zero' nnue approach
