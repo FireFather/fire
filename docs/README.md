@@ -52,21 +52,21 @@ fire 8.2 self-play nnue
 
 ## instructions to create an efficiently-updatable neural network (nnue) for any engine:
 - setting up a suitable Windows environment
-  - [windows-environment.md](docs/windows-environment.md)
+  - [windows-environment.md](windows-environment.md)
 - creating an efficient opening book using cutechess-cli
-  - [cutechess-opening-books.md](docs/cutechess-opening-books.md)
+  - [cutechess-opening-books.md](cutechess-opening-books.md)
 - running selfplay games for a 'zero' nnue approach
-  - [engine-selfplay-via-cutechess-cli.md](docs/engine-selfplay-via-cutechess-cli.md)
+  - [engine-selfplay-via-cutechess-cli.md](engine-selfplay-via-cutechess-cli.md)
 - using eval-extract to obtain fens & data from pgn files
-  - [nnue-extract_fen-&-data-extraction-&-conversion-to-plain-text.md](docs/nnue-extract_fen-&-data-extraction-&-conversion-to-plain-text.md)
+  - [nnue-extract_fen-&-data-extraction-&-conversion-to-plain-text.md](nnue-extract_fen-&-data-extraction-&-conversion-to-plain-text.md)
 - converting plain text data files to nnue .bin training format
-  - [plain-text-conversion-to-nnue-training-.bin-format.md](docs/plain-text-conversion-to-nnue-training-.bin-format.md)
+  - [plain-text-conversion-to-nnue-training-.bin-format.md](plain-text-conversion-to-nnue-training-.bin-format.md)
 - training & command-line management using nnue-gui
-  - [create-a-nnue-with-nnue-gui.md](docs/create-a-nnue-with-nnue-gui.md)
+  - [create-a-nnue-with-nnue-gui.md](create-a-nnue-with-nnue-gui.md)
 - testing the generated nnues
-  - [version-testing-with-little-blitzer.md](docs/version-testing-with-little-blitzer.md)
+  - [version-testing-with-little-blitzer.md](version-testing-with-little-blitzer.md)
 - improving the NNUE with supervised & reinforcement learning
-  - [improving-the-nnue.md](docs/improving-the-nnue.md)
+  - [improving-the-nnue.md](improving-the-nnue.md)
 
 ## available Windows binaries
 - **x64 bmi2** = fast pgo binary (for modern 64-bit systems w/ BMI2 instruction set) if you own a Intel Haswell or newer cpu, this compile should be faster.
