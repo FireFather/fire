@@ -22,7 +22,7 @@ class position;
 
 #if !defined(_MSC_VER)
 #define NNUE_EMBEDDED
-#define NNUE_EVAL_FILE "10262022-094307.bin"
+#define NNUE_EVAL_FILE "05152023-045758.bin"
 #endif
 
 namespace evaluate
