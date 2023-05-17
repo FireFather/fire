@@ -26,34 +26,35 @@ fire 8.2 self-play nnue
 - asychronous cout (acout) class using std::unique_lock<std::mutex>
 - uci option searchtype random w/ uniform_real_distribution & mesenne_twister_engine
 - reads engine.conf on startup for search, eval, pawn, and material parameters
-- uses a unique NNUE evaluation (halfkp_256x2-32-32)
+- uses a unique NNUE (halfkp_256x2-32-32) evaluation
 - fast alpha-beta search
 
 **fire-zero-05172023 is now available**
 
-| strength estimate 3460 Elo        |    |      |                    |      |
-| ----------------------------------| -- | ---- | ------------------ | ---- |
-|                                   | elo| games|(+win, =draw, -loss)| (%)  |
-|    stockfish-15                 	|3861|   863| (+715,=135,-13)    |90.7 %|
-|    komodo-dragon-3.1           	|3838|   863| (+702,=141,-20)    |89.5 %|
-|    berserk-9                   	|3754|   863| (+631,=190,-42)    |84.1 %|
-|    koivisto_8.0                 	|3637|   863| (+501,=261,-101)   |73.2 %|
-|    rubiChess-20220813          	|3564|   863| (+386,=338,-139)   |64.3 %|
-|    seer-v2.5                    	|3504|   862| (+322,=324,-216)   |56.1 %|
-|    rofChade-3.0                 	|3492|   862| (+302,=336,-224)   |54.5 %|
-|    fire-zero-05172023_x64_bmi2  	|3460| 16384| (+5968,=4937,-5479)|51.5 %|
-|    slow64-2.9                   	|3452|   863| (+254,=336,-273)   |48.9 %|
-|    rebel-15.1                   	|3450|   862| (+245,=348,-269)   |48.6 %|
-|    wasp-6.00                   	|3395|   862| (+207,=291,-364)   |40.9 %|
-|    fire-8242022                	|3384|   862| (+195,=290,-377)   |39.4 %|
-|    nemorino-6.00                	|3374|   862| (+156,=344,-362)   |38.1 %|
-|    igel-3.1.0                   	|3334|   862| (+122,=323,-417)   |32.9 %|
-|    ethereal-12.75              	|3331|   862| (+158,=244,-460)   |32.5 %|
-|    clover-3.1                   	|3296|   862| (+147,=194,-521)   |28.3 %|
-|    minic-3.24                   	|3290|   862| (+106,=264,-492)   |27.6 %|
-|    xiphos-0.6                   	|3266|   862| (+124,=184,-554)   |25.1 %|
-|    tucano-10.00                 	|3266|   862| (+99,=234,-529)    |25.1 %|
-|    marvin-6.0.0                 	|3233|   862| (+107,=160,-595)   |21.7 %|
+| strength estimate                     |    |       |                    |      |
+| ------------------------------------- |--- | ----- | ------------------ | ---- |
+|                                       |    | games |(+win, =draw, -loss)| (%)  |
+|    fire-zero-05172023_x64_bmi2  	|3460| 16384 | (+5968,=4937,-5479)|51.5 %|
+|    vs.                                |     |      |                    |      |
+|    stockfish-15                 	|3861|   863 | (+715,=135,-13)    |90.7 %|
+|    komodo-dragon-3.1           	|3838|   863 | (+702,=141,-20)    |89.5 %|
+|    berserk-9                   	|3754|   863 | (+631,=190,-42)    |84.1 %|
+|    koivisto_8.0                 	|3637|   863 | (+501,=261,-101)   |73.2 %|
+|    rubiChess-20220813          	|3564|   863 | (+386,=338,-139)   |64.3 %|
+|    seer-v2.5                    	|3504|   862 | (+322,=324,-216)   |56.1 %|
+|    rofChade-3.0                 	|3492|   862 | (+302,=336,-224)   |54.5 %|
+|    slow64-2.9                   	|3452|   863 | (+254,=336,-273)   |48.9 %|
+|    rebel-15.1                   	|3450|   862 | (+245,=348,-269)   |48.6 %|
+|    wasp-6.00                   	|3395|   862 | (+207,=291,-364)   |40.9 %|
+|    fire-8242022                	|3384|   862 | (+195,=290,-377)   |39.4 %|
+|    nemorino-6.00                	|3374|   862 | (+156,=344,-362)   |38.1 %|
+|    igel-3.1.0                   	|3334|   862 | (+122,=323,-417)   |32.9 %|
+|    ethereal-12.75              	|3331|   862 | (+158,=244,-460)   |32.5 %|
+|    clover-3.1                   	|3296|   862 | (+147,=194,-521)   |28.3 %|
+|    minic-3.24                   	|3290|   862 | (+106,=264,-492)   |27.6 %|
+|    xiphos-0.6                   	|3266|   862 | (+124,=184,-554)   |25.1 %|
+|    tucano-10.00                 	|3266|   862 | (+99,=234,-529)    |25.1 %|
+|    marvin-6.0.0                 	|3233|   862 | (+107,=160,-595)   |21.7 %|
 
 ## tools used:
 
@@ -97,16 +98,16 @@ fire 8.2 self-play nnue
 ## available Windows binaries
 - **x64 bmi2** = fast pgo binary (for modern 64-bit systems w/ BMI2 instruction set) if you own a Intel Haswell or newer cpu, this compile should be faster.
 - **x64 avx2** = fast pgo binary (for modern 64-bit systems w/ AVX2 instruction set) if you own a modern AMD cpu, this compile should be the fastest.
+- **x64 popc** = fast pgo binary (for older 64-bit systems w/ SSE41 instruction set).
 
 
 run 'bench' at command line to determine which binary runs best/fastest on your system. for greater accuracy, run it twice and calculate the average of both results.
-
 
 please see **http://chesslogik.wix.com/fire** for more info
 
 ## compile it yourself
 - **windows** (visual studio) use included project files: Fire.vcxproj or Fire.sln
-- **minGW** run one of the included bash shell scripts: make_bmi2.sh, make_axv2.sh, or make_all.sh 
+- **minGW** run one of the included bash shell scripts: make_bmi2.sh, make_avx2.sh, or make_all.sh 
 - **ubuntu** type 'make profile-build ARCH=x86-64-bmi2', 'make profile-build ARCH=x86-64-avx2', etc.
 
 ## uci options
@@ -125,7 +126,6 @@ please see **http://chesslogik.wix.com/fire** for more info
 - **SyzygyProbeLimit** number of pieces that have to be on the board in the endgame before the table-bases are probed.
 - **Syzygy50MoveRule** set to false, tablebase positions that are drawn by the 50-move rule will count as a win or loss.
 - **SyzygyPath** path to the syzygy tablebase files.
-- **NnueEvalFile** path to the NNUE evaluation file.
 
 ## acknowledgements
 many of the ideas & techiques incorporated into Fire are documented in detail here
