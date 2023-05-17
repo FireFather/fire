@@ -31,7 +31,6 @@ fire 8.2 self-play nnue
 
 **fire-zero-05172023 is now available**
 
-## 16384 game gauntlet result
 | strength estimate 3460 Elo        |    |      |                    |      |
 | ----------------------------------| -- | ---- | ------------------ | ---- |
 |                                   | elo| games|(+win, =draw, -loss)| (%)  |
