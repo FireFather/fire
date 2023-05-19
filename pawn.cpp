@@ -131,7 +131,8 @@ namespace pawn
 	{
 		for (auto n = 0; n < 17; n++)
 			for (auto dist = 0; dist < 8; dist++)
-				king_pawn_distance[n][dist] = make_score(0, static_cast<int>(floor(sqrt(static_cast<double>(n)) * 5.0 * dist)));
+				king_pawn_distance[n][dist] = make_score(
+					0, static_cast<int>(floor(sqrt(static_cast<double>(n)) * 5.0 * dist)));
 
 		for (auto n = 0; n < 8; n++)
 		{
@@ -205,7 +206,8 @@ namespace pawn
 			{
 				const auto sq = pop_lsb(&pawns_bb);
 				line_sum += sq & 7;
-			} while (pawns_bb);
+			}
+			while (pawns_bb);
 			entry->average_line = line_sum / entry->n_pawns;
 		}
 
@@ -215,7 +217,7 @@ namespace pawn
 	template <side me>
 	int eval_shelter_storm(const position& pos, const square square_k)
 	{
-		const auto you{ me == white ? black : white };
+		const auto you{me == white ? black : white};
 
 		static constexpr auto file_factor_mult = 64;
 		static constexpr auto ss_danger_factor = 3;
@@ -245,18 +247,20 @@ namespace pawn
 			b = your_pawns & get_file(f);
 			const auto your_rank = b ? relative_rank(me, front_square(you, b)) : rank_1;
 
-			danger += shelter_weakness[std::min(f, file_h - f)][my_rank] * shield_factor[std::abs(f - file_of(square_k))];
+			danger += shelter_weakness[std::min(f, file_h - f)][my_rank] * shield_factor[
+				std::abs(f - file_of(square_k))];
 
 			const int t_type =
 				f == file_of(square_k) && your_rank == relative_rank(me, square_k) + 1
-				? blocked_by_king
-				: my_rank == rank_1
-				? not_my_pawn
-				: your_rank == my_rank + 1
-				? blocked_by_pawn
-				: can_move;
+					? blocked_by_king
+					: my_rank == rank_1
+					? not_my_pawn
+					: your_rank == my_rank + 1
+					? blocked_by_pawn
+					: can_move;
 
-			danger += storm_danger[t_type][std::min(f, file_h - f)][your_rank] * storm_factor[std::abs(f - file_of(square_k))];
+			danger += storm_danger[t_type][std::min(f, file_h - f)][your_rank] * storm_factor[std::abs(
+				f - file_of(square_k))];
 		}
 		danger /= file_factor_mult;
 		return ss_base + max_safety_bonus * ss_safety_factor - danger * ss_danger_factor;
@@ -300,7 +304,8 @@ namespace pawn
 
 		if (const auto first_rank = me == white ? rank_1_bb : rank_8_bb; king_bb & first_rank)
 		{
-			if (const uint64_t bb = shift_up<me>(king_bb) | shift_up_left<me>(king_bb) | shift_up_right<me>(king_bb); bb == (pos.pieces(me, pt_pawn) & bb))
+			if (const uint64_t bb = shift_up<me>(king_bb) | shift_up_left<me>(king_bb) | shift_up_right<me>(king_bb); bb
+				== (pos.pieces(me, pt_pawn) & bb))
 				result += king_1st_rank;
 		}
 

@@ -113,7 +113,8 @@ namespace pawn
 	// doubled/isolated pawn
 	inline constexpr score doubled_pawn[4] =
 	{
-		static_cast<score>(4063396), static_cast<score>(6029492), static_cast<score>(6881459), static_cast<score>(6881459)
+		static_cast<score>(4063396), static_cast<score>(6029492), static_cast<score>(6881459),
+		static_cast<score>(6881459)
 	};
 
 	inline constexpr int isolated_pawn[2][num_files] =
@@ -138,28 +139,28 @@ namespace pawn
 	inline constexpr int storm_danger[][4][num_ranks] =
 	{
 		{
-		{0, 66, 134, 38, 32},
-		{0, 56, 138, 36, 22},
-		{0, 42, 114, 42, 26},
-		{0, 68, 124, 56, 32}
+			{0, 66, 134, 38, 32},
+			{0, 56, 138, 36, 22},
+			{0, 42, 114, 42, 26},
+			{0, 68, 124, 56, 32}
 		},
 		{
-		{20, 42, 100, 56, 20},
-		{22, 20, 98, 40, 14},
-		{22, 38, 102, 36, 18},
-		{28, 18, 108, 42, 26}
+			{20, 42, 100, 56, 20},
+			{22, 20, 98, 40, 14},
+			{22, 38, 102, 36, 18},
+			{28, 18, 108, 42, 26}
 		},
 		{
-		{0, 0, 74, 14, 2},
-		{0, 0, 150, 30, 4},
-		{0, 0, 160, 22, 4},
-		{0, 0, 166, 24, 12}
+			{0, 0, 74, 14, 2},
+			{0, 0, 150, 30, 4},
+			{0, 0, 160, 22, 4},
+			{0, 0, 166, 24, 12}
 		},
 		{
-		{0, -282, -280, 56, 30},
-		{0, 58, 140, 38, 18},
-		{0, 64, 142, 48, 32},
-		{0, 60, 126, 50, 18}
+			{0, -282, -280, 56, 30},
+			{0, 58, 140, 38, 18},
+			{0, 64, 142, 48, 32},
+			{0, 60, 126, 50, 18}
 		}
 	};
 
@@ -322,7 +323,8 @@ namespace pawn
 		entry* operator[](const uint64_t key)
 		{
 			static_assert(sizeof(entry) == 32 || sizeof(entry) == 128, "Wrong size");
-			return reinterpret_cast<entry*>(reinterpret_cast<char*>(pawn_hash_mem_) + (static_cast<uint32_t>(key) & (size - 1) * sizeof(entry)));
+			return reinterpret_cast<entry*>(reinterpret_cast<char*>(pawn_hash_mem_) + (static_cast<uint32_t>(key) & (
+				size - 1) * sizeof(entry)));
 		}
 
 	private:
@@ -332,7 +334,7 @@ namespace pawn
 	void init();
 	pawn_hash_entry* probe(const position& pos);
 	constexpr int pawn_hash_size = 16384;
-	typedef pawn_hash_table<pawn_hash_entry, pawn_hash_size> pawn_hash;
+	using pawn_hash = pawn_hash_table<pawn_hash_entry, pawn_hash_size>;
 }
 
 inline square square_in_front(const side color, const square sq)
