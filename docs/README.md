@@ -8,7 +8,7 @@ fire 8.2 self-play nnue
 - fire w/ NNUE from shared SF & LC0 data can be found here: https://github.com/FireFather/fire-NN
 
 ## features
-- c++17
+- c++20
 - windows & linux
 - uci
 - 64-bit
