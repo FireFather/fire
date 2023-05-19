@@ -25,8 +25,8 @@
 #include "../util/util.h"
 
 // use uniform_real_distribution to generate all possible value and avoid statistical bias
-void random(position& pos) {
-
+void random(position& pos)
+{
 	int num_moves = 0;
 
 	// find & count legal moves
@@ -58,4 +58,3 @@ void random(position& pos) {
 		}
 	}
 }
-

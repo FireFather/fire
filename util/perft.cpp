@@ -27,8 +27,8 @@
 #include "../uci.h"
 
 // count leaf nodes for all legal moves at a specific depth
-static uint64_t perft(position& pos, const int depth) {
-
+static uint64_t perft(position& pos, const int depth)
+{
 	uint64_t cnt = 0;
 	const auto leaf = depth == 2;
 
@@ -41,7 +41,8 @@ static uint64_t perft(position& pos, const int depth) {
 	return cnt;
 }
 
-uint64_t start_perft(position& pos, const int depth) {
+uint64_t start_perft(position& pos, const int depth)
+{
 	return depth > 1 ? perft(pos, depth) : legal_move_list(pos).size();
 }
 
