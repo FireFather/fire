@@ -45,7 +45,8 @@ void bitboard::init()
 
 	for (auto square1 = a1; square1 <= h8; ++square1)
 		for (auto square2 = a1; square2 <= h8; ++square2)
-			square_distance[square1][square2] = static_cast<int8_t>(std::max(file_distance(square1, square2), rank_distance(square1, square2)));
+			square_distance[square1][square2] = static_cast<int8_t>(std::max(file_distance(square1, square2),
+				rank_distance(square1, square2)));
 
 	for (auto sq = a1; sq <= h8; ++sq)
 	{
@@ -119,7 +120,8 @@ void init_magic_bb_pext(uint64_t* attack, uint64_t* square_index[], uint64_t* ma
 			square_index[sq][pext(b, mask[sq])] = sliding_attacks(sq, b, deltas, 0, 7, 0, 7);
 			b = b - mask[sq] & mask[sq];
 			attack++;
-		} while (b);
+		}
+		while (b);
 	}
 }
 #else
@@ -156,7 +158,7 @@ void init_magic_sliders()
 }
 
 uint64_t sliding_attacks(const int sq, const uint64_t block, const int deltas[4][2],
-	const int f_min, const int f_max, const int r_min, const int r_max)
+                         const int f_min, const int f_max, const int r_min, const int r_max)
 {
 	uint64_t result = 0;
 	const auto rk = sq / 8;
@@ -167,8 +169,8 @@ uint64_t sliding_attacks(const int sq, const uint64_t block, const int deltas[4]
 		const auto dx = deltas[direction][0];
 		const auto dy = deltas[direction][1];
 		for (auto f = fl + dx, r = rk + dy;
-			(dx == 0 || f >= f_min && f <= f_max) && (dy == 0 || r >= r_min && r <= r_max);
-			f += dx, r += dy)
+		     (dx == 0 || f >= f_min && f <= f_max) && (dy == 0 || r >= r_min && r <= r_max);
+		     f += dx, r += dy)
 		{
 			result |= square_bb[f + r * 8];
 			if (block & square_bb[f + r * 8])

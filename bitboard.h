@@ -15,7 +15,6 @@
 */
 
 #pragma once
-
 #include "fire.h"
 #include "bitop.h"
 
@@ -197,25 +196,31 @@ inline constexpr uint64_t rank_bb[num_ranks] =
 template <square delta>
 uint64_t shift_bb(const uint64_t b)
 {
-	return delta == north ? b << 8
-		: delta == south ? b >> 8
-		: delta == north_east ? (b & ~file_h_bb) << 9
-		: delta == south_east ? (b & ~file_h_bb) >> 7
-		: delta == north_west ? (b & ~file_a_bb) << 7
-		: delta == south_west ? (b & ~file_a_bb) >> 9
-		: 0;
+	return delta == north
+		       ? b << 8
+		       : delta == south
+		       ? b >> 8
+		       : delta == north_east
+		       ? (b & ~file_h_bb) << 9
+		       : delta == south_east
+		       ? (b & ~file_h_bb) >> 7
+		       : delta == north_west
+		       ? (b & ~file_a_bb) << 7
+		       : delta == south_west
+		       ? (b & ~file_a_bb) >> 9
+		       : 0;
 }
 
 inline constexpr int kp_delta[][8] =
 {
-{},
-{
-	9, 7, -7, -9, 8, 1, -1, -8
-},
-{},
-{
-	17, 15, 10, 6, -6, -10, -15, -17
-}
+	{},
+	{
+		9, 7, -7, -9, 8, 1, -1, -8
+	},
+	{},
+	{
+		17, 15, 10, 6, -6, -10, -15, -17
+	}
 };
 
 inline constexpr int rook_deltas[4][2] =
@@ -417,7 +422,7 @@ inline uint64_t attack_bb(const uint8_t piece_t, const square sq, const uint64_t
 }
 
 template <side color>
-inline uint64_t pawn_attack(const uint64_t bb)
+uint64_t pawn_attack(const uint64_t bb)
 {
 	if constexpr (color == white)
 		return shift_bb<north_west>(bb) | shift_bb<north_east>(bb);
@@ -426,7 +431,7 @@ inline uint64_t pawn_attack(const uint64_t bb)
 }
 
 template <side color>
-inline uint64_t shift_up(const uint64_t bb)
+uint64_t shift_up(const uint64_t bb)
 {
 	if constexpr (color == white)
 		return shift_bb<north>(bb);
@@ -435,7 +440,7 @@ inline uint64_t shift_up(const uint64_t bb)
 }
 
 template <side color>
-inline uint64_t shift_down(const uint64_t bb)
+uint64_t shift_down(const uint64_t bb)
 {
 	if constexpr (color == white)
 		return shift_bb<south>(bb);
@@ -444,7 +449,7 @@ inline uint64_t shift_down(const uint64_t bb)
 }
 
 template <side color>
-inline uint64_t shift_up_left(const uint64_t bb)
+uint64_t shift_up_left(const uint64_t bb)
 {
 	if constexpr (color == white)
 		return shift_bb<north_west>(bb);
@@ -453,13 +458,14 @@ inline uint64_t shift_up_left(const uint64_t bb)
 }
 
 template <side color>
-inline uint64_t shift_up_right(const uint64_t bb)
+uint64_t shift_up_right(const uint64_t bb)
 {
 	if constexpr (color == white)
 		return shift_bb<north_east>(bb);
 	else
 		return shift_bb<south_east>(bb);
 }
+
 // clear least significant bit
 inline square pop_lsb(uint64_t* b)
 {

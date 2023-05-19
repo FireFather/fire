@@ -18,7 +18,7 @@
 
 #include "fire.h"
 
-#if defined(_MSC_VER) || defined(__INTEL_COMPILER)
+#if defined(_MSC_VER)
 #include <bit>
 #endif
 
@@ -35,7 +35,7 @@ inline uint64_t pext(const uint64_t occupied, const uint64_t mask)
 // calculate the number of bits set to 1
 inline int popcnt(const uint64_t b)
 {
-#if defined(_MSC_VER) || defined(__INTEL_COMPILER)
+#if defined(_MSC_VER)
 	return std::popcount(b);
 #elif defined(__GNUC__)
 	return __builtin_popcountll(b);
@@ -45,7 +45,7 @@ inline int popcnt(const uint64_t b)
 // search the mask data from least significant bit (LSB) to the most significant bit (MSB) for a set bit (1)
 inline square lsb(const uint64_t b)
 {
-#if defined(_WIN64) && defined(_MSC_VER)
+#if defined(_MSC_VER)
 	return static_cast<square>(std::countr_zero(b));
 #elif defined(__GNUC__)
 	return square(__builtin_ctzll(b));
@@ -55,7 +55,7 @@ inline square lsb(const uint64_t b)
 // search the mask data from most significant bit (MSB) to least significant bit (LSB) for a set bit (1)
 inline square msb(const uint64_t b)
 {
-#if defined(_WIN64) && defined(_MSC_VER)
+#if defined(_MSC_VER)
 	unsigned long idx;
 	_BitScanReverse64(&idx, b);
 	return static_cast<square>(idx);
@@ -71,14 +71,14 @@ inline square msb(const uint64_t b)
 #define CACHE_ALIGN __attribute__ ((aligned(64)))
 #endif
 
-#if defined(_MSC_VER) || defined(__INTEL_COMPILER)
+#if defined(_MSC_VER)
 #include <xmmintrin.h>
 #endif
 
 // increase speed by having the compiler prefetch data from memory
 inline void prefetch(void* address)
 {
-#if defined(_MSC_VER) || defined(__INTEL_COMPILER)
+#if defined(_MSC_VER)
 	_mm_prefetch(static_cast<char*>(address), _MM_HINT_T0);
 #elif defined(__GNUC__)
 	__builtin_prefetch(address);
@@ -87,7 +87,7 @@ inline void prefetch(void* address)
 
 inline void prefetch2(void* address)
 {
-#if defined(_MSC_VER) || defined(__INTEL_COMPILER)
+#if defined(_MSC_VER)
 	_mm_prefetch(static_cast<char*>(address), _MM_HINT_T0);
 	_mm_prefetch(static_cast<char*>(address) + 64, _MM_HINT_T0);
 #elif defined(__GNUC__)

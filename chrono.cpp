@@ -37,7 +37,8 @@ void timecontrol::init(const search_param& limit, const side me, const int ply)
 		int64_t t1 = std::llround(static_cast<double>(available) * ratio1);
 
 		auto ratio2 = max_ratio_ * move_importance / (max_ratio_ * move_importance + other_moves_importance);
-		auto ratio3 = (move_importance + steal_ratio_ * other_moves_importance) / (move_importance + other_moves_importance);
+		auto ratio3 = (move_importance + steal_ratio_ * other_moves_importance) / (move_importance +
+			other_moves_importance);
 		int64_t t2 = std::llround(static_cast<double>(available) * std::min(ratio2, ratio3));
 
 		optimal_time_ = std::min(t1, optimal_time_);
@@ -69,7 +70,8 @@ double timecontrol::calc_move_importance(const int ply) const
 {
 	auto factor = 1.0;
 	if (ply > ply_min_ && ply < ply_max_)
-		factor = factor_base_ - ply_factor_ * (static_cast<double>(ply) - static_cast<double>(base_moves_)) * (static_cast<double>(ply)
+		factor = factor_base_ - ply_factor_ * (static_cast<double>(ply) - static_cast<double>(base_moves_)) * (
+			static_cast<double>(ply)
 			- static_cast<double>(base_moves_));
 
 	return factor * pow(1 + exp((ply - x_shift_) / x_scale_), -skew_);
