@@ -8,8 +8,8 @@ egtb.o: egtb/egtb.cpp egtb/tbprobe.h egtb/../position.h \
  egtb/../chrono.h egtb/../movepick.h egtb/../movegen.h \
  egtb/../util/util.h
 tbprobe.o: egtb/tbprobe.cpp egtb/tbprobe.h egtb/../position.h \
- egtb/../bitboard.h egtb/../fire.h egtb/../bitop.h egtb/tbcore.cpp \
- egtb/tbcore.h egtb/../pragma.h egtb/../movegen.h egtb/../zobrist.h
+ egtb/../bitboard.h egtb/../fire.h egtb/../bitop.h egtb/tbcore.h \
+ egtb/../pragma.h egtb/../movegen.h egtb/../zobrist.h
 endgame.o: endgame.cpp bitboard.h fire.h bitop.h endgame.h position.h \
  movegen.h pragma.h thread.h material.h movepick.h mutex.h pawn.h \
  macro/square.h search.h chrono.h
