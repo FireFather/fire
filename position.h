@@ -28,9 +28,9 @@ struct cmhinfo;
 template <int max_plus, int max_min>
 struct piece_square_stats;
 
-typedef piece_square_stats<24576, 24576> counter_move_values;
+using counter_move_values = piece_square_stats<24576, 24576>;
 
-inline constexpr int delayed_number{ 7 };
+inline constexpr int delayed_number{7};
 
 enum ptype : uint8_t
 {
@@ -128,7 +128,7 @@ struct position_info
 	uint8_t eval_factor, lmr_reduction;
 	bool no_early_pruning, move_repetition;
 
-	s_move* mp_current_move, * mp_end_list, * mp_end_bad_capture;
+	s_move *mp_current_move, *mp_end_list, *mp_end_bad_capture;
 	stage mp_stage;
 	uint32_t mp_hash_move, mp_counter_move;
 	int mp_depth;
@@ -238,12 +238,15 @@ public:
 	[[nodiscard]] int fifty_move_counter() const;
 	[[nodiscard]] int psq_score() const;
 	[[nodiscard]] int non_pawn_material(side color) const;
+
 	[[nodiscard]] position_info* info() const
 	{
 		return pos_info_;
 	}
+
 	void copy_position(const position* pos, thread* th, const position_info* copy_state);
 	double epd_result;
+
 private:
 	void set_castling_possibilities(side color, square from_r);
 	void set_position_info(position_info* si) const;
@@ -313,15 +316,15 @@ inline bool position::advanced_pawn(const uint32_t move) const
 }
 
 template <uint8_t piece_type>
-inline uint64_t position::attack_from(const square sq) const
+uint64_t position::attack_from(const square sq) const
 {
 	return piece_type == pt_bishop
-		? attack_bishop_bb(sq, pieces())
-		: piece_type == pt_rook
-		? attack_rook_bb(sq, pieces())
-		: piece_type == pt_queen
-		? attack_from<pt_rook>(sq) | attack_from<pt_bishop>(sq)
-		: empty_attack[piece_type][sq];
+		       ? attack_bishop_bb(sq, pieces())
+		       : piece_type == pt_rook
+		       ? attack_rook_bb(sq, pieces())
+		       : piece_type == pt_queen
+		       ? attack_from<pt_rook>(sq) | attack_from<pt_bishop>(sq)
+		       : empty_attack[piece_type][sq];
 }
 
 template <>
@@ -348,7 +351,9 @@ inline uint64_t position::bishop_color_key() const
 inline bool position::capture_or_promotion(const uint32_t move) const
 {
 	assert(is_ok(move));
-	return move < static_cast<uint32_t>(castle_move) ? !empty_square(to_square(move)) : move >= static_cast<uint32_t>(enpassant);
+	return move < static_cast<uint32_t>(castle_move)
+		? !empty_square(to_square(move))
+		: move >= static_cast<uint32_t>(enpassant);
 }
 
 inline square position::castle_rook_square(const square king_square) const
@@ -356,12 +361,12 @@ inline square position::castle_rook_square(const square king_square) const
 	return castle_rook_square_[king_square];
 }
 
-inline bool position::castling_impossible(const  uint8_t castle) const
+inline bool position::castling_impossible(const uint8_t castle) const
 {
 	return pieces() & castle_path_[castle];
 }
 
-inline int position::castling_possible(const  uint8_t castle) const
+inline int position::castling_possible(const uint8_t castle) const
 {
 	return pos_info_->castle_possibilities & castle;
 }
@@ -456,7 +461,8 @@ inline uint64_t position::material_key() const
 
 inline bool position::material_or_castle_changed() const
 {
-	return pos_info_->material_key != (pos_info_ - 1)->material_key || pos_info_->castle_possibilities != (pos_info_ - 1)->castle_possibilities;
+	return pos_info_->material_key != (pos_info_ - 1)->material_key || pos_info_->castle_possibilities != (pos_info_ -
+		1)->castle_possibilities;
 }
 
 inline ptype position::moved_piece(const uint32_t move) const
@@ -492,7 +498,8 @@ inline side position::on_move() const
 inline bool position::passed_pawn_advance(const uint32_t move, const rank r) const
 {
 	const auto piece = moved_piece(move);
-	return piece_type(piece) == pt_pawn && relative_rank(on_move_, to_square(move)) >= r && is_passed_pawn(piece_color(piece), to_square(move));
+	return piece_type(piece) == pt_pawn && relative_rank(on_move_, to_square(move)) >= r && is_passed_pawn(
+		piece_color(piece), to_square(move));
 }
 
 inline uint64_t position::pawn_key() const
@@ -585,9 +592,3 @@ inline uint64_t position::visited_nodes() const
 {
 	return nodes_;
 }
-
-
-
-
-
-

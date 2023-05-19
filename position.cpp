@@ -152,7 +152,7 @@ void position::copy_position(const position* pos, thread* th, const position_inf
 		cmh_info_ = th->cmhi;
 		pos_info_ = th->ti->position_inf + 5;
 
-		auto* orig_st = pos->thread_info_->position_inf + 5;
+		const auto* orig_st = pos->thread_info_->position_inf + 5;
 		while (orig_st < copy_state - 4)
 		{
 			pos_info_->key = orig_st->key;
@@ -262,7 +262,7 @@ bool position::is_draw() const
 	if (n < 0)
 		return false;
 
-	auto* stp = pos_info_ - 4;
+	const auto* stp = pos_info_ - 4;
 	do
 	{
 		if (stp->key == pos_info_->key)
@@ -270,7 +270,8 @@ bool position::is_draw() const
 
 		stp -= 2;
 		n -= 2;
-	} while (n >= 0);
+	}
+	while (n >= 0);
 
 	return false;
 }
@@ -651,7 +652,8 @@ bool position::see_test(const uint32_t move, const int limit) const
 		if (capture_piece >= pt_rook)
 			attackers |= attack_rook_bb(to, occupied) & (pieces(pt_rook) | pieces(pt_queen));
 		attackers &= occupied;
-	} while (true);
+	}
+	while (true);
 }
 
 const int* position::see_values()
@@ -688,7 +690,6 @@ void position::set_castling_possibilities(const side color, const square from_r)
 	if (from_k >= from_r && from_r != relative_square(color, a1))
 		chess960_ = true;
 }
-
 
 void position::set_position_info(position_info* si) const
 {
@@ -958,7 +959,3 @@ bool position::valid_move(const uint32_t move) const
 
 	return true;
 }
-
-
-
-
