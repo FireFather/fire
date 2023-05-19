@@ -42,15 +42,15 @@ namespace util
 	{
 		// specify correct bit manipulation instruction set constant, as this will be appended
 		// to the fully distinguished engine name after platform
-		#ifdef USE_PEXT
-				static constexpr auto bmis = "bmi2";
-		#else
-		#ifdef USE_AVX2
+#ifdef USE_PEXT
+		static constexpr auto bmis = "bmi2";
+#else
+#ifdef USE_AVX2
 				static constexpr auto bmis = "avx2";
-		#else
+#else
 				static constexpr auto bmis = "sse41";
-		#endif
-		#endif
+#endif
+#endif
 
 		ei << program << " ";
 		date >> month >> day >> year;
@@ -64,7 +64,8 @@ namespace util
 	std::string build_date()
 	{
 		date >> month >> day >> year;
-		bd << "\nBuild timestamp  : " << month << ' ' << std::setw(2) << std::setfill('0') << day << ' ' << year << ' ' << std::setw(2) << std::setfill('0') << __TIME__ << std::endl;
+		bd << "\nBuild timestamp  : " << month << ' ' << std::setw(2) << std::setfill('0') << day << ' ' << year << ' '
+			<< std::setw(2) << std::setfill('0') << __TIME__ << std::endl;
 		return bd.str();
 	}
 
@@ -94,8 +95,8 @@ namespace util
 		return ci.str();
 	}
 
-	std::string compiler_info() {
-
+	std::string compiler_info()
+	{
 #define STRINGIFY2(x) #x
 #define STRINGIFY(x) STRINGIFY2(x)
 #define MAKE_VERSION_STRING(major, minor, patch) STRINGIFY(major) "." STRINGIFY(minor) "." STRINGIFY(patch)
@@ -253,9 +254,11 @@ namespace util
 		if (pos.is_chess960())
 		{
 			if (str == "O-O")
-				str = move_to_string(make_move(castle_move, pos.king(pos.on_move()), relative_square(pos.on_move(), g1)), pos);
+				str = move_to_string(
+					make_move(castle_move, pos.king(pos.on_move()), relative_square(pos.on_move(), g1)), pos);
 			else if (str == "O-O-O")
-				str = move_to_string(make_move(castle_move, pos.king(pos.on_move()), relative_square(pos.on_move(), c1)), pos);
+				str = move_to_string(
+					make_move(castle_move, pos.king(pos.on_move()), relative_square(pos.on_move(), c1)), pos);
 		}
 
 		if (str.length() == 5)
@@ -274,8 +277,8 @@ std::ostream& operator<<(std::ostream& os, const position& pos)
 {
 	constexpr char p_chars[] =
 	{
-	'K','P','N','B','R','Q',
-	'k','p','n','b','r','q',
+		'K', 'P', 'N', 'B', 'R', 'Q',
+		'k', 'p', 'n', 'b', 'r', 'q',
 	};
 
 	auto found = false;

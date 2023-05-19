@@ -32,12 +32,14 @@ static std::mutex mutex_cout;
 struct acout
 {
 	std::unique_lock<std::mutex> lk;
+
 	acout()
 		:
 		lk(std::unique_lock(mutex_cout))
-	{}
+	{
+	}
 
-	template<typename T>
+	template <typename T>
 	acout& operator<<(const T& _t)
 	{
 		std::cout << _t;
@@ -90,4 +92,5 @@ namespace util
 		}
 	};
 }
+
 std::ostream& operator<<(std::ostream& os, const position& pos);
