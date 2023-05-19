@@ -23,7 +23,7 @@
 #include "movepick.h"
 #include "position.h"
 
-typedef movelist<max_pv> principal_variation;
+using principal_variation = movelist<max_pv>;
 
 struct search_signals
 {
@@ -43,7 +43,8 @@ namespace search
 
 	enum nodetype
 	{
-		PV, nonPV
+		PV,
+		nonPV
 	};
 
 	inline int counter_move_bonus[max_ply];
@@ -109,9 +110,11 @@ namespace search
 
 	int value_to_hash(int val, int ply);
 	int value_from_hash(int val, int ply);
-	void copy_pv(uint32_t* pv, uint32_t move, uint32_t* pv_lower);
-	void update_stats(const position& pos, bool state_check, uint32_t move, int depth, const uint32_t* quiet_moves, int quiet_number);
-	void update_stats_quiet(const position& pos, bool state_check, int depth, const uint32_t* quiet_moves, int quiet_number);
+	void copy_pv(uint32_t* pv, uint32_t move, const uint32_t* pv_lower);
+	void update_stats(const position& pos, bool state_check, uint32_t move, int depth, const uint32_t* quiet_moves,
+	                  int quiet_number);
+	void update_stats_quiet(const position& pos, bool state_check, int depth, const uint32_t* quiet_moves,
+	                        int quiet_number);
 	void update_stats_minus(const position& pos, bool state_check, uint32_t move, int depth);
 	void send_time_info();
 
@@ -149,8 +152,14 @@ namespace search
 
 	inline constexpr int late_move_number_values[2][32] =
 	{
-		{0, 0, 3, 3, 4, 5, 6, 7, 8, 10, 12, 15, 17, 20, 23, 26, 30, 33, 37, 40, 44, 49, 53, 58, 63, 68, 73, 78, 83, 88, 94, 100},
-		{0, 0, 5, 5, 6, 7, 9, 11, 14, 17, 20, 23, 27, 31, 35, 40, 45, 50, 55, 60, 65, 71, 77, 84, 91, 98, 105, 112, 119, 127, 135, 143}
+		{
+			0, 0, 3, 3, 4, 5, 6, 7, 8, 10, 12, 15, 17, 20, 23, 26, 30, 33, 37, 40, 44, 49, 53, 58, 63, 68, 73, 78, 83,
+			88, 94, 100
+		},
+		{
+			0, 0, 5, 5, 6, 7, 9, 11, 14, 17, 20, 23, 27, 31, 35, 40, 45, 50, 55, 60, 65, 71, 77, 84, 91, 98, 105, 112,
+			119, 127, 135, 143
+		}
 	};
 
 	inline int late_move_number(const int d, const bool progress)
@@ -163,17 +172,22 @@ namespace search
 		return lm_reductions[pv][vg][std::min(d, 64 * static_cast<int>(plies) - 1)][std::min(n, 63)];
 	}
 
-	struct rootmove_mc {
+	struct rootmove_mc
+	{
+		explicit rootmove_mc(const uint32_t m) : pv(1, m)
+		{
+		}
 
-		explicit rootmove_mc(const uint32_t m) : pv(1, m) {}
 		bool operator==(const uint32_t& m) const
 		{
 			return pv[0] == m;
 		}
+
 		bool operator<(const rootmove_mc& m) const
 		{
-			return m.score != score ? m.score < score
-				: m.previous_score < previous_score;
+			return m.score != score
+				       ? m.score < score
+				       : m.previous_score < previous_score;
 		}
 
 		int score = -max_score;
@@ -185,7 +199,7 @@ namespace search
 		std::vector<uint32_t> pv;
 	};
 
-	typedef std::vector<rootmove_mc> rootmoves_mc;
+	using rootmoves_mc = std::vector<rootmove_mc>;
 
 	struct stack_mc
 	{
@@ -203,7 +217,7 @@ namespace search
 
 template <int max_plus, int max_min>
 struct piece_square_stats;
-typedef piece_square_stats<24576, 24576> counter_move_values;
+using counter_move_values = piece_square_stats<24576, 24576>;
 
 inline constexpr int egtb_helpful = 0 * plies;
 inline constexpr int egtb_not_helpful = 10 * plies;
@@ -213,7 +227,7 @@ inline bool tb_root_in_tb;
 inline int tb_probe_depth;
 inline int tb_score;
 
-typedef int (*egtb_probe)(position& pos);
+using egtb_probe = int(*)(position& pos);
 void filter_root_moves(position& pos);
 std::string score_cp(int score);
 
