@@ -27,15 +27,15 @@ inline constexpr sfactor normal_factor = static_cast<sfactor>(100);
 inline constexpr sfactor max_factor = static_cast<sfactor>(200);
 inline constexpr sfactor no_factor = static_cast<sfactor>(255);
 
-typedef int (*endgame_value)(const position& pos);
-typedef sfactor(*endgame_scale_factor)(const position& pos);
+using endgame_value = int(*)(const position& pos);
+using endgame_scale_factor = sfactor(*)(const position& pos);
 
 class endgames
 {
 	void add_value(const char* pieces, endgame_value, endgame_value);
 	void add_scale_factor(const char* pieces, endgame_scale_factor, endgame_scale_factor);
 
-	typedef std::map<uint64_t, int> function_index_map;
+	using function_index_map = std::map<uint64_t, int>;
 
 	int value_number_ = 0;
 	int factor_number_ = 0;
@@ -63,29 +63,28 @@ namespace endgame
 	square normalize_pawn_side(const position& pos, side strong_side, square sq);
 	uint64_t attack_king_inc(square s);
 
-
 	inline constexpr int push_to_side[num_squares] =
 	{
-		 80, 72, 64, 56, 56, 64, 72, 80,
-		 72, 56, 48, 40, 40, 48, 56, 72,
-		 64, 48, 32, 24, 24, 32, 48, 64,
-		 56, 40, 24, 16, 16, 24, 40, 56,
-		 56, 40, 24, 16, 16, 24, 40, 56,
-		 64, 48, 32, 24, 24, 32, 48, 64,
-		 72, 56, 48, 40, 40, 48, 56, 72,
-		 80, 72, 64, 56, 56, 64, 72, 80
+		80, 72, 64, 56, 56, 64, 72, 80,
+		72, 56, 48, 40, 40, 48, 56, 72,
+		64, 48, 32, 24, 24, 32, 48, 64,
+		56, 40, 24, 16, 16, 24, 40, 56,
+		56, 40, 24, 16, 16, 24, 40, 56,
+		64, 48, 32, 24, 24, 32, 48, 64,
+		72, 56, 48, 40, 40, 48, 56, 72,
+		80, 72, 64, 56, 56, 64, 72, 80
 	};
 
 	inline constexpr int push_to_corner[num_squares] =
 	{
-		 80, 72, 64, 56, 48, 40, 32, 24,
-		 72, 64, 56, 48, 40, 32, 24, 32,
-		 64, 56, 44, 32, 32, 20, 32, 40,
-		 56, 48, 32, 16, 8, 32, 40, 48,
-		 48, 40, 32, 8, 16, 32, 48, 56,
-		 40, 32, 20, 32, 32, 44, 56, 64,
-		 32, 24, 32, 40, 48, 56, 64, 72,
-		 24, 32, 40, 48, 56, 64, 72, 80
+		80, 72, 64, 56, 48, 40, 32, 24,
+		72, 64, 56, 48, 40, 32, 24, 32,
+		64, 56, 44, 32, 32, 20, 32, 40,
+		56, 48, 32, 16, 8, 32, 40, 48,
+		48, 40, 32, 8, 16, 32, 48, 56,
+		40, 32, 20, 32, 32, 44, 56, 64,
+		32, 24, 32, 40, 48, 56, 64, 72,
+		24, 32, 40, 48, 56, 64, 72, 80
 	};
 
 	inline constexpr int draw_closer[8] =
