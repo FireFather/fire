@@ -39,11 +39,14 @@ namespace movepick
 			pi->mp_stage = pi->mp_hash_move ? normal_search : gen_good_captures;
 			if (pi->move_counter_values)
 			{
-				pi->mp_counter_move = static_cast<uint32_t>(pos.thread_info()->counter_moves.get(pi->moved_piece, to_square(pi->previous_move)));
+				pi->mp_counter_move = static_cast<uint32_t>(pos.thread_info()->counter_moves.get(
+					pi->moved_piece, to_square(pi->previous_move)));
 				if (!pi->mp_hash_move && (pi - 1)->move_counter_values
-					&& (!pi->mp_counter_move || !pos.valid_move(pi->mp_counter_move) || pos.capture_or_promotion(pi->mp_counter_move)))
+					&& (!pi->mp_counter_move || !pos.valid_move(pi->mp_counter_move) || pos.capture_or_promotion(
+						pi->mp_counter_move)))
 				{
-					pi->mp_counter_move = pos.thread_info()->counter_followup_moves.get((pi - 1)->moved_piece, to_square((pi - 1)->previous_move),
+					pi->mp_counter_move = pos.thread_info()->counter_followup_moves.get(
+						(pi - 1)->moved_piece, to_square((pi - 1)->previous_move),
 						pi->moved_piece, to_square(pi->previous_move));
 				}
 			}
@@ -84,11 +87,11 @@ namespace movepick
 		pi->mp_threshold = limit + 1;
 
 		pi->mp_hash_move = hash_move
-			&& pos.valid_move(hash_move)
-			&& pos.capture_or_promotion(hash_move)
-			&& pos.see_test(hash_move, pi->mp_threshold)
-			? hash_move
-			: no_move;
+		                   && pos.valid_move(hash_move)
+		                   && pos.capture_or_promotion(hash_move)
+		                   && pos.see_test(hash_move, pi->mp_threshold)
+			                   ? hash_move
+			                   : no_move;
 
 		pi->mp_stage = pi->mp_hash_move ? probcut : gen_probcut;
 	}
@@ -99,7 +102,7 @@ namespace movepick
 		const auto* const pi = pos.info();
 		for (auto* z = pi->mp_current_move; z < pi->mp_end_list; z++)
 			z->value = capture_sort_values[pos.piece_on_square(to_square(z->move))]
-			- 200 * relative_rank(pos.on_move(), to_square(z->move));
+				- 200 * relative_rank(pos.on_move(), to_square(z->move));
 	}
 
 	template <>
@@ -108,13 +111,15 @@ namespace movepick
 		const auto& history = pos.thread_info()->history;
 
 		const auto* pi = pos.info();
-		const counter_move_values* cm = pi->move_counter_values ? pi->move_counter_values : &pos.cmh_info()->counter_move_stats[no_piece][a1];
+		const counter_move_values* cm = pi->move_counter_values
+			                                ? pi->move_counter_values
+			                                : &pos.cmh_info()->counter_move_stats[no_piece][a1];
 		const counter_move_values* fm = (pi - 1)->move_counter_values
-			? (pi - 1)->move_counter_values
-			: &pos.cmh_info()->counter_move_stats[no_piece][a1];
+			                                ? (pi - 1)->move_counter_values
+			                                : &pos.cmh_info()->counter_move_stats[no_piece][a1];
 		const counter_move_values* f2 = (pi - 3)->move_counter_values
-			? (pi - 3)->move_counter_values
-			: &pos.cmh_info()->counter_move_stats[no_piece][a1];
+			                                ? (pi - 3)->move_counter_values
+			                                : &pos.cmh_info()->counter_move_stats[no_piece][a1];
 
 		const auto threat = pi->mp_depth < 6 * plies ? pos.calculate_threat() : no_square;
 
@@ -142,7 +147,7 @@ namespace movepick
 		{
 			if (pos.is_capture_move(z->move))
 				z->value = capture_sort_values[pos.piece_on_square(to_square(z->move))]
-				- piece_order[pos.moved_piece(z->move)] + sort_max;
+					- piece_order[pos.moved_piece(z->move)] + sort_max;
 			else
 			{
 				const auto offset = move_value_stats::calculate_offset(pos.moved_piece(z->move), to_square(z->move));
@@ -228,8 +233,10 @@ namespace movepick
 	{
 		switch (auto* pi = pos.info(); pi->mp_stage)
 		{
-		case normal_search: case check_evasions:
-		case q_search_with_checks: case q_search_no_checks:
+		case normal_search:
+		case check_evasions:
+		case q_search_with_checks:
+		case q_search_no_checks:
 		case probcut:
 			pi->mp_end_list = (pi - 1)->mp_end_list;
 			++pi->mp_stage;
@@ -257,14 +264,16 @@ namespace movepick
 
 			pi->mp_stage = killers_1;
 			{
-				if (const auto move = pi->killers[0]; move && move != pi->mp_hash_move && pos.valid_move(move) && !pos.capture_or_promotion(move))
+				if (const auto move = pi->killers[0]; move && move != pi->mp_hash_move && pos.valid_move(move) && !pos.
+					capture_or_promotion(move))
 					return move;
 			}
 
 		case killers_1:
 			pi->mp_stage = killers_2;
 			{
-				if (const auto move = pi->killers[1]; move && move != pi->mp_hash_move && pos.valid_move(move) && !pos.capture_or_promotion(move))
+				if (const auto move = pi->killers[1]; move && move != pi->mp_hash_move && pos.valid_move(move) && !pos.
+					capture_or_promotion(move))
 					return move;
 			}
 
@@ -284,7 +293,8 @@ namespace movepick
 		case bxp_captures:
 			while (pi->mp_current_move < pi->mp_end_bad_capture)
 			{
-				if (const uint32_t move = *pi->mp_current_move++; piece_type(pos.piece_on_square(to_square(move))) == pt_knight
+				if (const uint32_t move = *pi->mp_current_move++; piece_type(pos.piece_on_square(to_square(move))) ==
+					pt_knight
 					&& piece_type(pos.piece_on_square(from_square(move))) == pt_bishop)
 				{
 					*(pi->mp_current_move - 1) = no_move;
@@ -361,13 +371,15 @@ namespace movepick
 			}
 			return no_move;
 
-		case q_search_1: case q_search_2:
+		case q_search_1:
+		case q_search_2:
 			pi->mp_current_move = (pi - 1)->mp_end_list;
 			pi->mp_end_list = generate_moves<captures_promotions>(pos, pi->mp_current_move);
 			score<captures_promotions>(pos);
 			++pi->mp_stage;
 
-		case q_search_captures_1: case q_search_captures_2:
+		case q_search_captures_1:
+		case q_search_captures_2:
 			while (pi->mp_current_move < pi->mp_end_list)
 			{
 				if (const auto move = find_best_move(pi->mp_current_move++, pi->mp_end_list); move != pi->mp_hash_move)
@@ -398,7 +410,8 @@ namespace movepick
 		case probcut_captures:
 			while (pi->mp_current_move < pi->mp_end_list)
 			{
-				if (const auto move = find_best_move(pi->mp_current_move++, pi->mp_end_list); move != pi->mp_hash_move && pos.see_test(move, pi->mp_threshold))
+				if (const auto move = find_best_move(pi->mp_current_move++, pi->mp_end_list); move != pi->mp_hash_move
+					&& pos.see_test(move, pi->mp_threshold))
 					return move;
 			}
 			return no_move;
@@ -412,7 +425,8 @@ namespace movepick
 		case recapture_moves:
 			while (pi->mp_current_move < pi->mp_end_list)
 			{
-				if (const auto move = find_best_move(pi->mp_current_move++, pi->mp_end_list); to_square(move) == pi->mp_capture_square)
+				if (const auto move = find_best_move(pi->mp_current_move++, pi->mp_end_list); to_square(move) == pi->
+					mp_capture_square)
 					return move;
 			}
 			return no_move;

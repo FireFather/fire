@@ -15,7 +15,6 @@
 */
 
 #pragma once
-
 #include <array>
 #include <limits>
 
@@ -47,15 +46,15 @@ namespace movepick
 	void score(const position& pos);
 }
 
-template <typename tn>
+template <typename Tn>
 struct piece_square_table
 {
-	const tn* operator[](ptype piece) const
+	const Tn* operator[](ptype piece) const
 	{
 		return table_[piece];
 	}
 
-	tn* operator[](ptype piece)
+	Tn* operator[](ptype piece)
 	{
 		return table_[piece];
 	}
@@ -65,18 +64,18 @@ struct piece_square_table
 		std::memset(table_, 0, sizeof(table_));
 	}
 
-	tn get(ptype piece, square to)
+	Tn get(ptype piece, square to)
 	{
 		return table_[piece][to];
 	}
 
-	void update(ptype piece, square to, tn val)
+	void update(ptype piece, square to, Tn val)
 	{
 		table_[piece][to] = val;
 	}
 
 protected:
-	tn table_[num_pieces][num_squares];
+	Tn table_[num_pieces][num_squares];
 };
 
 template <int max_plus, int max_min>
@@ -95,7 +94,8 @@ struct piece_square_stats : piece_square_table<int16_t>
 	void fill(const int val)
 	{
 		const auto vv = static_cast<uint16_t>(val) << 16 | static_cast<uint16_t>(val);
-		std::fill(reinterpret_cast<int*>(table_), reinterpret_cast<int*>(reinterpret_cast<char*>(table_) + sizeof table_), vv);
+		std::fill(reinterpret_cast<int*>(table_),
+		          reinterpret_cast<int*>(reinterpret_cast<char*>(table_) + sizeof table_), vv);
 	}
 
 	void update_plus(const int offset, const int val)
@@ -223,68 +223,72 @@ private:
 	uint32_t table_[num_sides][65536] = {};
 };
 
-typedef piece_square_table<uint16_t> counter_move_stats;
-typedef piece_square_stats<8192, 8192> move_value_stats;
-typedef piece_square_stats<3 * 8192, 3 * 8192> counter_move_values;
-typedef piece_square_table<counter_move_values> counter_move_history;
+using counter_move_stats = piece_square_table<uint16_t>;
+using move_value_stats = piece_square_stats<8192, 8192>;
+using counter_move_values = piece_square_stats<3 * 8192, 3 * 8192>;
+using counter_move_history = piece_square_table<counter_move_values>;
 
 inline stage& operator++(stage& d)
 {
 	return d = static_cast<stage>(static_cast<int>(d) + 1);
 }
 
-template<typename t, int d>
-class pi_entry {
-
-	t entry;
+template <typename T, int D>
+class pi_entry
+{
+	T entry_;
 
 public:
-	void operator=(const t& v)
+	void operator=(const T& v)
 	{
-		entry = v;
+		entry_ = v;
 	}
-	t* operator&()
+
+	T* operator&()
 	{
-		return &entry;
+		return &entry_;
 	}
-	t* operator->()
+
+	T* operator->()
 	{
-		return &entry;
+		return &entry_;
 	}
-	explicit operator const t& () const
+
+	explicit operator const T&() const
 	{
-		return entry;
+		return entry_;
 	}
 
 	void operator<<(int bonus)
 	{
-		assert(abs(bonus) <= D);
-		static_assert(d <= std::numeric_limits<t>::max(), "D overflows T");
+		assert(abs(bonus) <= d);
+		static_assert(D <= std::numeric_limits<T>::max(), "d overflows T");
 
-		entry += bonus - entry * abs(bonus) / d;
+		entry_ += bonus - entry_ * abs(bonus) / D;
 
-		assert(abs(entry) <= D);
+		assert(abs(entry) <= d);
 	}
 };
 
 template <typename t, int d, int Size, int... sizes>
 struct pos_info : std::array<pos_info<t, d, sizes...>, Size>
 {
-	typedef pos_info<t, d, Size, sizes...> stats;
+	using stats = pos_info<t, d, Size, sizes...>;
 
 	void fill(const t& v)
 	{
 		assert(std::is_standard_layout<stats>::value);
 
-		typedef pi_entry<t, d> entry;
+		using entry = pi_entry<t, d>;
 		entry* p = reinterpret_cast<entry*>(this);
 		std::fill(p, p + sizeof(*this) / sizeof(entry), v);
 	}
 };
 
 template <typename t, int d, int Size>
-struct pos_info<t, d, Size> : std::array<pi_entry<t, d>, Size> {};
-typedef pos_info<int16_t, 29952, 16, 64> piece_to_history;
-typedef pos_info<piece_to_history, 0, 16, 64> continuation_history;
+struct pos_info<t, d, Size> : std::array<pi_entry<t, d>, Size>
+{
+};
 
-
+using piece_to_history = pos_info<int16_t, 29952, 16, 64>;
+using continuation_history = pos_info<piece_to_history, 0, 16, 64>;
