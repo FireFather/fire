@@ -11,7 +11,7 @@
 #define FD_ERR -1
 #else
 #include <Windows.h>
-constexpr auto SEP_CHAR = ';';
+constexpr auto sep_char = ';';
 #define FD HANDLE
 #define FD_ERR INVALID_HANDLE_VALUE
 #endif
@@ -25,22 +25,22 @@ constexpr auto SEP_CHAR = ';';
 #define LOCK_T HANDLE
 #define LOCK_INIT(x) do { (x) = CreateMutex(NULL, FALSE, NULL); } while (0)
 
-template<typename T>
-constexpr auto LOCK(T x) { return WaitForSingleObject(x, INFINITE); }
+template <typename T>
+constexpr auto lock(T x) { return WaitForSingleObject(x, INFINITE); }
 
-template<typename T>
-constexpr auto UNLOCK(T x) { return ReleaseMutex(x); }
+template <typename T>
+constexpr auto unlock(T x) { return ReleaseMutex(x); }
 #endif
 
 #ifndef _MSC_VER
-#define B_SWAP32(v) __builtin_bswap32(v)
-#define B_SWAP64(v) __builtin_bswap64(v)
+#define b_swap32(v) __builtin_bswap32(v)
+#define b_swap64(v) __builtin_bswap64(v)
 #else
-template<typename T>
-constexpr auto B_SWAP32(T v) { return _byteswap_ulong(v); }
+template <typename T>
+constexpr auto b_swap32(T v) { return _byteswap_ulong(v); }
 
-template<typename T>
-constexpr auto B_SWAP64(T v) { return _byteswap_uint64(v); }
+template <typename T>
+constexpr auto b_swap64(T v) { return _byteswap_uint64(v); }
 #endif
 
 inline constexpr auto wdl_suffix = ".rtbw";
@@ -49,10 +49,10 @@ inline constexpr auto wdl_dir = "RTBWDIR";
 inline constexpr auto dtz_dir = "RTBZDIR";
 inline constexpr auto tb_pieces = 6;
 
-typedef unsigned long long uint64;
-typedef unsigned int uint32;
-typedef unsigned char ubyte;
-typedef unsigned short ushort;
+using uint64 = unsigned long long;
+using uint32 = unsigned int;
+using ubyte = unsigned char;
+using ushort = unsigned short;
 
 inline constexpr ubyte wdl_magic[4] =
 {
@@ -68,7 +68,7 @@ inline constexpr auto tb_hash_bits = 10;
 
 struct tb_hash_entry;
 
-typedef uint64 base_t;
+using base_t = uint64;
 
 struct pairs_data
 {
@@ -125,6 +125,7 @@ struct tb_entry_pawn
 	ubyte symmetric;
 	ubyte has_pawns;
 	ubyte pawns[2];
+
 	struct
 	{
 		pairs_data* precomp[2];
@@ -163,14 +164,15 @@ struct dtz_entry_pawn
 	ubyte symmetric;
 	ubyte has_pawns;
 	ubyte pawns[2];
+
 	struct
 	{
 		pairs_data* precomp;
 		int factor[tb_pieces];
 		ubyte pieces[tb_pieces];
 		ubyte norm[tb_pieces];
-	}
-	file[4];
+	} file[4];
+
 	ubyte flags[4];
 	ushort map_idx[4][4];
 	ubyte* map;
@@ -188,5 +190,3 @@ struct dtz_table_entry
 	uint64 key2;
 	tb_entry* entry;
 };
-
-
