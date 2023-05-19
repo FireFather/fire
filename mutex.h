@@ -51,7 +51,7 @@ typedef std::condition_variable_any ConditionVariable;
 
 #else
 
-typedef std::mutex Mutex;
-typedef std::condition_variable ConditionVariable;
+using Mutex = std::mutex;
+using ConditionVariable = std::condition_variable;
 
 #endif

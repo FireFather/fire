@@ -66,7 +66,8 @@ struct main_hash_entry
 		return static_cast<hashflags>(flags_ & threat_mask);
 	}
 
-	void save(const uint64_t k, const int val, const uint8_t flags, const int d, const uint32_t z, const int eval, const uint8_t gen)
+	void save(const uint64_t k, const int val, const uint8_t flags, const int d, const uint32_t z, const int eval,
+	          const uint8_t gen)
 	{
 		const auto dd = d / plies;
 		const uint16_t k16 = k >> 48;
@@ -124,18 +125,19 @@ public:
 	{
 		return age_;
 	}
+
 	[[nodiscard]] main_hash_entry* probe(uint64_t key) const;
 	[[nodiscard]] main_hash_entry* replace(uint64_t key) const;
 	[[nodiscard]] int hash_full() const;
 	void init(size_t mb_size);
 	void clear() const;
 
-	[[nodiscard]] inline main_hash_entry* entry(const uint64_t key) const
+	[[nodiscard]] main_hash_entry* entry(const uint64_t key) const
 	{
 		return reinterpret_cast<main_hash_entry*>(reinterpret_cast<char*>(hash_mem_) + (key & bucket_mask_));
 	}
 
-	inline void prefetch_entry(const uint64_t key) const
+	void prefetch_entry(const uint64_t key) const
 	{
 		prefetch(entry(key));
 	}
