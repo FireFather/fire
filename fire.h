@@ -15,7 +15,6 @@
 */
 
 #pragma once
-
 #include <algorithm>
 #include <cassert>
 #include <chrono>
@@ -43,7 +42,14 @@ enum square : int8_t
 
 enum file
 {
-	file_a, file_b, file_c, file_d, file_e, file_f, file_g, file_h
+	file_a,
+	file_b,
+	file_c,
+	file_d,
+	file_e,
+	file_f,
+	file_g,
+	file_h
 };
 
 enum rank
@@ -201,12 +207,12 @@ enum stage
 };
 
 // constant expressions
-inline constexpr score make_score(const int mg, const int eg)
+constexpr score make_score(const int mg, const int eg)
 {
 	return static_cast<score>((static_cast<int>(mg * score_factor) << 16) + static_cast<int>(eg * score_factor));
 }
 
-inline constexpr int remake_score(const int mg, const int eg)
+constexpr int remake_score(const int mg, const int eg)
 {
 	return (static_cast<int>(mg) << 16) + static_cast<int>(eg);
 }
@@ -218,9 +224,9 @@ inline int mg_value(const int score)
 		uint16_t u;
 		int16_t s;
 	} mg =
-	{
-	static_cast<uint16_t>(static_cast<unsigned>(score + 0x8000) >> 16)
-	};
+		{
+			static_cast<uint16_t>(static_cast<unsigned>(score + 0x8000) >> 16)
+		};
 	return mg.s;
 }
 
@@ -231,9 +237,9 @@ inline int eg_value(const int score)
 		uint16_t u;
 		int16_t s;
 	} eg =
-	{
-		static_cast<uint16_t>(static_cast<unsigned>(score))
-	};
+		{
+			static_cast<uint16_t>(static_cast<unsigned>(score))
+		};
 	return eg.s;
 }
 
@@ -242,12 +248,12 @@ inline int operator/(const score score, const int i)
 	return remake_score(mg_value(score) / i, eg_value(score) / i);
 }
 
-inline constexpr side operator~(const side color)
+constexpr side operator~(const side color)
 {
 	return static_cast<side>(color ^ 1);
 }
 
-inline constexpr square operator~(const square sq)
+constexpr square operator~(const square sq)
 {
 	return static_cast<square>(sq ^ 56);
 }
@@ -257,22 +263,22 @@ inline int mul_div(const int score, const int mul, const int div)
 	return remake_score(mg_value(score) * mul / div, eg_value(score) * mul / div);
 }
 
-inline constexpr int gives_mate(const int ply)
+constexpr int gives_mate(const int ply)
 {
 	return mate_score - ply;
 }
 
-inline constexpr int gets_mated(const int ply)
+constexpr int gets_mated(const int ply)
 {
 	return -mate_score + ply;
 }
 
-inline constexpr square make_square(const file f, const rank r)
+constexpr square make_square(const file f, const rank r)
 {
 	return static_cast<square>((r << 3) + f);
 }
 
-inline constexpr file file_of(const square sq)
+constexpr file file_of(const square sq)
 {
 	return static_cast<file>(sq & 7);
 }
@@ -282,12 +288,12 @@ inline rank rank_of(const square sq)
 	return static_cast<rank>(sq >> 3);
 }
 
-inline constexpr  square relative_square(const side color, const square sq)
+constexpr square relative_square(const side color, const square sq)
 {
 	return static_cast<square>(sq ^ color * 56);
 }
 
-inline constexpr rank relative_rank(const side color, const rank r)
+constexpr rank relative_rank(const side color, const rank r)
 {
 	return static_cast<rank>(r ^ color * 7);
 }
@@ -297,54 +303,54 @@ inline rank relative_rank(const side color, const square sq)
 	return relative_rank(color, rank_of(sq));
 }
 
-inline constexpr bool different_color(const square v1, const square v2)
+constexpr bool different_color(const square v1, const square v2)
 {
 	const auto val = static_cast<int>(v1) ^ static_cast<int>(v2);
 	return (val >> 3 ^ val) & 1;
 }
 
-inline constexpr square pawn_ahead(const side color)
+constexpr square pawn_ahead(const side color)
 {
 	return color == white ? north : south;
 }
 
-inline constexpr square from_square(const uint32_t move)
+constexpr square from_square(const uint32_t move)
 {
 	return static_cast<square>(move >> 6 & 0x3F);
 }
 
-inline constexpr square to_square(const uint32_t move)
+constexpr square to_square(const uint32_t move)
 {
 	return static_cast<square>(move & 0x3F);
 }
 
-inline constexpr int move_type(const uint32_t move)
+constexpr int move_type(const uint32_t move)
 {
 	return static_cast<int>(move & 15 << 12);
 }
 
-inline constexpr uint8_t promotion_piece(const uint32_t move)
+constexpr uint8_t promotion_piece(const uint32_t move)
 {
 	return static_cast<uint8_t>(pt_knight + ((move >> 12 & 15) - (promotion_p >> 12)));
 }
 
-inline constexpr uint8_t piece_moved(const uint32_t move)
+constexpr uint8_t piece_moved(const uint32_t move)
 {
 	assert(move < castle_move);
 	return static_cast<uint8_t>(move >> 12 & 7);
 }
 
-inline constexpr uint32_t make_move(const square from, const square to)
+constexpr uint32_t make_move(const square from, const square to)
 {
 	return static_cast<uint32_t>(to + (from << 6));
 }
 
-inline constexpr uint32_t make_move(const int type, const square from, const square to)
+constexpr uint32_t make_move(const int type, const square from, const square to)
 {
 	return static_cast<uint32_t>(to + (from << 6) + type);
 }
 
-inline constexpr bool is_ok(const uint32_t move)
+constexpr bool is_ok(const uint32_t move)
 {
 	return move != no_move && move != null_move;
 }
@@ -368,10 +374,12 @@ struct movelist
 	{
 		return moves[index];
 	}
+
 	const uint32_t& operator[](int index) const
 	{
 		return moves[index];
 	}
+
 	[[nodiscard]] int size() const
 	{
 		return move_number;
