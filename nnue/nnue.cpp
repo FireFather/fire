@@ -116,12 +116,12 @@ enum
 uint32_t piece_to_index[2][14] =
 {
 	{
-	0, 0, ps_w_queen, ps_w_rook, ps_w_bishop, ps_w_knight, ps_w_pawn,
-	0, ps_b_queen, ps_b_rook, ps_b_bishop, ps_b_knight, ps_b_pawn, 0
+		0, 0, ps_w_queen, ps_w_rook, ps_w_bishop, ps_w_knight, ps_w_pawn,
+		0, ps_b_queen, ps_b_rook, ps_b_bishop, ps_b_knight, ps_b_pawn, 0
 	},
 	{
-	0, 0, ps_b_queen, ps_b_rook, ps_b_bishop, ps_b_knight, ps_b_pawn,
-	0, ps_w_queen, ps_w_rook, ps_w_bishop, ps_w_knight, ps_w_pawn, 0
+		0, 0, ps_b_queen, ps_b_rook, ps_b_bishop, ps_b_knight, ps_b_pawn,
+		0, ps_w_queen, ps_w_rook, ps_w_bishop, ps_w_knight, ps_w_pawn, 0
 	}
 };
 
@@ -138,7 +138,8 @@ enum
 enum
 {
 	k_half_dimensions = 256,
-	ft_in_dims = 64 * ps_end, // 64 * 641
+	ft_in_dims = 64 * ps_end,
+	// 64 * 641
 	ft_out_dims = k_half_dimensions * 2
 };
 
@@ -166,20 +167,20 @@ typedef __mmask64 mask_t;
 constexpr auto simd_width = 256;
 constexpr auto num_regs = 16;
 
-typedef __m256i vec16_t;
-typedef __m256i vec8_t;
-typedef uint32_t mask_t;
+using vec16_t = __m256i;
+using vec8_t = __m256i;
+using mask_t = uint32_t;
 
-template<typename T1, typename T2>
+template <typename T1, typename T2>
 constexpr auto vec_add_16(T1 a, T2 b) { return _mm256_add_epi16(a, b); }
 
-template<typename T1, typename T2>
+template <typename T1, typename T2>
 constexpr auto vec_sub_16(T1 a, T2 b) { return _mm256_sub_epi16(a, b); }
 
-template<typename T1, typename T2>
+template <typename T1, typename T2>
 constexpr auto vec_packs(T1 a, T2 b) { return _mm256_packs_epi16(a, b); }
 
-template<typename T>
+template <typename T>
 constexpr auto vec_mask_pos(T a) { return _mm256_movemask_epi8(_mm256_cmpgt_epi8(a, _mm256_setzero_si256())); }
 
 #elif USE_SSE2
@@ -231,23 +232,23 @@ typedef uint8_t mask_t; // dummy
 #endif
 
 #ifdef IS_64_BIT
-typedef uint64_t mask2_t;
+using mask2_t = uint64_t;
 #else
 typedef uint32_t mask2_t;
 #endif
 
-typedef int8_t clipped_t;
+using clipped_t = int8_t;
 #if defined(USE_MMX) || (defined(USE_SSE2) && !defined(USE_AVX2))
 typedef int16_t weight_t;
 #else
-typedef int8_t weight_t;
+using weight_t = int8_t;
 #endif
 
-typedef struct
+using index_list = struct
 {
 	size_t size;
 	unsigned values[30];
-} index_list;
+};
 
 INLINE int orient(const int c, const int s)
 {
@@ -260,7 +261,7 @@ INLINE unsigned make_index(const int c, const int s, const int pc, const int ksq
 }
 
 static void half_kp_append_active_indices(const Position* pos, const int c,
-	index_list* active)
+                                          index_list* active)
 {
 	int ksq = pos->squares[c];
 	ksq = orient(c, ksq);
@@ -273,7 +274,7 @@ static void half_kp_append_active_indices(const Position* pos, const int c,
 }
 
 static void half_kp_append_changed_indices(const Position* pos, const int c,
-	const dirty_piece* dp, index_list* removed, index_list* added)
+                                           const dirty_piece* dp, index_list* removed, index_list* added)
 {
 	int ksq = pos->squares[c];
 	ksq = orient(c, ksq);
@@ -295,7 +296,7 @@ static void append_active_indices(const Position* pos, index_list active[2])
 }
 
 static void append_changed_indices(const Position* pos, index_list removed[2],
-	index_list added[2], bool reset[2])
+                                   index_list added[2], bool reset[2])
 {
 	// assert(dp->dirtyNum != 0);
 
@@ -431,7 +432,7 @@ static_assert(ft_out_dims % 64 == 0, "ft_out_dims not a multiple of 64");
 
 #ifdef VECTOR
 INLINE bool next_idx(unsigned* idx, unsigned* offset, mask2_t* v,
-	mask_t* mask, const unsigned in_dims)
+                     mask_t* mask, const unsigned in_dims)
 {
 	while (*v == 0)
 	{
@@ -440,11 +441,11 @@ INLINE bool next_idx(unsigned* idx, unsigned* offset, mask2_t* v,
 		memcpy(v, reinterpret_cast<char*>(mask) + (*offset / 8), sizeof(mask2_t));
 	}
 #ifdef IS_64_BIT
-	* idx = *offset + bsf(*v);
+	*idx = *offset + bsf(*v);
 #else
 	* idx = *offset + bsf(*v);
 #endif
-	* v &= *v - 1;
+	*v &= *v - 1;
 	return true;
 }
 
@@ -521,8 +522,9 @@ INLINE void affine_txfm(int8_t* input, void* output, unsigned in_dims,
 		out_vec[0] = _mm256_max_epi8(out_vec[0], kZero256);
 }
 #elif defined(USE_AVX2)
-INLINE void affine_txfm(const int8_t* input, void* output, unsigned in_dims, unsigned out_dims, int32_t* biases, weight_t* weights,
-	mask_t* in_mask, mask_t* out_mask, const bool pack8_and_calc_mask)
+INLINE void affine_txfm(const int8_t* input, void* output, unsigned in_dims, unsigned out_dims, int32_t* biases,
+                        weight_t* weights,
+                        mask_t* in_mask, mask_t* out_mask, const bool pack8_and_calc_mask)
 {
 	assert(out_dims == 32);
 
@@ -536,9 +538,9 @@ INLINE void affine_txfm(const int8_t* input, void* output, unsigned in_dims, uns
 	mask2_t v;
 	unsigned idx;
 
-
 	memcpy(&v, in_mask, sizeof(mask2_t));
-	for (unsigned offset = 0; offset < in_dims;) {
+	for (unsigned offset = 0; offset < in_dims;)
+	{
 		if (!next_idx(&idx, &offset, &v, in_mask, in_dims))
 			break;
 
@@ -1150,7 +1152,7 @@ INLINE void transform(const Position* pos, clipped_t* output, mask_t* out_mask)
 	if (!update_accumulator(pos))
 		refresh_accumulator(pos);
 
-	int16_t(*accumulation)[2][256] = &pos->nnue[0]->accumulator.accumulation;
+	int16_t (*accumulation)[2][256] = &pos->nnue[0]->accumulator.accumulation;
 	(void)out_mask; // avoid compiler warning
 
 	const int perspectives[2] =
@@ -1198,7 +1200,7 @@ int nnue_evaluate_pos(const Position* pos)
 {
 	int32_t out_value;
 	alignas(8) mask_t input_mask[ft_out_dims / (8 * sizeof(mask_t))];
-	alignas(8) mask_t hidden1_mask[8 / sizeof(mask_t)] = { 0 };
+	alignas(8) mask_t hidden1_mask[8 / sizeof(mask_t)] = {0};
 
 #ifdef ALIGNMENT_HACK // work around a bug in old gcc on Windows
 	uint8_t buf[sizeof(struct NetData) + 63];
@@ -1212,13 +1214,13 @@ int nnue_evaluate_pos(const Position* pos)
 	transform(pos, B(input), input_mask);
 
 	affine_txfm(B(input), B(hidden1_out), ft_out_dims, 32,
-		hidden1_biases, hidden1_weights, input_mask, hidden1_mask, true);
+	            hidden1_biases, hidden1_weights, input_mask, hidden1_mask, true);
 
 	affine_txfm(B(hidden1_out), B(hidden2_out), 32, 32,
-		hidden2_biases, hidden2_weights, hidden1_mask, nullptr, false);
+	            hidden2_biases, hidden2_weights, hidden1_mask, nullptr, false);
 
 	out_value = affine_propagate(B(hidden2_out), output_biases,
-		output_weights);
+	                             output_weights);
 
 #if defined(USE_MMX)
 	_mm_empty();
@@ -1370,7 +1372,6 @@ static void init_weights(const void* eval_data)
 #endif
 }
 
-
 static bool load_eval_file(const char* eval_file)
 {
 	const void* eval_data;
@@ -1384,14 +1385,14 @@ static bool load_eval_file(const char* eval_file)
     size = gNetworkSize;
   } else
 #endif
-  {
-    FD fd = open_file(eval_file);
-    if (fd == FD_ERR)
-		return false;
-    eval_data = map_file(fd, &mapping);
-    size = file_size(fd);
-    close_file(fd);
-  }
+	{
+		FD fd = open_file(eval_file);
+		if (fd == FD_ERR)
+			return false;
+		eval_data = map_file(fd, &mapping);
+		size = file_size(fd);
+		close_file(fd);
+	}
 
 	const bool success = verify_net(eval_data, size);
 	if (success)
@@ -1435,4 +1436,3 @@ int _CDECL nnue_evaluate(const int player, int* pieces, int* squares)
 	pos.squares = squares;
 	return nnue_evaluate_pos(&pos);
 }
-

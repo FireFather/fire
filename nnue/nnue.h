@@ -56,49 +56,62 @@
 */
 enum colors
 {
-	white_nnue, black_nnue
+	white_nnue,
+	black_nnue
 };
+
 enum pieces
 {
-	blank = 0, wking, wqueen, wrook, wbishop, wknight, wpawn,
-	bking, bqueen, brook, bbishop, bknight, bpawn
+	blank = 0,
+	wking,
+	wqueen,
+	wrook,
+	wbishop,
+	wknight,
+	wpawn,
+	bking,
+	bqueen,
+	brook,
+	bbishop,
+	bknight,
+	bpawn
 };
 
 /**
 * nnue data structure
 */
 
-typedef struct dirty_piece
+using dirty_piece = struct dirty_piece
 {
 	int dirty_num;
 	int pc[3];
 	int from[3];
 	int to[3];
-} dirty_piece;
+};
 
-typedef struct accumulator
+using Accumulator = struct accumulator
 {
 	alignas(64) int16_t accumulation[2][256];
 	int computed_accumulation;
-} Accumulator;
+};
 
-typedef struct nnue_data
+using nnue_data = struct nnue_data
 {
 	Accumulator accumulator;
 	dirty_piece dirtyPiece;
-} nnue_data;
+};
 
 /**
 * position data structure passed to core subroutines
 *  See nnue_evaluate for a description of parameters
 */
-typedef struct Position
+using Position = struct Position
 {
 	int player;
 	int* pieces;
 	int* squares;
 	nnue_data* nnue[3];
-} Position;
+};
 
 int nnue_evaluate_pos(const Position* pos);
 
@@ -107,7 +120,7 @@ int nnue_evaluate_pos(const Position* pos);
 */
 void _CDECL nnue_init
 (
-	const char* eval_file             /** Path to NNUE file */
+	const char* eval_file /** Path to NNUE file */
 );
 
 /**
@@ -133,8 +146,7 @@ void _CDECL nnue_init
 */
 int _CDECL nnue_evaluate
 (
-	int player,                       /** Side to move: white=0 black=1 */
-	int* pieces,                      /** Array of pieces */
-	int* squares                      /** Corresponding array of squares each piece stands on */
+	int player, /** Side to move: white=0 black=1 */
+	int* pieces, /** Array of pieces */
+	int* squares /** Corresponding array of squares each piece stands on */
 );
-

@@ -31,7 +31,7 @@ FD open_file(const char* name)
 	return open(name, O_RDONLY);
 #else
 	return CreateFile(name, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING,
-		FILE_FLAG_RANDOM_ACCESS, nullptr);
+	                  FILE_FLAG_RANDOM_ACCESS, nullptr);
 #endif
 }
 

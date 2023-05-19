@@ -59,6 +59,7 @@ INLINE int bsf(const uint64_t b)
 	_BitScanForward64(&x, b);
 	return static_cast<int>(x);
 }
+
 INLINE int bsr(const uint64_t b)
 {
 	unsigned long x;
@@ -68,9 +69,9 @@ INLINE int bsr(const uint64_t b)
 #   endif
 
 #ifdef _WIN32
-typedef HANDLE FD;
+using FD = HANDLE;
 #define FD_ERR INVALID_HANDLE_VALUE
-typedef HANDLE map_t;
+using map_t = HANDLE;
 #else /* Unix */
 typedef int FD;
 #define FD_ERR -1
@@ -95,6 +96,5 @@ INLINE uint16_t readu_le_u16(const void* p)
 	return static_cast<uint16_t>(q[0] | (q[1] << 8));
 }
 
-template<typename T1, typename T2, typename T3>
-constexpr auto clamp(T1 a, T2  b, T3  c) { return ((a) < (b) ? (b) : (a) > (c) ? (c) : (a)); }
-
+template <typename T1, typename T2, typename T3>
+constexpr auto clamp(T1 a, T2 b, T3 c) { return ((a) < (b) ? (b) : (a) > (c) ? (c) : (a)); }
