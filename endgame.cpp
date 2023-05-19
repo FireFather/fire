@@ -40,6 +40,7 @@ namespace endgame
 
 		return sq;
 	}
+
 	// read char string position representation of endgame, then calculate and return 
 	// a unique material key via binary XOR of position's piece square table values
 	uint64_t material_key(const side color, const char* pieces)
@@ -204,4 +205,3 @@ inline int value_of_material(const int val)
 {
 	return 16 * static_cast<int>(val);
 }
-
