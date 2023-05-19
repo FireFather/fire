@@ -15,7 +15,6 @@
 */
 
 #pragma once
-
 #include <climits>
 #include <unordered_map>
 
@@ -27,15 +26,17 @@
 struct node_info;
 struct edge;
 
-typedef double reward;
-typedef node_info* mc_node;
+using reward = double;
+using mc_node = node_info*;
 
 inline bool print_children = false;
 constexpr int max_children = 128;
 
 enum edge_statistic
 {
-	stat_ucb, stat_visits, stat_mean
+	stat_ucb,
+	stat_visits,
+	stat_mean
 };
 
 class monte_carlo
@@ -76,7 +77,6 @@ public:
 	void print_pv(int depth);
 
 private:
-
 	position& pos_;
 	mc_node root_{};
 
@@ -90,7 +90,7 @@ private:
 	time_point last_output_time_{};
 
 	long max_descents_{};
-	double  backup_minimax_{};
+	double backup_minimax_{};
 	double ucb_unexpanded_node_{};
 	double ucb_exploration_constant_{};
 	double ucb_losses_avoidance_{};
@@ -174,7 +174,7 @@ static struct
 
 struct node_info
 {
-	uint32_t  last_move() const
+	uint32_t last_move() const
 	{
 		return prev_move;
 	}
@@ -194,5 +194,5 @@ struct node_info
 	edge children[max_children]{};
 };
 
-typedef std::unordered_multimap<uint64_t, node_info> mcts_hash_table;
+using mcts_hash_table = std::unordered_multimap<uint64_t, node_info>;
 extern mcts_hash_table mcts;

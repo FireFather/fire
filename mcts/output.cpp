@@ -37,11 +37,11 @@ bool monte_carlo::should_output_result() const
 	const time_point elapsed = now() - start_time_ + 1;
 	const time_point output_delay = now() - last_output_time_;
 
-	if (elapsed < 1100)            return output_delay >= 100;
-	if (elapsed < 11000)       return output_delay >= 1000;
-	if (elapsed < 61000)       return output_delay >= 10000;
-	if (elapsed < 360000)   return output_delay >= 30000;
-	if (elapsed < 3660000)  return output_delay >= 60000;
+	if (elapsed < 1100) return output_delay >= 100;
+	if (elapsed < 11000) return output_delay >= 1000;
+	if (elapsed < 61000) return output_delay >= 10000;
+	if (elapsed < 360000) return output_delay >= 30000;
+	if (elapsed < 3660000) return output_delay >= 60000;
 
 	return output_delay >= 60000;
 }

@@ -15,7 +15,7 @@
 */
 
 #include <cassert>
-#include <cstring>    
+#include <cstring>
 #include <unordered_map>
 
 #include "mcts.h"
@@ -136,10 +136,13 @@ edge* monte_carlo::best_child(mc_node node, const edge_statistic statistic) cons
 	double best_value = -1000000000000.0;
 	for (int k = 0; k < number_of_sons(node); k++)
 	{
-		if (const double r = (statistic == stat_visits ? children[k].visits
-			: statistic == stat_mean ? children[k].mean_action_value
-			: statistic == stat_ucb ? ucb(node, children[k])
-			: 0.0); r > best_value)
+		if (const double r = (statistic == stat_visits
+			                      ? children[k].visits
+			                      : statistic == stat_mean
+			                      ? children[k].mean_action_value
+			                      : statistic == stat_ucb
+			                      ? ucb(node, children[k])
+			                      : 0.0); r > best_value)
 		{
 			best_value = r;
 			best = k;

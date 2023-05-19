@@ -47,8 +47,9 @@ double monte_carlo::ucb(mc_node node, const edge& edge) const
 	else
 		result += ucb_unexpanded_node_;
 
-	const double c = ucb_use_father_visits_ ? exploration_constant() * sqrt(father_visits)
-		: exploration_constant();
+	const double c = ucb_use_father_visits_
+		                 ? exploration_constant() * sqrt(father_visits)
+		                 : exploration_constant();
 
 	const double losses = edge.visits - edge.action_value;
 	const double visits = edge.visits;

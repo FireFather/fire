@@ -23,7 +23,6 @@
 #include "../pragma.h"
 #include "../thread.h"
 
-
 mc_node monte_carlo::tree_policy()
 {
 	assert(is_root(current_node()));

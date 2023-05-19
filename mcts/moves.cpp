@@ -73,7 +73,7 @@ reward monte_carlo::value_to_reward(const int v) const
 
 int monte_carlo::reward_to_value(const reward r) const
 {
-	if (r > 0.99) return  win_score;
+	if (r > 0.99) return win_score;
 	if (r < 0.01) return -win_score;
 
 	constexpr double g = 203.77396313709564;

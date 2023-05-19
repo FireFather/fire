@@ -15,7 +15,6 @@
 */
 
 #pragma once
-
 #include "mcts.h"
 
 #include "../position.h"

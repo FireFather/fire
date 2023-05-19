@@ -93,8 +93,8 @@ void mainthread::check_time()
 		return;
 
 	if (constexpr int time_numerator = 10; (search::param.use_time_calculating()
-		&& (elapsed > time_control.maximum() * time_numerator / time_denominator
-			|| search::signals.stop_if_ponder_hit))
+			&& (elapsed > time_control.maximum() * time_numerator / time_denominator
+				|| search::signals.stop_if_ponder_hit))
 		|| (search::param.move_time && elapsed >= search::param.move_time)
 		|| (search::param.nodes && thread_pool.visited_nodes() >= search::param.nodes))
 		search::signals.stop_analyzing = true;
@@ -105,13 +105,3 @@ int monte_carlo::evaluate() const
 	const int score = evaluate::eval(pos_);
 	return score;
 }
-
-
-
-
-
-
-
-
-
-
