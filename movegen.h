@@ -55,7 +55,7 @@ namespace movegen
 	template <side me, uint8_t piece, bool only_check_moves>
 	s_move* moves_for_piece(const position& pos, s_move* moves, uint64_t target);
 
-	template < uint8_t castle, bool only_check_moves, bool chess960>
+	template <uint8_t castle, bool only_check_moves, bool chess960>
 	s_move* get_castle(const position& pos, s_move* moves);
 }
 
@@ -85,6 +85,7 @@ struct legal_move_list
 	{
 		return last_;
 	}
+
 	[[nodiscard]] size_t size() const
 	{
 		return last_ - moves_;

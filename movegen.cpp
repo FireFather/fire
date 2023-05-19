@@ -80,7 +80,7 @@ namespace movegen
 	}
 
 	// generate castle moves
-	template < uint8_t castle, bool only_check_moves, bool chess960>
+	template <uint8_t castle, bool only_check_moves, bool chess960>
 	s_move* get_castle(const position& pos, s_move* moves)
 	{
 		const auto me = castle <= white_long ? white : black;
@@ -99,7 +99,8 @@ namespace movegen
 				if (pos.attack_to(sq) & pos.pieces(you))
 					return moves;
 
-			if (const auto from_r = pos.castle_rook_square(to_k); attack_rook_bb(to_k, pos.pieces() ^ from_r) & pos.pieces(you, pt_rook, pt_queen))
+			if (const auto from_r = pos.castle_rook_square(to_k); attack_rook_bb(to_k, pos.pieces() ^ from_r) & pos.
+				pieces(you, pt_rook, pt_queen))
 				return moves;
 		}
 		else
@@ -158,10 +159,10 @@ namespace movegen
 		const auto pawns_not_7th_rank = pos.pieces(me, pt_pawn) & ~seventh_rank;
 
 		auto your_pieces = mg == evade_check
-			? pos.pieces(you) & target
-			: mg == captures_promotions
-			? target
-			: pos.pieces(you);
+			                   ? pos.pieces(you) & target
+			                   : mg == captures_promotions
+			                   ? target
+			                   : pos.pieces(you);
 
 		if constexpr (mg != captures_promotions)
 		{
@@ -181,10 +182,12 @@ namespace movegen
 				multi_move_bb &= pos.attack_from<pt_pawn>(pos.king(you), you);
 				double_move_bb &= pos.attack_from<pt_pawn>(pos.king(you), you);
 
-				if (const auto discovered_check = pos.info()->x_ray[~pos.on_move()]; pawns_not_7th_rank & discovered_check)
+				if (const auto discovered_check = pos.info()->x_ray[~pos.on_move()]; pawns_not_7th_rank &
+					discovered_check)
 				{
-					const uint64_t deduction_forward = shift_up<me>(pawns_not_7th_rank & discovered_check) & empty_squares & ~get_file(
-						pos.king(you));
+					const uint64_t deduction_forward = shift_up<me>(pawns_not_7th_rank & discovered_check) &
+						empty_squares & ~get_file(
+							pos.king(you));
 					const uint64_t deduction_double = shift_up<me>(deduction_forward & third_rank) & empty_squares;
 
 					multi_move_bb |= deduction_forward;
@@ -303,16 +306,16 @@ s_move* generate_moves(const position& pos, s_move* moves)
 	const auto me = pos.on_move();
 
 	const auto target = mg == captures_promotions
-		? pos.pieces(~me)
-		: mg == quiet_moves
-		? ~pos.pieces()
-		: mg == all_moves
-		? ~pos.pieces(me)
-		: 0;
+		                    ? pos.pieces(~me)
+		                    : mg == quiet_moves
+		                    ? ~pos.pieces()
+		                    : mg == all_moves
+		                    ? ~pos.pieces(me)
+		                    : 0;
 
 	return me == white
-		? movegen::all_piece_moves<white, mg>(pos, moves, target)
-		: movegen::all_piece_moves<black, mg>(pos, moves, target);
+		       ? movegen::all_piece_moves<white, mg>(pos, moves, target)
+		       : movegen::all_piece_moves<black, mg>(pos, moves, target);
 }
 
 template s_move* generate_moves<captures_promotions>(const position&, s_move*);
@@ -325,8 +328,8 @@ s_move* generate_captures_on_square(const position& pos, s_move* moves, const sq
 	const auto target = square_bb[sq];
 
 	return pos.on_move() == white
-		? movegen::all_piece_moves<white, captures_promotions>(pos, moves, target)
-		: movegen::all_piece_moves<black, captures_promotions>(pos, moves, target);
+		       ? movegen::all_piece_moves<white, captures_promotions>(pos, moves, target)
+		       : movegen::all_piece_moves<black, captures_promotions>(pos, moves, target);
 }
 
 // generate king evasion moves
@@ -355,8 +358,8 @@ s_move* generate_moves<evade_check>(const position& pos, s_move* moves)
 	const auto target = get_between(check_square, square_k) | check_square;
 
 	return me == white
-		? movegen::all_piece_moves<white, evade_check>(pos, moves, target)
-		: movegen::all_piece_moves<black, evade_check>(pos, moves, target);
+		       ? movegen::all_piece_moves<white, evade_check>(pos, moves, target)
+		       : movegen::all_piece_moves<black, evade_check>(pos, moves, target);
 }
 
 template <>
@@ -364,16 +367,16 @@ s_move* generate_moves<pawn_advances>(const position& pos, s_move* moves)
 {
 	const auto me = pos.on_move();
 	return me == white
-		? movegen::generate_pawn_advance<white>(pos, moves)
-		: movegen::generate_pawn_advance<black>(pos, moves);
+		       ? movegen::generate_pawn_advance<white>(pos, moves)
+		       : movegen::generate_pawn_advance<black>(pos, moves);
 }
 
 template <>
 s_move* generate_moves<queen_checks>(const position& pos, s_move* moves)
 {
 	return pos.on_move() == white
-		? movegen::moves_for_piece<white, pt_queen, true>(pos, moves, ~pos.pieces())
-		: movegen::moves_for_piece<black, pt_queen, true>(pos, moves, ~pos.pieces());
+		       ? movegen::moves_for_piece<white, pt_queen, true>(pos, moves, ~pos.pieces())
+		       : movegen::moves_for_piece<black, pt_queen, true>(pos, moves, ~pos.pieces());
 }
 
 template <>
@@ -400,8 +403,8 @@ s_move* generate_moves<quiet_checks>(const position& pos, s_move* moves)
 	}
 
 	return me == white
-		? movegen::all_piece_moves<white, quiet_checks>(pos, moves, ~pos.pieces())
-		: movegen::all_piece_moves<black, quiet_checks>(pos, moves, ~pos.pieces());
+		       ? movegen::all_piece_moves<white, quiet_checks>(pos, moves, ~pos.pieces())
+		       : movegen::all_piece_moves<black, quiet_checks>(pos, moves, ~pos.pieces());
 }
 
 // generate all legal moves
@@ -412,8 +415,8 @@ s_move* generate_legal_moves(const position& pos, s_move* moves)
 	auto* p_move = moves;
 
 	moves = pos.is_in_check()
-		? generate_moves<evade_check>(pos, moves)
-		: generate_moves<all_moves>(pos, moves);
+		        ? generate_moves<evade_check>(pos, moves)
+		        : generate_moves<all_moves>(pos, moves);
 	while (p_move != moves)
 		if ((pinned || from_square(*p_move) == square_k || move_type(*p_move) == enpassant)
 			&& !pos.legal_move(*p_move))
@@ -433,7 +436,7 @@ bool legal_move_list_contains_castle(const position& pos, const uint32_t move)
 
 	const auto* const end = generate_moves<castle_moves>(pos, moves);
 
-	auto* p_move = moves;
+	const auto* p_move = moves;
 	while (p_move != end)
 	{
 		if (p_move->move == move)
@@ -448,10 +451,10 @@ bool legal_moves_list_contains_move(const position& pos, const uint32_t move)
 {
 	s_move moves[max_moves];
 	const auto* const end = pos.is_in_check()
-		? generate_moves<evade_check>(pos, moves)
-		: generate_moves<all_moves>(pos, moves);
+		                        ? generate_moves<evade_check>(pos, moves)
+		                        : generate_moves<all_moves>(pos, moves);
 
-	auto* p_move = moves;
+	const auto* p_move = moves;
 	while (p_move != end)
 	{
 		if (p_move->move == move)
@@ -466,10 +469,10 @@ bool at_least_one_legal_move(const position& pos)
 {
 	s_move moves[max_moves];
 	const auto* const end = pos.is_in_check()
-		? generate_moves<evade_check>(pos, moves)
-		: generate_moves<all_moves>(pos, moves);
+		                        ? generate_moves<evade_check>(pos, moves)
+		                        : generate_moves<all_moves>(pos, moves);
 
-	auto* p_move = moves;
+	const auto* p_move = moves;
 	while (p_move != end)
 	{
 		if (pos.legal_move(p_move->move))
@@ -478,4 +481,3 @@ bool at_least_one_legal_move(const position& pos)
 	}
 	return false;
 }
-
