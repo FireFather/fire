@@ -27,8 +27,10 @@ namespace material
 	// adapted, consolidated, and optimized from robbolito material routines
 	// https://github.com/FireFather/robbolito/blob/main/values.c
 
-	int mat_imbalance(const int wp, const int wn, const int wb, const int wbl, const int wbd, const int wr, const int wq,
-		const int bp, const int bn, const int bb, const int bbl, const int bbd, const int br, const int bq)
+	int mat_imbalance(const int wp, const int wn, const int wb, const int wbl, const int wbd, const int wr,
+	                  const int wq,
+	                  const int bp, const int bn, const int bb, const int bbl, const int bbd, const int br,
+	                  const int bq)
 	{
 		// pawn factors
 		static constexpr auto p_base_score = 950;
@@ -92,12 +94,18 @@ namespace material
 		const auto wbp = wbl & wbd;
 		const auto bbp = bbl & bbd;
 
-		score += (wp - bp) * (p_base_score - p_q_factor * (wq + bq) - p_r_factor * (wr + br) - p_b_factor * (wb + bb) + p_n_factor * (wn + bn));
-		score += (wn - bn) * (n_base_score - n_q_factor * (wq + bq) - n_r_factor * (wr + br) - n_b_factor * (wb + bb) - n_n_factor * (wn + bn) + n_p_factor * (wp + bp));
-		score += (wb - bb) * (b_base_score - b_q_factor * (wq + bq) - b_r_factor * (wr + br) - b_b_factor * (wb + bb) - b_n_factor * (wn + bn) + b_p_factor * (wp + bp));
-		score += (wr - br) * (r_base_score - r_q_factor * (wq + bq) - r_r_factor * (wr + br) - r_b_factor * (wb + bb) - r_n_factor * (wn + bn) + r_p_factor * (wp + bp));
-		score += (wq - bq) * (q_base_score - q_q_factor * (wq + bq) - q_r_factor * (wr + br) - q_b_factor * (wb + bb) - q_n_factor * (wn + bn) + q_p_factor * (wp + bp));
-		score += (wbp - bbp) * (bp_base_score - bp_q_factor * (wq + bq) - bp_r_factor * (wr + br) - bp_b_factor * (wb + bb) - bp_n_factor * (wn + bn));
+		score += (wp - bp) * (p_base_score - p_q_factor * (wq + bq) - p_r_factor * (wr + br) - p_b_factor * (wb + bb) +
+			p_n_factor * (wn + bn));
+		score += (wn - bn) * (n_base_score - n_q_factor * (wq + bq) - n_r_factor * (wr + br) - n_b_factor * (wb + bb) -
+			n_n_factor * (wn + bn) + n_p_factor * (wp + bp));
+		score += (wb - bb) * (b_base_score - b_q_factor * (wq + bq) - b_r_factor * (wr + br) - b_b_factor * (wb + bb) -
+			b_n_factor * (wn + bn) + b_p_factor * (wp + bp));
+		score += (wr - br) * (r_base_score - r_q_factor * (wq + bq) - r_r_factor * (wr + br) - r_b_factor * (wb + bb) -
+			r_n_factor * (wn + bn) + r_p_factor * (wp + bp));
+		score += (wq - bq) * (q_base_score - q_q_factor * (wq + bq) - q_r_factor * (wr + br) - q_b_factor * (wb + bb) -
+			q_n_factor * (wn + bn) + q_p_factor * (wp + bp));
+		score += (wbp - bbp) * (bp_base_score - bp_q_factor * (wq + bq) - bp_r_factor * (wr + br) - bp_b_factor * (wb +
+			bb) - bp_n_factor * (wn + bn));
 
 		const auto w_minor_pieces = wb + wn;
 
@@ -146,7 +154,8 @@ namespace material
 		hash_entry->factor[white] = hash_entry->factor[black] = static_cast<uint8_t>(normal_factor);
 		hash_entry->game_phase = static_cast<uint8_t>(pos.game_phase());
 		hash_entry->conversion = max_factor;
-		hash_entry->value_function_index = hash_entry->scale_function_index[white] = hash_entry->scale_function_index[black] = -1;
+		hash_entry->value_function_index = hash_entry->scale_function_index[white] = hash_entry->scale_function_index[
+			black] = -1;
 
 		hash_entry->value = mat_imbalance(
 			pos.number(white, pt_pawn), pos.number(white, pt_knight), pos.number(white, pt_bishop),
@@ -169,7 +178,8 @@ namespace material
 
 		auto strong_side = num_sides;
 
-		if (const auto scale_factor = thread_pool.end_games.probe_scale_factor(pos.material_key(), strong_side); scale_factor >= 0)
+		if (const auto scale_factor = thread_pool.end_games.probe_scale_factor(pos.material_key(), strong_side);
+			scale_factor >= 0)
 		{
 			hash_entry->scale_function_index[strong_side] = scale_factor;
 			return hash_entry;
@@ -177,10 +187,12 @@ namespace material
 
 		for (auto color = white; color <= black; ++color)
 		{
-			if (pos.non_pawn_material(color) == mat_bishop && pos.number(color, pt_bishop) == 1 && pos.number(color, pt_pawn) >= 1)
+			if (pos.non_pawn_material(color) == mat_bishop && pos.number(color, pt_bishop) == 1 && pos.number(
+				color, pt_pawn) >= 1)
 				hash_entry->scale_function_index[color] = color == white ? 0 : 1;
 
-			else if (!pos.number(color, pt_pawn) && pos.non_pawn_material(color) == mat_queen && pos.number(color, pt_queen) == 1
+			else if (!pos.number(color, pt_pawn) && pos.non_pawn_material(color) == mat_queen && pos.number(
+					color, pt_queen) == 1
 				&& pos.number(~color, pt_rook) == 1 && pos.number(~color, pt_pawn) >= 1)
 				hash_entry->scale_function_index[color] = color == white ? 2 : 3;
 		}
@@ -208,10 +220,18 @@ namespace material
 		}
 
 		if (!pos.number(white, pt_pawn) && npm_w - npm_b <= mat_bishop)
-			hash_entry->factor[white] = static_cast<uint8_t>(npm_w < mat_rook ? draw_factor : npm_b <= mat_bishop ? static_cast<sfactor>(6) : static_cast<sfactor>(22));
+			hash_entry->factor[white] = static_cast<uint8_t>(npm_w < mat_rook
+				                                                 ? draw_factor
+				                                                 : npm_b <= mat_bishop
+				                                                 ? static_cast<sfactor>(6)
+				                                                 : static_cast<sfactor>(22));
 
 		if (!pos.number(black, pt_pawn) && npm_b - npm_w <= mat_bishop)
-			hash_entry->factor[black] = static_cast<uint8_t>(npm_b < mat_rook ? draw_factor : npm_w <= mat_bishop ? static_cast<sfactor>(6) : static_cast<sfactor>(22));
+			hash_entry->factor[black] = static_cast<uint8_t>(npm_b < mat_rook
+				                                                 ? draw_factor
+				                                                 : npm_w <= mat_bishop
+				                                                 ? static_cast<sfactor>(6)
+				                                                 : static_cast<sfactor>(22));
 
 		if (pos.number(white, pt_pawn) == 1 && npm_w - npm_b <= mat_bishop)
 			hash_entry->factor[white] = static_cast<uint8_t>(one_pawn_factor);
@@ -235,7 +255,8 @@ namespace material
 	{
 		if (scale_function_index[color] >= 0)
 		{
-			if (const auto scale_factor = (*thread_pool.end_games.factor_functions[scale_function_index[color]])(pos); scale_factor != no_factor)
+			if (const auto scale_factor = (*thread_pool.end_games.factor_functions[scale_function_index[color]])(pos);
+				scale_factor != no_factor)
 				return scale_factor;
 		}
 		return static_cast<sfactor>(factor[color]);

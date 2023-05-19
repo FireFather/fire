@@ -33,6 +33,7 @@ namespace material
 		{
 			return value_function_index >= 0;
 		}
+
 		[[nodiscard]] int value_from_function(const position& pos) const;
 		[[nodiscard]] sfactor scale_factor_from_function(const position& pos, side color) const;
 
@@ -54,7 +55,8 @@ namespace material
 		entry* operator[](const uint64_t key)
 		{
 			static_assert(sizeof(entry) == 32 || sizeof(entry) == 128, "Wrong size");
-			return reinterpret_cast<entry*>(reinterpret_cast<char*>(mat_hash_mem_) + (static_cast<uint32_t>(key) & (Size - 1) * sizeof(entry)));
+			return reinterpret_cast<entry*>(reinterpret_cast<char*>(mat_hash_mem_) + (static_cast<uint32_t>(key) & (Size
+				- 1) * sizeof(entry)));
 		}
 
 	private:
@@ -64,6 +66,6 @@ namespace material
 	// default material hash size = 16 MB;
 	constexpr int material_hash_size = 16384;
 
-	typedef material_hash_table<mat_hash_entry, material_hash_size> material_hash;
+	using material_hash = material_hash_table<mat_hash_entry, material_hash_size>;
 	mat_hash_entry* probe(const position& pos);
 }
