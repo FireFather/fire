@@ -81,7 +81,7 @@ ifeq ($(sse),yes)
 endif
 
 CXXFLAGS += -Wcast-qual -fno-exceptions $(EXTRACXXFLAGS)
-DEPENDFLAGS += -std=c++17
+DEPENDFLAGS += -std=c++20
 LDFLAGS += $(EXTRALDFLAGS)
 CC = gcc
 
@@ -214,7 +214,7 @@ ifeq ($(comp),mingw)
 endif
 
 CFLAGS := $(CXXFLAGS)
-CXXFLAGS += -fno-rtti -std=c++17
+CXXFLAGS += -fno-rtti -std=c++20
 
 help:
 	@echo ""
