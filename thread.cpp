@@ -16,7 +16,6 @@
 
 #include "thread.h"
 
-#include <iomanip>
 #include <iostream>
 
 #include "fire.h"
@@ -74,7 +73,7 @@ void threadpool::delete_counter_move_history()
 	cmh_data->counter_move_stats.clear();
 }
 
-void threadpool::change_thread_count(int const num_threads)
+void threadpool::change_thread_count(const int num_threads)
 {
 	assert(uci_threads > 0);
 
