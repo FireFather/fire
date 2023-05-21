@@ -29,7 +29,9 @@ fire 8.2 self-play nnue
 - uses a unique NNUE (halfkp_256x2-32-32) evaluation
 - fast alpha-beta search
 
-**fire-zero-05172023 is now available**
+fire-zero has undergone months of meticulous analysis and refactoring using many of the most modern C++ tools available today, including Clang, ReSharper C++, and Visual Studio Code Analysis, ensuring the production of extremely fast highly optimized and stable executables.
+
+**fire-zero-5192023 is now available**
 
 | strength estimate                     |    |       |                    |      |
 | ------------------------------------- |--- | ----- | ------------------ | ---- |
@@ -98,8 +100,9 @@ fire 8.2 self-play nnue
 ## available Windows binaries
 - **x64 bmi2** = fast pgo binary (for modern 64-bit systems w/ BMI2 instruction set) if you own a Intel Haswell or newer cpu, this compile should be faster.
 - **x64 avx2** = fast pgo binary (for modern 64-bit systems w/ AVX2 instruction set) if you own a modern AMD cpu, this compile should be the fastest.
-- **x64 popc** = fast pgo binary (for older 64-bit systems w/ SSE41 instruction set).
+- **x64 popc** = fast pgo binary (for older 64-bit systems w/ SSE41 & POPCNT instruction sets) 
 
+- **windows** : fire-zero_x64_x64_bmi2.exe, fire-zero_x64_avx2.exe, fire-zero_x64_popc.exe
 
 run 'bench' at command line to determine which binary runs best/fastest on your system. for greater accuracy, run it twice and calculate the average of both results.
 
@@ -107,7 +110,7 @@ please see **http://chesslogik.wix.com/fire** for more info
 
 ## compile it yourself
 - **windows** (visual studio) use included project files: Fire.vcxproj or Fire.sln
-- **minGW** run one of the included bash shell scripts: make_bmi2.sh, make_avx2.sh, or make_all.sh 
+- **minGW** run one of the included shell scripts: make_bmi2.sh, make_avx2.sh, make_popc.sh, or make_all.sh 
 - **ubuntu** type 'make profile-build ARCH=x86-64-bmi2', 'make profile-build ARCH=x86-64-avx2', etc.
 
 ## uci options
