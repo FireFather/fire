@@ -29,8 +29,6 @@ fire 8.2 self-play nnue
 - uses a unique NNUE (halfkp_256x2-32-32) evaluation
 - fast alpha-beta search
 
-fire-zero has undergone months of meticulous analysis and refactoring using many of the most modern C++ tools available today, including Clang, ReSharper C++, and Visual Studio Code Analysis, ensuring the production of extremely fast highly optimized and stable executables.
-
 **fire-zero-5192023 is now available**
 
 | strength estimate                     |    |       |                    |      |
@@ -96,6 +94,8 @@ fire-zero has undergone months of meticulous analysis and refactoring using many
   - [version-testing-with-little-blitzer.md](version-testing-with-little-blitzer.md)
 - improving the NNUE with supervised & reinforcement learning
   - [improving-the-nnue.md](improving-the-nnue.md)
+
+fire-zero has undergone months of meticulous analysis and refactoring using many of the most modern C++ tools available today, including Clang, ReSharper C++, and Visual Studio Code Analysis, ensuring the production of extremely fast highly optimized and stable executables.
 
 ## available Windows binaries
 - **x64 bmi2** = fast pgo binary (for modern 64-bit systems w/ BMI2 instruction set) if you own a Intel Haswell or newer cpu, this compile should be faster.
