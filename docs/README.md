@@ -134,6 +134,20 @@ please see **http://chesslogik.wix.com/fire** for more info
 - **Syzygy50MoveRule** set to false, tablebase positions that are drawn by the 50-move rule will count as a win or loss.
 - **SyzygyPath** path to the syzygy tablebase files.
 
+
+![alt tag](https://raw.githubusercontent.com/FireFather/fire-zero/master/logos/fire_1.bmp)
+![alt tag](https://raw.githubusercontent.com/FireFather/fire-zero/master/logos/fire_2.bmp)
+![alt tag](https://raw.githubusercontent.com/FireFather/fire-zero/master/logos/fire_3.bmp)
+![alt tag](https://raw.githubusercontent.com/FireFather/fire-zero/master/logos/fire_4.bmp)
+![alt tag](https://raw.githubusercontent.com/FireFather/fire-zero/master/logos/fire_5.bmp)
+![alt tag](https://raw.githubusercontent.com/FireFather/fire-zero/master/logos/fire_6.bmp)
+![alt tag](https://raw.githubusercontent.com/FireFather/fire-zero/master/logos/fire_7.bmp)
+![alt tag](https://raw.githubusercontent.com/FireFather/fire-zero/master/logos/fire_8.bmp)
+![alt tag](https://raw.githubusercontent.com/FireFather/fire-zero/master/logos/fire_9.bmp)
+![alt tag](https://raw.githubusercontent.com/FireFather/fire-zero/master/logos/fire_10.bmp)
+![alt tag](https://raw.githubusercontent.com/FireFather/fire-zero/master/logos/fire_11.bmp)
+![alt tag](https://raw.githubusercontent.com/FireFather/fire-zero/master/logos/fire_12.bmp)
+
 ## acknowledgements
 many of the ideas & techiques incorporated into Fire are documented in detail here
 - [Chess Programming Wiki](https://www.chessprogramming.org)
