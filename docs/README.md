@@ -4,8 +4,8 @@
 
 fire self-play nnue
 
-- fire without NNUE can be found here: https://github.com/FireFather/fire (archived, no longer actively maintained)
-- fire w/ NNUE from shared SF & LC0 data is here: https://github.com/FireFather/fire-NN (archived, no longer actively maintained)
+- fire without NNUE can be found here: https://github.com/FireFather/fire-HCE (archived, no longer actively maintained)
+- fire w/ NNUE from shared SF & LC0 data: https://github.com/FireFather/fire-NN (archived, no longer actively maintained)
 
 ## features
 - c++20
