@@ -146,7 +146,6 @@ please see **http://chesslogik.wix.com/fire** for more info
 ![alt tag](https://raw.githubusercontent.com/FireFather/fire-zero/master/logos/fire_9.bmp)
 ![alt tag](https://raw.githubusercontent.com/FireFather/fire-zero/master/logos/fire_10.bmp)
 ![alt tag](https://raw.githubusercontent.com/FireFather/fire-zero/master/logos/fire_11.bmp)
-![alt tag](https://raw.githubusercontent.com/FireFather/fire-zero/master/logos/fire_12.bmp)
 
 ## acknowledgements
 many of the ideas & techiques incorporated into Fire are documented in detail here
