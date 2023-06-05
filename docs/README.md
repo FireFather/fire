@@ -22,10 +22,9 @@ fire 8.2 self-play nnue
 - adjustable contempt setting
 - fast perft & divide
 - bench (includes ttd time-to-depth calculation)
-- timestamped bench, perft/divide, and tuner logs
+- timestamped bench, perft, & divide log files
 - asychronous cout (acout) class using std::unique_lock<std::mutex>
 - uci option searchtype random w/ uniform_real_distribution & mesenne_twister_engine
-- reads engine.conf on startup for search, eval, pawn, and material parameters
 - uses a unique NNUE (halfkp_256x2-32-32) evaluation
 - fast alpha-beta search
 
