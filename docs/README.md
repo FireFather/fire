@@ -24,7 +24,7 @@ fire self-play nnue
 - bench (includes ttd time-to-depth calculation)
 - timestamped bench, perft, & divide log files
 - asychronous cout (acout) class using std::unique_lock<std::mutex>
-- uci option searchtype random w/ uniform_real_distribution & mesenne_twister_engine
+- uci option EngineMode random w/ uniform_real_distribution & mesenne_twister_engine
 - uses a unique NNUE (halfkp_256x2-32-32) evaluation
 - fast alpha-beta search
 - optional experimental MCTS-UCT search
