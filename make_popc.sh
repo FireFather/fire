@@ -15,5 +15,5 @@
 arch_cpu=x86-64-popc
 make --no-print-directory -j profile-build ARCH=${arch_cpu} COMP=mingw
 strip fire.exe
-mv fire.exe fire-zero-05192023_x64_popc.exe
+mv fire.exe fire-9_x64_popc.exe
 make clean 

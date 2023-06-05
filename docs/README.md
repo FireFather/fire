@@ -2,7 +2,7 @@
 
 ![alt tag](https://raw.githubusercontent.com/FireFather/fire-zero/master/bitmaps/nnue-gui.png)
 
-fire 8.2 self-play nnue
+fire self-play nnue
 
 - fire without NNUE can be found here: https://github.com/FireFather/fire
 - fire w/ NNUE from shared SF & LC0 data can be found here: https://github.com/FireFather/fire-NN
@@ -27,13 +27,15 @@ fire 8.2 self-play nnue
 - uci option searchtype random w/ uniform_real_distribution & mesenne_twister_engine
 - uses a unique NNUE (halfkp_256x2-32-32) evaluation
 - fast alpha-beta search
+- optional experimental MCTS-UCT search
+ (Monte Carlo Tree Search w/ Upper Confidence Bounds Applied to Trees) pure/no minmax
 
-**fire-zero-5192023 is now available**
+**fire-9 is now available**
 
 | strength estimate                     |    |       |                    |      |
 | ------------------------------------- |--- | ----- | ------------------ | ---- |
 |                                       |    | games |(+win, =draw, -loss)| (%)  |
-|    fire-zero-05172023_x64_bmi2  	|3460| 16384 | (+5968,=4937,-5479)|51.5 %|
+|    fire-9_x64_bmi2  			|3460| 16384 | (+5968,=4937,-5479)|51.5 %|
 |    vs.                                |     |      |                    |      |
 |    stockfish-15                 	|3861|   863 | (+715,=135,-13)    |90.7 %|
 |    komodo-dragon-3.1           	|3838|   863 | (+702,=141,-20)    |89.5 %|
@@ -94,14 +96,17 @@ fire 8.2 self-play nnue
 - improving the NNUE with supervised & reinforcement learning
   - [improving-the-nnue.md](improving-the-nnue.md)
 
-fire-zero has undergone months of meticulous analysis and refactoring using many of the most modern C++ tools available today, including Clang, ReSharper C++, and Visual Studio Code Analysis, ensuring the production of extremely fast highly optimized and stable executables.
+## monte-carlo search mode:  
+![alt tag](https://raw.githubusercontent.com/FireFather/fire-NN/master/docs/Fire_8.NN.MCx64.png)
+
+fire-9 has undergone months of meticulous analysis and refactoring using many of the most modern C++ tools available today, including Clang, ReSharper C++, and Visual Studio Code Analysis, ensuring the production of extremely fast highly optimized and stable executables.
 
 ## available Windows binaries
 - **x64 bmi2** = fast pgo binary (for modern 64-bit systems w/ BMI2 instruction set) if you own a Intel Haswell or newer cpu, this compile should be faster.
 - **x64 avx2** = fast pgo binary (for modern 64-bit systems w/ AVX2 instruction set) if you own a modern AMD cpu, this compile should be the fastest.
 - **x64 popc** = fast pgo binary (for older 64-bit systems w/ SSE41 & POPCNT instruction sets) 
 
-- **windows** : fire-zero_x64_x64_bmi2.exe, fire-zero_x64_avx2.exe, fire-zero_x64_popc.exe
+- **windows** : fire-9_x64_x64_bmi2.exe, fire-9_x64_avx2.exe, fire-9_x64_popc.exe
 
 run 'bench' at command line to determine which binary runs best/fastest on your system. for greater accuracy, run it twice and calculate the average of both results.
 
@@ -149,6 +154,12 @@ the endgame table bases are implemented using code adapted from Ronald de Man's
 
 The NNUE implementation utilizes a modified version of Daniel Shaw's/Cfish excellent nnue probe code:
 - [nnue-probe](https://github.com/dshawul/nnue-probe/)
+
+the MCTS implementation is derived from Stephane Nicolet's work
+- https://github.com/snicolet/Stockfish/commits/montecarlo
+
+if you are interested in learning about my particular ultra-fast testing methodology, I've explained it in some detail here:
+http://www.chessdom.com/fire-the-chess-engine-releases-a-new-version/
 
 ## license
 Fire is distributed under the GNU General Public License. Please read LICENSE for more information.

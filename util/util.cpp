@@ -37,7 +37,6 @@ namespace util
 	std::stringstream ei, bd, date(__DATE__);
 
 	// return string with 'program' 'version' 'platform' and 'instruction set'
-
 	std::string engine_info()
 	{
 		// specify correct bit manipulation instruction set constant, as this will be appended
@@ -53,8 +52,6 @@ namespace util
 #endif
 
 		ei << program << " ";
-		date >> month >> day >> year;
-		ei << (1 + months.find(month) / 4) << day << year << " ";
 		ei << platform << " " << bmis;
 		version = ei.str();
 		return ei.str();

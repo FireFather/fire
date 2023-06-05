@@ -21,7 +21,7 @@
 
 #include "../position.h"
 
-inline constexpr auto program = "Fire Zero";
+inline constexpr auto program = "Fire 9";
 inline std::string version;
 inline constexpr auto author = "N. Schmidt";
 inline constexpr auto platform = "x64";
