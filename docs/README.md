@@ -165,7 +165,7 @@ and others
 the endgame table bases are implemented using code adapted from Ronald de Man's
 - [Syzygy EGTBs & probing code](https://github.com/syzygy1/tb)
 
-The NNUE implementation utilizes a modified version of Daniel Shaw's/Cfish excellent nnue probe code:
+The NNUE implementation utilizes a modified version of Daniel Shawul's/Cfish excellent nnue probe code:
 - [nnue-probe](https://github.com/dshawul/nnue-probe/)
 
 the MCTS implementation is derived from Stephane Nicolet's work
