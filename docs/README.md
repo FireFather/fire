@@ -60,7 +60,7 @@ fire self-play nnue
 ## tools used:
 
 - engine for generation of self-play games
-  - fire 8.2 https://github.com/FireFather/fire
+  - fire 8.2 https://github.com/FireFather/fire-HCE
 - application to run self-play games
   - cutechess-cli https://github.com/cutechess/cutechess
 - application to obtain fen positions and evaluation data from pgn files & convert to plain text
