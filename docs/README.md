@@ -60,7 +60,7 @@
 ## tools used:
 
 - engine for generation of self-play games
-  - fire 8.2 https://github.com/FireFather/fire
+  - fire 8.2 https://github.com/FireFather/fire-HCE
 - application to run self-play games
   - cutechess-cli https://github.com/cutechess/cutechess
 - application to obtain fen positions and evaluation data from pgn files & convert to plain text
@@ -68,7 +68,7 @@
 - windows application for nnue training session management
   - nnue-gui https://github.com/FireFather/nnue-gui
 - optimized port of the original nodchip shogi neural network implementation
-  - sf-nnue https://github.com/FireFather/sf-nnue
+  - sf-nnue https://github.com/FireFather/sf-nnue-aio
 - application used by nnue-extract to extract fen positions and info from pgns
   - pgn-extract https://www.cs.kent.ac.uk/people/staff/djb/pgn-extract/
 - application for testing nnue vs nnue, etc.
