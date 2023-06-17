@@ -2,7 +2,7 @@
 
 ![alt tag](https://raw.githubusercontent.com/FireFather/fire-zero/master/bitmaps/nnue-gui.png)
 
-fire self-play nnue
+**fire self-play nnue**
 
 - fire without NNUE can be found here: https://github.com/FireFather/fire-HCE (archived, no longer actively maintained)
 - fire w/ NNUE from shared SF & LC0 data: https://github.com/FireFather/fire-NN (archived, no longer actively maintained)
