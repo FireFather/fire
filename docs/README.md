@@ -58,6 +58,7 @@
 |    marvin-6.0.0                 	|3233|   862 | (+107,=160,-595)   |21.7 %|
 
 Games Completed = 16384 of 16384 (Avg game length = 12.627 sec)
+
 Settings = Gauntlet/32MB/1000ms+100ms/M 500cp for 6 moves, D 120 moves/EPD:book.epd(31526)
 
 ## tools used:
