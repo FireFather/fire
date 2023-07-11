@@ -1,12 +1,10 @@
 /*
   Copyright (c) 2011-2013 Ronald de Man
   This file may be redistributed and/or modified without restrictions.
-
   tbcore.c contains engine-independent routines of the tablebase probing code.
   This file should not need too much adaptation to add tablebase probing to
   a particular engine, provided the engine is written in C or C++.
 */
-
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
@@ -17,58 +15,43 @@
 #include <unistd.h>
 #include <sys/mman.h>
 #endif
-
 #include "tbprobe.h"
 #include "tbcore.h"
-
 #include "../pragma.h"
 #include "../bitboard.h"
 #include "../movegen.h"
 #include "../position.h"
 #include "../zobrist.h"
-
 constexpr auto tb_max_piece = 254;
 constexpr auto tb_max_pawn = 256;
 constexpr auto hash_max = 7;
-
 #define SWAP(a,b) {int tmp=a;(a)=b;(b)=tmp;}
-
 constexpr auto tb_pawn = 1;
 constexpr auto tb_knight = 2;
 constexpr auto tb_bishop = 3;
 constexpr auto tb_rook = 4;
 constexpr auto tb_queen = 5;
 constexpr auto tb_king = 6;
-
 #define TB_W_PAWN tb_pawn
 #define TB_B_PAWN (tb_pawn | 8)
-
 static LOCK_T tb_mutex;
-
 static bool initialized = false;
 static int num_paths = 0;
 static char* path_string = nullptr;
 static char** paths = nullptr;
-
 int tb_num_piece, tb_num_pawn, tb_max_men;
 static tb_entry_piece tb_piece[tb_max_piece];
 static tb_entry_pawn tb_pawns[tb_max_pawn];
-
 static tb_hash_entry tb_hash[1 << tb_hash_bits][hash_max];
-
 constexpr auto dtz_entries = 64;
-
 static dtz_table_entry dtz_table[dtz_entries];
-
 static void init_indices();
 static uint64 calc_key_from_pcs(const int* pcs, int mirror);
 static void free_wdl_entry(tb_entry* entry);
 static void free_dtz_entry(tb_entry* entry);
-
 static FD open_tb(const char* str, const char* suffix)
 {
 	FD fd;
-
 	for (auto i = 0; i < num_paths; i++)
 	{
 		char file[256];
@@ -80,13 +63,12 @@ static FD open_tb(const char* str, const char* suffix)
 		fd = open(file, O_RDONLY);
 #else
 		fd = CreateFile(file, GENERIC_READ, FILE_SHARE_READ, nullptr,
-		                OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+			OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
 #endif
 		if (fd != FD_ERR) return fd;
 	}
 	return FD_ERR;
 }
-
 static void close_tb(FD const fd)
 {
 #ifndef _WIN32
@@ -95,7 +77,6 @@ static void close_tb(FD const fd)
 	CloseHandle(fd);
 #endif
 }
-
 static char* map_file(const char* name, const char* suffix, uint64* mapping)
 {
 	FD const fd = open_tb(name, suffix);
@@ -116,7 +97,7 @@ static char* map_file(const char* name, const char* suffix, uint64* mapping)
 	const auto size_low = GetFileSize(fd, &size_high);
 	//  *size = ((uint64)size_high) << 32 | ((uint64)size_low);
 	auto* map = CreateFileMapping(fd, nullptr, PAGE_READONLY, size_high, size_low,
-	                              nullptr);
+		nullptr);
 	if (map == nullptr)
 	{
 		printf("CreateFileMapping() failed.\n");
@@ -133,7 +114,6 @@ static char* map_file(const char* name, const char* suffix, uint64* mapping)
 	close_tb(fd);
 	return data;
 }
-
 #ifndef _WIN32
 static void unmap_file(char* data, uint64 size)
 {
@@ -148,7 +128,6 @@ static void unmap_file(const char* data, const uint64 mapping)
 	CloseHandle(reinterpret_cast<HANDLE>(mapping));
 }
 #endif
-
 static void add_to_hash(tb_entry* ptr, const uint64 key)
 {
 	const int hshidx = static_cast<int>(key >> (64 - tb_hash_bits));
@@ -163,18 +142,14 @@ static void add_to_hash(tb_entry* ptr, const uint64 key)
 	tb_hash[hshidx][i].key = key;
 	tb_hash[hshidx][i].ptr = ptr;
 }
-
-static char pchr[] = {'K', 'Q', 'R', 'B', 'N', 'P'};
-
+static char pchr[] = { 'K', 'Q', 'R', 'B', 'N', 'P' };
 static void init_tb(const char* str)
 {
 	tb_entry* entry;
 	int i, pcs[16]{};
-
 	FD fd = open_tb(str, wdl_suffix);
 	if (fd == FD_ERR) return;
 	close_tb(fd);
-
 	for (i = 0; i < 16; i++)
 		pcs[i] = 0;
 	auto color = 0;
@@ -202,7 +177,7 @@ static void init_tb(const char* str)
 		case 'v':
 			color = 0x08;
 			break;
-		default: ;
+		default:;
 		}
 	for (i = 0; i < 8; i++)
 		if (pcs[i] != pcs[i + 8])
@@ -236,7 +211,6 @@ static void init_tb(const char* str)
 	entry->has_pawns = pcs[TB_W_PAWN] + pcs[TB_B_PAWN] > 0;
 	if (entry->num > tb_max_men)
 		tb_max_men = entry->num;
-
 	if (entry->has_pawns)
 	{
 		auto* ptr = reinterpret_cast<struct tb_entry_pawn*>(entry);
@@ -271,7 +245,6 @@ static void init_tb(const char* str)
 	add_to_hash(entry, key);
 	if (key2 != key) add_to_hash(entry, key2);
 }
-
 void syzygy_path_init(const std::string& path)
 {
 	char str[16];
@@ -279,7 +252,6 @@ void syzygy_path_init(const std::string& path)
 	int j;
 	int k;
 	int l;
-
 	if (initialized)
 	{
 		free(path_string);
@@ -304,7 +276,6 @@ void syzygy_path_init(const std::string& path)
 		init_indices();
 		initialized = true;
 	}
-
 	const auto* const p = path.c_str();
 	if (strlen(p) == 0 || !strcmp(p, "<empty>")) return;
 	path_string = static_cast<char*>(malloc(strlen(p) + 1));
@@ -326,42 +297,34 @@ void syzygy_path_init(const std::string& path)
 		paths[i] = &path_string[j];
 		while (path_string[j]) j++;
 	}
-
 	LOCK_INIT(tb_mutex);
-
 	tb_num_piece = tb_num_pawn = 0;
 	tb_max_men = 0;
-
 	for (i = 0; i < 1 << tb_hash_bits; i++)
 		for (j = 0; j < hash_max; j++)
 		{
 			tb_hash[i][j].key = 0ULL;
 			tb_hash[i][j].ptr = nullptr;
 		}
-
 	for (i = 0; i < dtz_entries; i++)
 		dtz_table[i].entry = nullptr;
-
 	for (i = 1; i < 6; i++)
 	{
 		sprintf(str, "K%cvK", pchr[i]);
 		init_tb(str);
 	}
-
 	for (i = 1; i < 6; i++)
 		for (j = i; j < 6; j++)
 		{
 			sprintf(str, "K%cvK%c", pchr[i], pchr[j]);
 			init_tb(str);
 		}
-
 	for (i = 1; i < 6; i++)
 		for (j = i; j < 6; j++)
 		{
 			sprintf(str, "K%c%cvK", pchr[i], pchr[j]);
 			init_tb(str);
 		}
-
 	for (i = 1; i < 6; i++)
 		for (j = i; j < 6; j++)
 			for (k = 1; k < 6; k++)
@@ -369,7 +332,6 @@ void syzygy_path_init(const std::string& path)
 				sprintf(str, "K%c%cvK%c", pchr[i], pchr[j], pchr[k]);
 				init_tb(str);
 			}
-
 	for (i = 1; i < 6; i++)
 		for (j = i; j < 6; j++)
 			for (k = j; k < 6; k++)
@@ -377,7 +339,6 @@ void syzygy_path_init(const std::string& path)
 				sprintf(str, "K%c%c%cvK", pchr[i], pchr[j], pchr[k]);
 				init_tb(str);
 			}
-
 	for (i = 1; i < 6; i++)
 		for (j = i; j < 6; j++)
 			for (k = i; k < 6; k++)
@@ -386,7 +347,6 @@ void syzygy_path_init(const std::string& path)
 					sprintf(str, "K%c%cvK%c%c", pchr[i], pchr[j], pchr[k], pchr[l]);
 					init_tb(str);
 				}
-
 	for (i = 1; i < 6; i++)
 		for (j = i; j < 6; j++)
 			for (k = j; k < 6; k++)
@@ -395,7 +355,6 @@ void syzygy_path_init(const std::string& path)
 					sprintf(str, "K%c%c%cvK%c", pchr[i], pchr[j], pchr[k], pchr[l]);
 					init_tb(str);
 				}
-
 	for (i = 1; i < 6; i++)
 		for (j = i; j < 6; j++)
 			for (k = j; k < 6; k++)
@@ -405,7 +364,6 @@ void syzygy_path_init(const std::string& path)
 					init_tb(str);
 				}
 }
-
 static constexpr signed char offdiag[] = {
 	0, -1, -1, -1, -1, -1, -1, -1,
 	1, 0, -1, -1, -1, -1, -1, -1,
@@ -416,7 +374,6 @@ static constexpr signed char offdiag[] = {
 	1, 1, 1, 1, 1, 1, 0, -1,
 	1, 1, 1, 1, 1, 1, 1, 0
 };
-
 static constexpr ubyte triangle[] = {
 	6, 0, 1, 2, 2, 1, 0, 6,
 	0, 7, 3, 4, 4, 3, 7, 0,
@@ -427,7 +384,6 @@ static constexpr ubyte triangle[] = {
 	0, 7, 3, 4, 4, 3, 7, 0,
 	6, 0, 1, 2, 2, 1, 0, 6
 };
-
 static constexpr ubyte flipdiag[] = {
 	0, 8, 16, 24, 32, 40, 48, 56,
 	1, 9, 17, 25, 33, 41, 49, 57,
@@ -438,7 +394,6 @@ static constexpr ubyte flipdiag[] = {
 	6, 14, 22, 30, 38, 46, 54, 62,
 	7, 15, 23, 31, 39, 47, 55, 63
 };
-
 static constexpr ubyte lower[] = {
 	28, 0, 1, 2, 3, 4, 5, 6,
 	0, 29, 7, 8, 9, 10, 11, 12,
@@ -449,7 +404,6 @@ static constexpr ubyte lower[] = {
 	5, 11, 16, 20, 23, 25, 34, 27,
 	6, 12, 17, 21, 24, 26, 27, 35
 };
-
 static constexpr ubyte diag[] = {
 	0, 0, 0, 0, 0, 0, 0, 8,
 	0, 1, 0, 0, 0, 0, 9, 0,
@@ -460,7 +414,6 @@ static constexpr ubyte diag[] = {
 	0, 14, 0, 0, 0, 0, 6, 0,
 	15, 0, 0, 0, 0, 0, 0, 7
 };
-
 static constexpr ubyte flap[] = {
 	0, 0, 0, 0, 0, 0, 0, 0,
 	0, 6, 12, 18, 18, 12, 6, 0,
@@ -471,7 +424,6 @@ static constexpr ubyte flap[] = {
 	5, 11, 17, 23, 23, 17, 11, 5,
 	0, 0, 0, 0, 0, 0, 0, 0
 };
-
 static constexpr ubyte ptwist[] = {
 	0, 0, 0, 0, 0, 0, 0, 0,
 	47, 35, 23, 11, 10, 22, 34, 46,
@@ -482,18 +434,15 @@ static constexpr ubyte ptwist[] = {
 	37, 25, 13, 1, 0, 12, 24, 36,
 	0, 0, 0, 0, 0, 0, 0, 0
 };
-
 static constexpr ubyte invflap[] = {
 	8, 16, 24, 32, 40, 48,
 	9, 17, 25, 33, 41, 49,
 	10, 18, 26, 34, 42, 50,
 	11, 19, 27, 35, 43, 51
 };
-
 static constexpr ubyte file_to_file[] = {
 	0, 1, 2, 3, 3, 2, 1, 0
 };
-
 static constexpr short kk_idx[10][64] = {
 	{
 		-1, -1, -1, 0, 1, 2, 3, 4,
@@ -596,15 +545,12 @@ static constexpr short kk_idx[10][64] = {
 		-1, -1, -1, -1, -1, -1, -1, 461
 	}
 };
-
 static int binomial[5][64];
 static int pawnidx[5][24];
 static int pfactor[5][4];
-
 static void init_indices()
 {
 	int i, j;
-
 	// binomial[k-1][n] = Bin(n, k)
 	for (i = 0; i < 5; i++)
 		for (j = 0; j < 64; j++)
@@ -618,7 +564,6 @@ static void init_indices()
 			}
 			binomial[i][j] = f / l;
 		}
-
 	for (i = 0; i < 5; i++)
 	{
 		auto s = 0;
@@ -651,13 +596,11 @@ static void init_indices()
 		pfactor[i][3] = s;
 	}
 }
-
 static uint64 encode_piece(const tb_entry_piece* ptr, const ubyte* norm, int* pos, const int* factor)
 {
 	uint64 idx;
 	int i, j, l;
 	const int n = ptr->num;
-
 	if (pos[0] & 0x04)
 	{
 		for (i = 0; i < n; i++)
@@ -668,41 +611,36 @@ static uint64 encode_piece(const tb_entry_piece* ptr, const ubyte* norm, int* po
 		for (i = 0; i < n; i++)
 			pos[i] ^= 0x38;
 	}
-
 	for (i = 0; i < n; i++)
 		if (offdiag[pos[i]]) break;
 	if (i < (ptr->enc_type == 0 ? 3 : 2) && offdiag[pos[i]] > 0)
 		for (i = 0; i < n; i++)
 			pos[i] = flipdiag[pos[i]];
-
 	switch (ptr->enc_type)
 	{
 	case 0: /* 111 */
 		i = pos[1] > pos[0];
 		j = (pos[2] > pos[0]) + (pos[2] > pos[1]);
-
 		if (offdiag[pos[0]])
 			idx = triangle[pos[0]] * static_cast<uint64_t>(63 * 62) + (static_cast<int64_t>(pos[1]) - static_cast<
 				int64_t>(i)) * static_cast<uint64_t>(62) + (static_cast<uint64_t>(pos[2]) - static_cast<uint64_t>(j));
 		else if (offdiag[pos[1]])
 			idx = static_cast<uint64_t>(6 * 63 * 62) + static_cast<uint64_t>(diag[pos[0]]) * static_cast<uint64_t>(28 *
-					62) + static_cast<uint64_t>(lower[pos[1]]) * static_cast<uint64_t>(62) + static_cast<uint64_t>(pos[
+				62) + static_cast<uint64_t>(lower[pos[1]]) * static_cast<uint64_t>(62) + static_cast<uint64_t>(pos[
 					2]) -
-				static_cast<uint64_t>(j);
+			static_cast<uint64_t>(j);
 		else if (offdiag[pos[2]])
 			idx = static_cast<uint64_t>(6 * 63 * 62 + 4 * 28 * 62) + static_cast<uint64_t>(diag[pos[0]]) * static_cast<
-				uint64_t>(7 * 28) + (static_cast<uint64_t>(diag[pos[1]]) - static_cast<uint64_t>(i)) * static_cast<
-				uint64_t>(28) + lower[pos[2]];
+			uint64_t>(7 * 28) + (static_cast<uint64_t>(diag[pos[1]]) - static_cast<uint64_t>(i)) * static_cast<
+			uint64_t>(28) + lower[pos[2]];
 		else
 			idx = static_cast<uint64_t>(6 * 63 * 62 + 4 * 28 * 62 + 4 * 7 * 28) + static_cast<uint64_t>(diag[pos[0]]) *
-				static_cast<uint64_t>(7 * 6) + (static_cast<uint64_t>(diag[pos[1]]) - static_cast<uint64_t>(i)) *
-				static_cast<uint64_t>(6) + (static_cast<uint64_t>(diag[pos[2]]) - static_cast<uint64_t>(j));
+			static_cast<uint64_t>(7 * 6) + (static_cast<uint64_t>(diag[pos[1]]) - static_cast<uint64_t>(i)) *
+			static_cast<uint64_t>(6) + (static_cast<uint64_t>(diag[pos[2]]) - static_cast<uint64_t>(j));
 		i = 3;
 		break;
-
 	case 1: /* K3 */
 		j = (pos[2] > pos[0]) + (pos[2] > pos[1]);
-
 		idx = kk_idx[triangle[pos[0]]][pos[1]];
 		if (idx < 441)
 			idx = idx + static_cast<uint64_t>(441) * (static_cast<uint64_t>(pos[2]) - static_cast<uint64_t>(j));
@@ -715,21 +653,19 @@ static uint64 encode_piece(const tb_entry_piece* ptr, const ubyte* norm, int* po
 		}
 		i = 3;
 		break;
-
 	default: /* K2 */
 		idx = kk_idx[triangle[pos[0]]][pos[1]];
 		i = 2;
 		break;
 	}
 	idx *= factor[0];
-
 	while (i < n)
 	{
 		const int t = norm[i];
 		for (j = i; j < i + t; j++)
 			for (auto k = j + 1; k < i + t; k++)
 				if (pos[j] > pos[k]) SWAP(pos[j], pos[k])
-		auto s = 0;
+					auto s = 0;
 		for (auto m = i; m < i + t; m++)
 		{
 			const auto p = pos[m];
@@ -740,40 +676,32 @@ static uint64 encode_piece(const tb_entry_piece* ptr, const ubyte* norm, int* po
 		idx += static_cast<uint64>(s) * static_cast<uint64>(factor[i]);
 		i += t;
 	}
-
 	return idx;
 }
-
 // determine file of leftmost pawn and sort pawns
 static int pawn_file(const tb_entry_pawn* ptr, int* pos)
 {
 	for (auto i = 1; i < ptr->pawns[0]; i++)
 		if (flap[pos[0]] > flap[pos[i]])
 			SWAP(pos[0], pos[i])
-
-	return file_to_file[pos[0] & 0x07];
+			return file_to_file[pos[0] & 0x07];
 }
-
 static uint64 encode_pawn(const tb_entry_pawn* ptr, const ubyte* norm, int* pos, const int* factor)
 {
 	int i, j, k, m, s;
 	const int n = ptr->num;
-
 	if (pos[0] & 0x04)
 		for (i = 0; i < n; i++)
 			pos[i] ^= 0x07;
-
 	for (i = 1; i < ptr->pawns[0]; i++)
 		for (j = i + 1; j < ptr->pawns[0]; j++)
 			if (ptwist[pos[i]] < ptwist[pos[j]])
 				SWAP(pos[i], pos[j])
-
-	auto t = ptr->pawns[0] - 1;
+				auto t = ptr->pawns[0] - 1;
 	uint64 idx = pawnidx[t][flap[pos[0]]];
 	for (i = t; i > 0; i--)
 		idx += binomial[t - i][ptwist[pos[i]]];
 	idx *= factor[0];
-
 	// remaining pawns
 	i = ptr->pawns[0];
 	t = i + ptr->pawns[1];
@@ -782,7 +710,7 @@ static uint64 encode_pawn(const tb_entry_pawn* ptr, const ubyte* norm, int* pos,
 		for (j = i; j < t; j++)
 			for (k = j + 1; k < t; k++)
 				if (pos[j] > pos[k]) SWAP(pos[j], pos[k])
-		s = 0;
+					s = 0;
 		for (m = i; m < t; m++)
 		{
 			const auto p = pos[m];
@@ -793,14 +721,13 @@ static uint64 encode_pawn(const tb_entry_pawn* ptr, const ubyte* norm, int* pos,
 		idx += static_cast<uint64>(s) * static_cast<uint64>(factor[i]);
 		i = t;
 	}
-
 	while (i < n)
 	{
 		t = norm[i];
 		for (j = i; j < i + t; j++)
 			for (k = j + 1; k < i + t; k++)
 				if (pos[j] > pos[k]) SWAP(pos[j], pos[k])
-		s = 0;
+					s = 0;
 		for (m = i; m < i + t; m++)
 		{
 			const auto p = pos[m];
@@ -811,10 +738,8 @@ static uint64 encode_pawn(const tb_entry_pawn* ptr, const ubyte* norm, int* pos,
 		idx += static_cast<uint64>(s) * static_cast<uint64>(factor[i]);
 		i += t;
 	}
-
 	return idx;
 }
-
 // place k like pieces on n squares
 static int subfactor(const int k, const int n)
 {
@@ -825,17 +750,13 @@ static int subfactor(const int k, const int n)
 		f *= n - i;
 		l *= i + 1;
 	}
-
 	return f / l;
 }
-
 static uint64 calc_factors_piece(int* factor, const int num, const int order, const ubyte* norm, const ubyte enc_type)
 {
 	int i, k;
-	static int pivfac[] = {31332, 28056, 462};
-
+	static int pivfac[] = { 31332, 28056, 462 };
 	auto n = 64 - norm[0];
-
 	uint64 f = 1;
 	for (i = norm[0], k = 0; i < num || k == order; k++)
 	{
@@ -852,17 +773,14 @@ static uint64 calc_factors_piece(int* factor, const int num, const int order, co
 			i += norm[i];
 		}
 	}
-
 	return f;
 }
-
 static uint64 calc_factors_pawn(int* factor, const int num, const int order, const int order2, const ubyte* norm,
-                                const int file)
+	const int file)
 {
 	int i = norm[0];
 	if (order2 < 0x0f) i += norm[i];
 	auto n = 64 - i;
-
 	uint64 f = 1;
 	for (auto k = 0; i < num || k == order || k == order2; k++)
 	{
@@ -884,17 +802,13 @@ static uint64 calc_factors_pawn(int* factor, const int num, const int order, con
 			i += norm[i];
 		}
 	}
-
 	return f;
 }
-
 static void set_norm_piece(const tb_entry_piece* ptr, ubyte* norm, const ubyte* pieces)
 {
 	int i;
-
 	for (i = 0; i < ptr->num; i++)
 		norm[i] = 0;
-
 	switch (ptr->enc_type)
 	{
 	case 0:
@@ -907,44 +821,35 @@ static void set_norm_piece(const tb_entry_piece* ptr, ubyte* norm, const ubyte* 
 		norm[0] = static_cast<ubyte>(ptr->enc_type - 1);
 		break;
 	}
-
 	for (i = norm[0]; i < ptr->num; i += norm[i])
 		for (auto j = i; j < ptr->num && pieces[j] == pieces[i]; j++)
 			norm[i]++;
 }
-
 static void set_norm_pawn(const tb_entry_pawn* ptr, ubyte* norm, const ubyte* pieces)
 {
 	int i;
-
 	for (i = 0; i < ptr->num; i++)
 		norm[i] = 0;
-
 	norm[0] = ptr->pawns[0];
 	if (ptr->pawns[1]) norm[ptr->pawns[0]] = ptr->pawns[1];
-
 	for (i = ptr->pawns[0] + ptr->pawns[1]; i < ptr->num; i += norm[i])
 		for (auto j = i; j < ptr->num && pieces[j] == pieces[i]; j++)
 			norm[i]++;
 }
-
 static void setup_pieces_piece(tb_entry_piece* ptr, const unsigned char* data, uint64* tb_size)
 {
 	int i;
-
 	for (i = 0; i < ptr->num; i++)
 		ptr->pieces[0][i] = static_cast<ubyte>(data[i + 1] & 0x0f);
 	auto order = data[0] & 0x0f;
 	set_norm_piece(ptr, ptr->norm[0], ptr->pieces[0]);
 	tb_size[0] = calc_factors_piece(ptr->factor[0], ptr->num, order, ptr->norm[0], ptr->enc_type);
-
 	for (i = 0; i < ptr->num; i++)
 		ptr->pieces[1][i] = static_cast<ubyte>(data[i + 1] >> 4);
 	order = data[0] >> 4;
 	set_norm_piece(ptr, ptr->norm[1], ptr->pieces[1]);
 	tb_size[1] = calc_factors_piece(ptr->factor[1], ptr->num, order, ptr->norm[1], ptr->enc_type);
 }
-
 static void setup_pieces_piece_dtz(dtz_entry_piece* ptr, const unsigned char* data, uint64* tb_size)
 {
 	for (auto i = 0; i < ptr->num; i++)
@@ -953,11 +858,9 @@ static void setup_pieces_piece_dtz(dtz_entry_piece* ptr, const unsigned char* da
 	set_norm_piece(reinterpret_cast<tb_entry_piece*>(ptr), ptr->norm, ptr->pieces);
 	tb_size[0] = calc_factors_piece(ptr->factor, ptr->num, order, ptr->norm, ptr->enc_type);
 }
-
 static void setup_pieces_pawn(tb_entry_pawn* ptr, const unsigned char* data, uint64* tb_size, const int f)
 {
 	int i;
-
 	const auto j = 1 + (ptr->pawns[1] > 0);
 	auto order = data[0] & 0x0f;
 	auto order2 = ptr->pawns[1] ? data[1] & 0x0f : 0x0f;
@@ -965,7 +868,6 @@ static void setup_pieces_pawn(tb_entry_pawn* ptr, const unsigned char* data, uin
 		ptr->file[f].pieces[0][i] = static_cast<ubyte>(data[i + j] & 0x0f);
 	set_norm_pawn(ptr, ptr->file[f].norm[0], ptr->file[f].pieces[0]);
 	tb_size[0] = calc_factors_pawn(ptr->file[f].factor[0], ptr->num, order, order2, ptr->file[f].norm[0], f);
-
 	order = data[0] >> 4;
 	order2 = ptr->pawns[1] ? data[1] >> 4 : 0x0f;
 	for (i = 0; i < ptr->num; i++)
@@ -973,7 +875,6 @@ static void setup_pieces_pawn(tb_entry_pawn* ptr, const unsigned char* data, uin
 	set_norm_pawn(ptr, ptr->file[f].norm[1], ptr->file[f].pieces[1]);
 	tb_size[1] = calc_factors_pawn(ptr->file[f].factor[1], ptr->num, order, order2, ptr->file[f].norm[1], f);
 }
-
 static void setup_pieces_pawn_dtz(dtz_entry_pawn* ptr, const unsigned char* data, uint64* tb_size, const int f)
 {
 	const auto j = 1 + (ptr->pawns[1] > 0);
@@ -984,7 +885,6 @@ static void setup_pieces_pawn_dtz(dtz_entry_pawn* ptr, const unsigned char* data
 	set_norm_pawn(reinterpret_cast<tb_entry_pawn*>(ptr), ptr->file[f].norm, ptr->file[f].pieces);
 	tb_size[0] = calc_factors_pawn(ptr->file[f].factor, ptr->num, order, order2, ptr->file[f].norm, f);
 }
-
 static void calc_symlen(pairs_data* d, const int s, char* tmp)
 {
 	const auto* const w = d->sympat + 3 * static_cast<int>(s);
@@ -999,23 +899,19 @@ static void calc_symlen(pairs_data* d, const int s, char* tmp)
 	}
 	tmp[s] = 1;
 }
-
 ushort read_ushort(const ubyte* d)
 {
 	return static_cast<ushort>(d[0] | d[1] << 8);
 }
-
 uint32 read_uint32(const ubyte* d)
 {
 	return d[0] | d[1] << 8 | d[2] << 16 | d[3] << 24;
 }
-
 static pairs_data* setup_pairs(unsigned char* data, const uint64 tb_size, uint64* size, unsigned char** next,
-                               ubyte* flags, const int wdl)
+	ubyte* flags, const int wdl)
 {
 	pairs_data* d;
 	int i;
-
 	*flags = data[0];
 	if (data[0] & 0x80)
 	{
@@ -1029,7 +925,6 @@ static pairs_data* setup_pairs(unsigned char* data, const uint64 tb_size, uint64
 		size[0] = size[1] = size[2] = 0;
 		return d;
 	}
-
 	const int blocksize = data[1];
 	const int idxbits = data[2];
 	const int real_num_blocks = static_cast<int>(read_uint32(&data[4]));
@@ -1046,12 +941,10 @@ static pairs_data* setup_pairs(unsigned char* data, const uint64 tb_size, uint64
 	d->sympat = &data[12 + 2 * h];
 	d->min_len = min_len;
 	*next = &data[12 + 2 * h + 3 * num_syms + (num_syms & 1)];
-
 	const auto num_indices = (tb_size + (1ULL << idxbits) - 1) >> idxbits;
 	size[0] = 6ULL * num_indices;
 	size[1] = 2ULL * num_blocks;
 	size[2] = (1ULL << blocksize) * real_num_blocks;
-
 	// char tmp[num_syms];
 	char tmp[4096]{};
 	for (i = 0; i < num_syms; i++)
@@ -1059,35 +952,28 @@ static pairs_data* setup_pairs(unsigned char* data, const uint64 tb_size, uint64
 	for (i = 0; i < num_syms; i++)
 		if (!tmp[i])
 			calc_symlen(d, i, tmp);
-
 	d->base[h - 1] = 0;
 	for (i = h - 2; i >= 0; i--)
 		d->base[i] = (d->base[i + 1] + read_ushort(reinterpret_cast<ubyte*>(d->offset + i)) - read_ushort(
 			reinterpret_cast<ubyte*>(d->offset + i + 1))) / 2;
 	for (i = 0; i < h; i++)
 		d->base[i] <<= 64 - (min_len + i);
-
 	d->offset -= d->min_len;
-
 	return d;
 }
-
 static int init_table_wdl(tb_entry* entry, char* str)
 {
 	ubyte* next = nullptr;
 	uint64 tb_size[8]{};
 	uint64 size[8 * 3]{};
 	ubyte flags = 0;
-
 	// first mmap the table into memory
-
 	entry->data = map_file(str, wdl_suffix, &entry->mapping);
 	if (!entry->data)
 	{
 		printf("Could not find %s" "wdl_suffix", str);
 		return 0;
 	}
-
 	auto* data = reinterpret_cast<ubyte*>(entry->data);
 	if (data[0] != wdl_magic[0] ||
 		data[1] != wdl_magic[1] ||
@@ -1099,19 +985,15 @@ static int init_table_wdl(tb_entry* entry, char* str)
 		entry->data = nullptr;
 		return 0;
 	}
-
 	const auto split = data[4] & 0x01;
 	const auto files = data[4] & 0x02 ? 4 : 1;
-
 	data += 5;
-
 	if (!entry->has_pawns)
 	{
 		auto* ptr = reinterpret_cast<struct tb_entry_piece*>(entry);
 		setup_pieces_piece(ptr, data, &tb_size[0]);
 		data += ptr->num + 1;
 		data += reinterpret_cast<uintptr_t>(data) & 0x01;
-
 		ptr->precomp[0] = setup_pairs(data, tb_size[0], &size[0], &next, &flags, 1);
 		data = next;
 		if (split)
@@ -1121,7 +1003,6 @@ static int init_table_wdl(tb_entry* entry, char* str)
 		}
 		else
 			ptr->precomp[1] = nullptr;
-
 		ptr->precomp[0]->indextable = reinterpret_cast<char*>(data);
 		data += size[0];
 		if (split)
@@ -1129,7 +1010,6 @@ static int init_table_wdl(tb_entry* entry, char* str)
 			ptr->precomp[1]->indextable = reinterpret_cast<char*>(data);
 			data += size[3];
 		}
-
 		ptr->precomp[0]->sizetable = reinterpret_cast<ushort*>(data);
 		data += size[1];
 		if (split)
@@ -1137,7 +1017,6 @@ static int init_table_wdl(tb_entry* entry, char* str)
 			ptr->precomp[1]->sizetable = reinterpret_cast<ushort*>(data);
 			data += size[4];
 		}
-
 		data = reinterpret_cast<ubyte*>(reinterpret_cast<uintptr_t>(data) + 0x3f & ~0x3f);
 		ptr->precomp[0]->data = data;
 		data += size[2];
@@ -1158,7 +1037,6 @@ static int init_table_wdl(tb_entry* entry, char* str)
 			data += ptr->num + static_cast<int>(s);
 		}
 		data += reinterpret_cast<uintptr_t>(data) & 0x01;
-
 		for (f = 0; f < files; f++)
 		{
 			ptr->file[f].precomp[0] = setup_pairs(data, tb_size[2 * f], &size[6 * f], &next, &flags, 1);
@@ -1171,7 +1049,6 @@ static int init_table_wdl(tb_entry* entry, char* str)
 			else
 				ptr->file[f].precomp[1] = nullptr;
 		}
-
 		for (f = 0; f < files; f++)
 		{
 			ptr->file[f].precomp[0]->indextable = reinterpret_cast<char*>(data);
@@ -1182,7 +1059,6 @@ static int init_table_wdl(tb_entry* entry, char* str)
 				data += size[6 * f + 3];
 			}
 		}
-
 		for (f = 0; f < files; f++)
 		{
 			ptr->file[f].precomp[0]->sizetable = reinterpret_cast<ushort*>(data);
@@ -1193,7 +1069,6 @@ static int init_table_wdl(tb_entry* entry, char* str)
 				data += size[6 * f + 4];
 			}
 		}
-
 		for (f = 0; f < files; f++)
 		{
 			data = reinterpret_cast<ubyte*>(reinterpret_cast<uintptr_t>(data) + 0x3f & ~0x3f);
@@ -1207,20 +1082,16 @@ static int init_table_wdl(tb_entry* entry, char* str)
 			}
 		}
 	}
-
 	return 1;
 }
-
 static int init_table_dtz(tb_entry* entry)
 {
 	auto* data = reinterpret_cast<ubyte*>(entry->data);
 	ubyte* next = nullptr;
 	uint64 tb_size[4]{};
 	uint64 size[4 * 3]{};
-
 	if (!data)
 		return 0;
-
 	if (data[0] != dtz_magic[0] ||
 		data[1] != dtz_magic[1] ||
 		data[2] != dtz_magic[2] ||
@@ -1229,21 +1100,16 @@ static int init_table_dtz(tb_entry* entry)
 		printf("Corrupted table.\n");
 		return 0;
 	}
-
 	const auto files = data[4] & 0x02 ? 4 : 1;
-
 	data += 5;
-
 	if (!entry->has_pawns)
 	{
 		auto* ptr = reinterpret_cast<struct dtz_entry_piece*>(entry);
 		setup_pieces_piece_dtz(ptr, data, &tb_size[0]);
 		data += ptr->num + 1;
 		data += reinterpret_cast<uintptr_t>(data) & 0x01;
-
 		ptr->precomp = setup_pairs(data, tb_size[0], &size[0], &next, &ptr->flags, 0);
 		data = next;
-
 		ptr->map = data;
 		if (ptr->flags & 2)
 		{
@@ -1254,13 +1120,10 @@ static int init_table_dtz(tb_entry* entry)
 			}
 			data += reinterpret_cast<uintptr_t>(data) & 0x01;
 		}
-
 		ptr->precomp->indextable = reinterpret_cast<char*>(data);
 		data += size[0];
-
 		ptr->precomp->sizetable = reinterpret_cast<ushort*>(data);
 		data += size[1];
-
 		data = reinterpret_cast<ubyte*>(reinterpret_cast<uintptr_t>(data) + 0x3f & ~0x3f);
 		ptr->precomp->data = data;
 		data += size[2];
@@ -1276,13 +1139,11 @@ static int init_table_dtz(tb_entry* entry)
 			data += ptr->num + static_cast<int>(s);
 		}
 		data += reinterpret_cast<uintptr_t>(data) & 0x01;
-
 		for (f = 0; f < files; f++)
 		{
 			ptr->file[f].precomp = setup_pairs(data, tb_size[f], &size[3 * f], &next, &ptr->flags[f], 0);
 			data = next;
 		}
-
 		ptr->map = data;
 		for (f = 0; f < files; f++)
 		{
@@ -1296,19 +1157,16 @@ static int init_table_dtz(tb_entry* entry)
 			}
 		}
 		data += reinterpret_cast<uintptr_t>(data) & 0x01;
-
 		for (f = 0; f < files; f++)
 		{
 			ptr->file[f].precomp->indextable = reinterpret_cast<char*>(data);
 			data += size[3 * f];
 		}
-
 		for (f = 0; f < files; f++)
 		{
 			ptr->file[f].precomp->sizetable = reinterpret_cast<ushort*>(data);
 			data += size[3 * f + 1];
 		}
-
 		for (f = 0; f < files; f++)
 		{
 			data = reinterpret_cast<ubyte*>(reinterpret_cast<uintptr_t>(data) + 0x3f & ~0x3f);
@@ -1316,53 +1174,43 @@ static int init_table_dtz(tb_entry* entry)
 			data += size[3 * f + 2];
 		}
 	}
-
 	return 1;
 }
-
 template <bool LittleEndian>
 static ubyte decompress_pairs(pairs_data* d, const uint64 idx)
 {
 	if (!d->idxbits)
 		return static_cast<ubyte>(d->min_len);
-
 	const auto mainidx = static_cast<uint32>(idx >> d->idxbits);
 	int litidx = (idx & (1ULL << d->idxbits) - 1) - (1ULL << d->idxbits - 1);
 	auto block = *reinterpret_cast<uint32*>(d->indextable + 6 * static_cast<int>(mainidx));
 	if (!LittleEndian)
 		block = b_swap32(block);
-
 	auto idx_offset = *reinterpret_cast<ushort*>(d->indextable + 6 * static_cast<int>(mainidx) + 4);
 	if (!LittleEndian)
 		idx_offset = static_cast<ushort>(idx_offset << 8 | idx_offset >> 8);
 	litidx += idx_offset;
-
 	if (litidx < 0)
 	{
 		do
 		{
 			litidx += d->sizetable[--block] + 1;
-		}
-		while (litidx < 0);
+		} while (litidx < 0);
 	}
 	else
 	{
 		while (litidx > d->sizetable[block])
 			litidx -= d->sizetable[block++] + 1;
 	}
-
 	auto* ptr = reinterpret_cast<uint32*>(d->data + (block << static_cast<uint32>(d->blocksize)));
-
 	const auto m = d->min_len;
 	const auto* const offset = d->offset;
 	const auto* const base = d->base - m;
 	const auto* const symlen = d->symlen;
 	int sym;
-
 	auto code = *reinterpret_cast<uint64*>(ptr);
 	if (LittleEndian)
 		code = b_swap64(code);
-
 	ptr += 2;
 	auto bitcnt = 0; // number of "empty bits" in code
 	for (;;)
@@ -1386,7 +1234,6 @@ static ubyte decompress_pairs(pairs_data* d, const uint64 idx)
 			code |= static_cast<uint64>(tmp) << bitcnt;
 		}
 	}
-
 	const auto* const sympat = d->sympat;
 	while (symlen[sym] != 0)
 	{
@@ -1399,29 +1246,23 @@ static ubyte decompress_pairs(pairs_data* d, const uint64 idx)
 			sym = w[2] << 4 | w[1] >> 4;
 		}
 	}
-
 	return sympat[3 * sym];
 }
-
 void load_dtz_table(const char* str, const uint64 key1, const uint64 key2)
 {
 	int i;
-
 	dtz_table[0].key1 = key1;
 	dtz_table[0].key2 = key2;
 	dtz_table[0].entry = nullptr;
-
 	// find corresponding WDL entry
 	const auto* const ptr2 = tb_hash[key1 >> (64 - tb_hash_bits)];
 	for (i = 0; i < hash_max; i++)
 		if (ptr2[i].key == key1) break;
 	if (i == hash_max) return;
 	auto* const ptr = ptr2[i].ptr;
-
 	auto* ptr3 = static_cast<struct tb_entry*>(malloc(ptr->has_pawns
-		                                                  ? sizeof(struct dtz_entry_pawn)
-		                                                  : sizeof(struct dtz_entry_piece)));
-
+		? sizeof(struct dtz_entry_pawn)
+		: sizeof(struct dtz_entry_piece)));
 	ptr3->data = map_file(str, dtz_suffix, &ptr3->mapping);
 	ptr3->key = ptr->key;
 	ptr3->num = ptr->num;
@@ -1443,7 +1284,6 @@ void load_dtz_table(const char* str, const uint64 key1, const uint64 key2)
 	else
 		dtz_table[0].entry = ptr3;
 }
-
 static void free_wdl_entry(tb_entry* entry)
 {
 	unmap_file(entry->data, entry->mapping);
@@ -1456,8 +1296,8 @@ static void free_wdl_entry(tb_entry* entry)
 	}
 	else
 	{
-		for (auto* ptr = reinterpret_cast<struct tb_entry_pawn*>(entry); const auto& [precomp, factor, pieces, norm] :
-		     ptr->file)
+		for (auto* ptr = reinterpret_cast<struct tb_entry_pawn*>(entry); const auto & [precomp, factor, pieces, norm] :
+		ptr->file)
 		{
 			free(precomp[0]);
 			if (precomp[1])
@@ -1465,7 +1305,6 @@ static void free_wdl_entry(tb_entry* entry)
 		}
 	}
 }
-
 static void free_dtz_entry(tb_entry* entry)
 {
 	unmap_file(entry->data, entry->mapping);
@@ -1476,16 +1315,14 @@ static void free_dtz_entry(tb_entry* entry)
 	}
 	else
 	{
-		for (auto* ptr = reinterpret_cast<struct dtz_entry_pawn*>(entry); const auto& [precomp, factor, pieces, norm] :
-		     ptr->file)
+		for (auto* ptr = reinterpret_cast<struct dtz_entry_pawn*>(entry); const auto & [precomp, factor, pieces, norm] :
+		ptr->file)
 			free(precomp);
 	}
 	free(entry);
 }
-
-static int wdl_to_map[5] = {1, 3, 0, 2, 0};
-static ubyte pa_flags[5] = {8, 0, 0, 0, 4};
-
+static int wdl_to_map[5] = { 1, 3, 0, 2, 0 };
+static ubyte pa_flags[5] = { 8, 0, 0, 0, 4 };
 enum syzygy_piece_type
 {
 	syz_none,
@@ -1497,30 +1334,24 @@ enum syzygy_piece_type
 	syz_king,
 	syz_nb
 };
-
 inline syzygy_piece_type& operator++(syzygy_piece_type& d)
 {
 	return d = static_cast<syzygy_piece_type>(static_cast<int>(d) + 1);
 }
-
 inline syzygy_piece_type& operator--(syzygy_piece_type& d)
 {
 	return d = static_cast<syzygy_piece_type>(static_cast<int>(d) - 1);
 }
-
 constexpr uint8_t pt_from_syz[syz_nb] = {
 	no_piecetype, pt_pawn, pt_knight, pt_bishop, pt_rook, pt_queen, pt_king
 };
-
 constexpr syzygy_piece_type syz_from_pt[num_piecetypes] = {
 	syz_none, syz_king, syz_pawn, syz_knight, syz_bishop, syz_rook, syz_queen
 };
-
 static void prt_str(const position& pos, char* str, const int mirror)
 {
 	syzygy_piece_type pt;
 	int i;
-
 	auto color = !mirror ? white : black;
 	for (pt = syz_king; pt >= syz_pawn; --pt)
 		for (i = pos.number(color, pt_from_syz[pt]); i > 0; i--)
@@ -1532,13 +1363,11 @@ static void prt_str(const position& pos, char* str, const int mirror)
 			*str++ = pchr[6 - pt];
 	*str++ = 0;
 }
-
 static uint64 calc_key(const position& pos, const int mirror)
 {
 	syzygy_piece_type pt;
 	int i;
 	uint64 key = 0;
-
 	auto color = !mirror ? white : black;
 	for (pt = syz_pawn; pt <= syz_king; ++pt)
 		for (i = pos.number(color, pt_from_syz[pt]); i > 0; i--)
@@ -1547,16 +1376,13 @@ static uint64 calc_key(const position& pos, const int mirror)
 	for (pt = syz_pawn; pt <= syz_king; ++pt)
 		for (i = pos.number(color, pt_from_syz[pt]); i > 0; i--)
 			key ^= zobrist::psq[make_piece(black, pt_from_syz[pt])][i - 1];
-
 	return key;
 }
-
 static uint64 calc_key_from_pcs(const int* pcs, const int mirror)
 {
 	syzygy_piece_type pt;
 	int i;
 	uint64 key = 0;
-
 	auto color = !mirror ? 0 : 8;
 	for (pt = syz_pawn; pt <= syz_king; ++pt)
 		for (i = 0; i < pcs[color + pt]; i++)
@@ -1565,10 +1391,8 @@ static uint64 calc_key_from_pcs(const int* pcs, const int mirror)
 	for (pt = syz_pawn; pt <= syz_king; ++pt)
 		for (i = 0; i < pcs[color + pt]; i++)
 			key ^= zobrist::psq[make_piece(black, pt_from_syz[pt])][i];
-
 	return key;
 }
-
 bool is_little_endian()
 {
 	union
@@ -1579,26 +1403,21 @@ bool is_little_endian()
 	x.i = 1;
 	return x.c[0] == 1;
 }
-
 static ubyte decompress_pairs(pairs_data* d, const uint64 idx)
 {
 	static const auto islittleendian = is_little_endian();
 	return islittleendian
-		       ? decompress_pairs<true>(d, idx)
-		       : decompress_pairs<false>(d, idx);
+		? decompress_pairs<true>(d, idx)
+		: decompress_pairs<false>(d, idx);
 }
-
 static int probe_wdl_table(const position& pos, int* success)
 {
 	int i;
 	ubyte res;
 	int p[tb_pieces];
-
 	const auto key = pos.material_key();
-
 	if (key == (zobrist::psq[w_king][0] ^ zobrist::psq[b_king][0]))
 		return 0;
-
 	auto* ptr2 = tb_hash[key >> (64 - tb_hash_bits)];
 	for (i = 0; i < hash_max; i++)
 		if (ptr2[i].key == key) break;
@@ -1607,7 +1426,6 @@ static int probe_wdl_table(const position& pos, int* success)
 		*success = 0;
 		return 0;
 	}
-
 	auto* ptr = ptr2[i].ptr;
 	if (!ptr->ready)
 	{
@@ -1632,11 +1450,9 @@ static int probe_wdl_table(const position& pos, int* success)
 		}
 		unlock(tb_mutex);
 	}
-
 	int b_side;
 	int mirror;
 	int c_mirror;
-
 	if (!ptr->symmetric)
 	{
 		if (key != ptr->key)
@@ -1657,7 +1473,6 @@ static int probe_wdl_table(const position& pos, int* success)
 		mirror = pos.on_move() == white ? 0 : 0x38;
 		b_side = 0;
 	}
-
 	if (uint64 idx; !ptr->has_pawns)
 	{
 		const auto* entry = reinterpret_cast<struct tb_entry_piece*>(ptr);
@@ -1665,12 +1480,11 @@ static int probe_wdl_table(const position& pos, int* success)
 		for (i = 0; i < entry->num;)
 		{
 			auto bb = pos.pieces(static_cast<side>((pc[i] ^ c_mirror) >> 3),
-			                     pt_from_syz[pc[i] & 0x07]);
+				pt_from_syz[pc[i] & 0x07]);
 			do
 			{
 				p[i++] = pop_lsb(&bb);
-			}
-			while (bb);
+			} while (bb);
 		}
 		idx = encode_piece(entry, entry->norm[b_side], p, entry->factor[b_side]);
 		res = decompress_pairs(entry->precomp[b_side], idx);
@@ -1684,37 +1498,30 @@ static int probe_wdl_table(const position& pos, int* success)
 		do
 		{
 			p[i++] = pop_lsb(&bb) ^ mirror;
-		}
-		while (bb);
+		} while (bb);
 		const auto f = pawn_file(entry, p);
 		const auto* pc = entry->file[f].pieces[b_side];
 		while (i < entry->num)
 		{
 			bb = pos.pieces(static_cast<side>((pc[i] ^ c_mirror) >> 3),
-			                pt_from_syz[pc[i] & 0x07]);
+				pt_from_syz[pc[i] & 0x07]);
 			do
 			{
 				p[i++] = pop_lsb(&bb) ^ mirror;
-			}
-			while (bb);
+			} while (bb);
 		}
 		idx = encode_pawn(entry, entry->file[f].norm[b_side], p, entry->file[f].factor[b_side]);
 		res = decompress_pairs(entry->file[f].precomp[b_side], idx);
 	}
-
 	return static_cast<int>(res) - 2;
 }
-
 static int probe_dtz_table(const position& pos, const int wdl, int* success)
 {
 	tb_entry* ptr;
 	int i;
 	int res;
-
 	int p[tb_pieces];
-
 	const auto key = pos.material_key();
-
 	if (dtz_table[0].key1 != key && dtz_table[0].key2 != key)
 	{
 		for (i = 1; i < dtz_entries; i++)
@@ -1747,18 +1554,15 @@ static int probe_dtz_table(const position& pos, const int wdl, int* success)
 			load_dtz_table(str, calc_key(pos, mirror), calc_key(pos, !mirror));
 		}
 	}
-
 	ptr = dtz_table[0].entry;
 	if (!ptr)
 	{
 		*success = 0;
 		return 0;
 	}
-
 	int b_side;
 	int mirror;
 	int c_mirror;
-
 	if (!ptr->symmetric)
 	{
 		if (key != ptr->key)
@@ -1779,7 +1583,6 @@ static int probe_dtz_table(const position& pos, const int wdl, int* success)
 		mirror = pos.on_move() == white ? 0 : 0x38;
 		b_side = 0;
 	}
-
 	if (uint64 idx; !ptr->has_pawns)
 	{
 		auto* entry = reinterpret_cast<struct dtz_entry_piece*>(ptr);
@@ -1792,19 +1595,16 @@ static int probe_dtz_table(const position& pos, const int wdl, int* success)
 		for (i = 0; i < entry->num;)
 		{
 			auto bb = pos.pieces(static_cast<side>((pc[i] ^ c_mirror) >> 3),
-			                     pt_from_syz[pc[i] & 0x07]);
+				pt_from_syz[pc[i] & 0x07]);
 			do
 			{
 				p[i++] = pop_lsb(&bb);
-			}
-			while (bb);
+			} while (bb);
 		}
 		idx = encode_piece(reinterpret_cast<tb_entry_piece*>(entry), entry->norm, p, entry->factor);
 		res = decompress_pairs(entry->precomp, idx);
-
 		if (entry->flags & 2)
 			res = entry->map[entry->map_idx[wdl_to_map[wdl + 2]] + res];
-
 		if (!(entry->flags & pa_flags[wdl + 2]) || wdl & 1)
 			res *= 2;
 	}
@@ -1817,8 +1617,7 @@ static int probe_dtz_table(const position& pos, const int wdl, int* success)
 		do
 		{
 			p[i++] = pop_lsb(&bb) ^ mirror;
-		}
-		while (bb);
+		} while (bb);
 		const auto f = pawn_file(reinterpret_cast<struct tb_entry_pawn*>(entry), p);
 		if ((entry->flags[f] & 1) != b_side)
 		{
@@ -1829,30 +1628,24 @@ static int probe_dtz_table(const position& pos, const int wdl, int* success)
 		while (i < entry->num)
 		{
 			bb = pos.pieces(static_cast<side>((pc[i] ^ c_mirror) >> 3),
-			                pt_from_syz[pc[i] & 0x07]);
+				pt_from_syz[pc[i] & 0x07]);
 			do
 			{
 				p[i++] = pop_lsb(&bb) ^ mirror;
-			}
-			while (bb);
+			} while (bb);
 		}
 		idx = encode_pawn(reinterpret_cast<tb_entry_pawn*>(entry), entry->file[f].norm, p, entry->file[f].factor);
 		res = decompress_pairs(entry->file[f].precomp, idx);
-
 		if (entry->flags[f] & 2)
 			res = entry->map[entry->map_idx[f][wdl_to_map[wdl + 2]] + res];
-
 		if (!(entry->flags[f] & pa_flags[wdl + 2]) || wdl & 1)
 			res *= 2;
 	}
-
 	return res;
 }
-
 static s_move* add_underprom_caps(const position& pos, const s_move* stack, s_move* end)
 {
 	auto* extra = end;
-
 	for (const auto* moves = stack; moves < end; moves++)
 	{
 		if (const auto move = moves->move; move_type(move) >= promotion_p && !pos.empty_square(to_square(move)))
@@ -1862,16 +1655,13 @@ static s_move* add_underprom_caps(const position& pos, const s_move* stack, s_mo
 			(*extra++).move = move - (3 << 12);
 		}
 	}
-
 	return extra;
 }
-
 static int probe_ab(position& pos, int alpha, const int beta, int* success)
 {
 	int val;
 	s_move stack[64];
 	s_move* end;
-
 	if (!pos.is_in_check())
 	{
 		end = generate_moves<captures_promotions>(pos, stack);
@@ -1879,7 +1669,6 @@ static int probe_ab(position& pos, int alpha, const int beta, int* success)
 	}
 	else
 		end = generate_moves<evade_check>(pos, stack);
-
 	for (const auto* moves = stack; moves < end; moves++)
 	{
 		const auto capture = moves->move;
@@ -1900,7 +1689,6 @@ static int probe_ab(position& pos, int alpha, const int beta, int* success)
 			alpha = val;
 		}
 	}
-
 	val = probe_wdl_table(pos, success);
 	if (*success == 0) return 0;
 	if (alpha >= val)
@@ -1911,26 +1699,21 @@ static int probe_ab(position& pos, int alpha, const int beta, int* success)
 	*success = 1;
 	return val;
 }
-
 int syzygy_probe_wdl(position& pos, int* success)
 {
 	*success = 1;
 	auto val = probe_ab(pos, -2, 2, success);
-
 	if (pos.enpassant_square() == no_square)
 		return val;
 	if (!*success) return 0;
-
 	auto v1 = -3;
 	s_move stack[192];
 	s_move* moves;
 	s_move* end;
-
 	if (!pos.is_in_check())
 		end = generate_moves<captures_promotions>(pos, stack);
 	else
 		end = generate_moves<evade_check>(pos, stack);
-
 	for (moves = stack; moves < end; moves++)
 	{
 		const auto capture = moves->move;
@@ -1967,31 +1750,24 @@ int syzygy_probe_wdl(position& pos, int* success)
 				val = v1;
 		}
 	}
-
 	return val;
 }
-
 static int probe_dtz_no_ep(position& pos, int* success)
 {
 	const auto wdl = probe_ab(pos, -2, 2, success);
 	if (*success == 0) return 0;
-
 	if (wdl == 0) return 0;
-
 	if (*success == 2)
 		return wdl == 2 ? 1 : 101;
-
 	s_move stack[192];
 	s_move* moves;
 	const s_move* end = nullptr;
-
 	if (wdl > 0)
 	{
 		if (!pos.is_in_check())
 			end = generate_moves<all_moves>(pos, stack);
 		else
 			end = generate_moves<evade_check>(pos, stack);
-
 		for (moves = stack; moves < end; moves++)
 		{
 			const auto move = moves->move;
@@ -2000,22 +1776,20 @@ static int probe_dtz_no_ep(position& pos, int* success)
 				continue;
 			pos.play_move(move);
 			const auto val = pos.enpassant_square() != no_square
-				                 ? -syzygy_probe_wdl(pos, success)
-				                 : -probe_ab(pos, -2, -wdl + 1, success);
+				? -syzygy_probe_wdl(pos, success)
+				: -probe_ab(pos, -2, -wdl + 1, success);
 			pos.take_move_back(move);
 			if (*success == 0) return 0;
 			if (val == wdl)
 				return val == 2 ? 1 : 101;
 		}
 	}
-
 	auto dtz = 1 + probe_dtz_table(pos, wdl, success);
 	if (*success >= 0)
 	{
 		if (wdl & 1) dtz += 100;
 		return wdl >= 0 ? dtz : -dtz;
 	}
-
 	if (wdl > 0)
 	{
 		auto best = 0xffff;
@@ -2066,31 +1840,24 @@ static int probe_dtz_no_ep(position& pos, int* success)
 	}
 	return best;
 }
-
 constexpr int wdl_to_dtz[] = {
 	-1, -101, 0, 101, 1
 };
-
 int syzygy_probe_dtz(position& pos, int* success)
 {
 	*success = 1;
 	auto val = probe_dtz_no_ep(pos, success);
-
 	if (pos.enpassant_square() == no_square)
 		return val;
 	if (*success == 0) return 0;
-
 	auto v1 = -3;
-
 	s_move stack[192];
 	s_move* moves;
 	s_move* end;
-
 	if (!pos.is_in_check())
 		end = generate_moves<captures_promotions>(pos, stack);
 	else
 		end = generate_moves<evade_check>(pos, stack);
-
 	for (moves = stack; moves < end; moves++)
 	{
 		const auto capture = moves->move;
@@ -2151,6 +1918,5 @@ int syzygy_probe_dtz(position& pos, int* success)
 				val = v1;
 		}
 	}
-
 	return val;
 }
