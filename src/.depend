@@ -95,8 +95,7 @@ perft.o: util/perft.cpp util/util.h util/../position.h util/../bitboard.h \
  util/../material.h util/../movepick.h util/../movegen.h util/../mutex.h \
  util/../pawn.h util/../macro/square.h util/../search.h util/../chrono.h \
  util/../uci.h
-util.o: util/util.cpp util/../util/util.h util/../util/../position.h \
- util/../util/../bitboard.h util/../util/../fire.h \
- util/../util/../bitop.h util/../movegen.h util/../macro/file.h \
- util/../macro/rank.h
+util.o: util/util.cpp util/../fire.h util/../movegen.h util/../position.h \
+ util/../bitboard.h util/../bitop.h util/../macro/file.h \
+ util/../macro/rank.h util/../util/util.h
 zobrist.o: zobrist.cpp zobrist.h fire.h position.h bitboard.h bitop.h
