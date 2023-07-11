@@ -1,27 +1,20 @@
 /*
   Fire is a freeware UCI chess playing engine authored by Norman Schmidt.
-
   Fire utilizes many state-of-the-art chess programming ideas and techniques
   which have been documented in detail at https://www.chessprogramming.org/
   and demonstrated via the very strong open-source chess engine Stockfish...
   https://github.com/official-stockfish/Stockfish.
-
   Fire is free software: you can redistribute it and/or modify it under the
   terms of the GNU General Public License as published by the Free Software
   Foundation, either version 3 of the License, or any later version.
-
   You should have received a copy of the GNU General Public License with
   this program: copying.txt.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 #include "../bitboard.h"
 #include "../fire.h"
 #include "../macro/rank.h"
-
-namespace kpk
-{
+namespace kpk {
 	constexpr uint32_t max_index = 196608;
-
 	uint32_t kpk_bitbase[max_index / 32] =
 	{
 		0xfffffcfc, 0xfffeffff, 0xfffff8f8, 0xfffeffff, 0xfffff1f1, 0xfffeffff, 0xffffe3e3, 0xfffeffff,
@@ -793,17 +786,14 @@ namespace kpk
 		0x7f7f7778, 0x7c7c7f7f, 0x7f7f7700, 0x38387f7f, 0x7f7f7700, 0x10107f7f, 0x7f7f7700, 0x00007f7f,
 		0x7f7f7700, 0x04047f7f, 0x7f7f7700, 0x0e0e7f7f, 0x7f7f770f, 0x1f1f7f7f, 0xfffff73f, 0x3f3fffff
 	};
-
 	uint32_t index(const side me, const square bk_sq, const square wk_sq, const square pawn)
 	{
 		return wk_sq | bk_sq << 6 | me << 12 | file_of(pawn) << 13 | rank_7 - rank_of(pawn) << 15;
 	}
 }
-
 bool kpk::probe(const square wk_sq, const square wp_sq, const square bk_sq, const side me)
 {
 	assert(file_of(wp_sq) <= file_d);
-
 	const auto idx = index(me, bk_sq, wk_sq, wp_sq);
 	return kpk_bitbase[idx / 32] & 1 << (idx & 0x1F);
 }
