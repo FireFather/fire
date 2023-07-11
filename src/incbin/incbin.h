@@ -33,8 +33,7 @@
 # else
 # define INCBIN_ALIGNMENT_INDEX 2
 #endif
-
-/* Lookup table of (1 << n) where `n' is `INCBIN_ALIGNMENT_INDEX' */
+ /* Lookup table of (1 << n) where `n' is `INCBIN_ALIGNMENT_INDEX' */
 #define INCBIN_ALIGN_SHIFT_0 1
 #define INCBIN_ALIGN_SHIFT_1 2
 #define INCBIN_ALIGN_SHIFT_2 4
@@ -42,13 +41,11 @@
 #define INCBIN_ALIGN_SHIFT_4 16
 #define INCBIN_ALIGN_SHIFT_5 32
 #define INCBIN_ALIGN_SHIFT_6 64
-
 /* Actual alignment value */
 #define INCBIN_ALIGNMENT \
     INCBIN_CONCATENATE( \
         INCBIN_CONCATENATE(INCBIN_ALIGN_SHIFT, _), \
         INCBIN_ALIGNMENT_INDEX)
-
 /* Stringize */
 #define INCBIN_STR(X) \
     #X
@@ -64,7 +61,6 @@
     X
 #define INCBIN_INVOKE(N, ...) \
     INCBIN_EVAL(N(__VA_ARGS__))
-
 /* Green Hills uses a different directive for including binary data */
 #if defined(__ghs__)
 #  if (__ghs_asm == 2)
@@ -76,20 +72,17 @@
 #else
 #  define INCBIN_MACRO ".incbin"
 #endif
-
 #ifndef _MSC_VER
 #  define INCBIN_ALIGN \
     __attribute__((aligned(INCBIN_ALIGNMENT)))
 #else
 #  define INCBIN_ALIGN __declspec(align(INCBIN_ALIGNMENT))
 #endif
-
 #if defined(__arm__) || /* GNU C and RealView */ \
     defined(__arm) || /* Diab */ \
     defined(_ARM) /* ImageCraft */
 #  define INCBIN_ARM
 #endif
-
 #ifdef __GNUC__
 /* Utilize .balign where supported */
 #  define INCBIN_ALIGN_HOST ".balign " INCBIN_STRINGIZE(INCBIN_ALIGNMENT) "\n"
@@ -106,7 +99,6 @@
 #  define INCBIN_ALIGN_HOST ".align " INCBIN_STRINGIZE(INCBIN_ALIGNMENT) "\n"
 #  define INCBIN_ALIGN_BYTE ".align 1\n"
 #endif
-
 /* INCBIN_CONST is used by incbin.c generated files */
 #if defined(__cplusplus)
 #  define INCBIN_EXTERNAL extern "C"
@@ -115,7 +107,6 @@
 #  define INCBIN_EXTERNAL extern
 #  define INCBIN_CONST    const
 #endif
-
 /**
  * @brief Optionally override the linker section into which data is emitted.
  *
@@ -137,9 +128,8 @@
 #    define INCBIN_OUTPUT_SECTION         ".rodata"
 #  endif
 #endif
-
 #if defined(__APPLE__)
-/* The directives are different for Apple branded compilers */
+ /* The directives are different for Apple branded compilers */
 #  define INCBIN_SECTION         INCBIN_OUTPUT_SECTION "\n"
 #  define INCBIN_GLOBAL(NAME)    ".globl " INCBIN_MANGLE INCBIN_STRINGIZE(INCBIN_PREFIX) #NAME "\n"
 #  define INCBIN_INT             ".long "
@@ -160,22 +150,20 @@
 #    define INCBIN_MANGLE        ""
 #  endif
 #  if defined(INCBIN_ARM)
-/* On arm assemblers, `@' is used as a line comment token */
+ /* On arm assemblers, `@' is used as a line comment token */
 #    define INCBIN_TYPE(NAME)    ".type " INCBIN_STRINGIZE(INCBIN_PREFIX) #NAME ", %object\n"
 #  elif defined(__MINGW32__) || defined(__MINGW64__)
-/* Mingw doesn't support this directive either */
+ /* Mingw doesn't support this directive either */
 #    define INCBIN_TYPE(NAME)
 #  else
-/* It's safe to use `@' on other architectures */
+ /* It's safe to use `@' on other architectures */
 #    define INCBIN_TYPE(NAME)    ".type " INCBIN_STRINGIZE(INCBIN_PREFIX) #NAME ", @object\n"
 #  endif
 #  define INCBIN_BYTE            ".byte "
 #endif
-
 /* List of style types used for symbol names */
 #define INCBIN_STYLE_CAMEL 0
 #define INCBIN_STYLE_SNAKE 1
-
 /**
  * @brief Specify the prefix to use for symbol names.
  *
@@ -205,49 +193,46 @@
 #if !defined(INCBIN_PREFIX)
 #  define INCBIN_PREFIX g
 #endif
-
-/**
- * @brief Specify the style used for symbol names.
- *
- * Possible options are
- * - INCBIN_STYLE_CAMEL "CamelCase"
- * - INCBIN_STYLE_SNAKE "snake_case"
- *
- * Default option is *INCBIN_STYLE_CAMEL* producing symbols of the form:
- * @code
- * #include "incbin.h"
- * INCBIN(Foo, "foo.txt");
- *
- * // Now you have the following symbols:
- * // const unsigned char <prefix>FooData[];
- * // const unsigned char *const <prefix>FooEnd;
- * // const unsigned int <prefix>FooSize;
- * @endcode
- *
- * If however you specify a style before including: e.g:
- * @code
- * #define INCBIN_STYLE INCBIN_STYLE_SNAKE
- * #include "incbin.h"
- * INCBIN(foo, "foo.txt");
- *
- * // Now you have the following symbols:
- * // const unsigned char <prefix>foo_data[];
- * // const unsigned char *const <prefix>foo_end;
- * // const unsigned int <prefix>foo_size;
- * @endcode
- */
+ /**
+  * @brief Specify the style used for symbol names.
+  *
+  * Possible options are
+  * - INCBIN_STYLE_CAMEL "CamelCase"
+  * - INCBIN_STYLE_SNAKE "snake_case"
+  *
+  * Default option is *INCBIN_STYLE_CAMEL* producing symbols of the form:
+  * @code
+  * #include "incbin.h"
+  * INCBIN(Foo, "foo.txt");
+  *
+  * // Now you have the following symbols:
+  * // const unsigned char <prefix>FooData[];
+  * // const unsigned char *const <prefix>FooEnd;
+  * // const unsigned int <prefix>FooSize;
+  * @endcode
+  *
+  * If however you specify a style before including: e.g:
+  * @code
+  * #define INCBIN_STYLE INCBIN_STYLE_SNAKE
+  * #include "incbin.h"
+  * INCBIN(foo, "foo.txt");
+  *
+  * // Now you have the following symbols:
+  * // const unsigned char <prefix>foo_data[];
+  * // const unsigned char *const <prefix>foo_end;
+  * // const unsigned int <prefix>foo_size;
+  * @endcode
+  */
 #if !defined(INCBIN_STYLE)
 #  define INCBIN_STYLE INCBIN_STYLE_CAMEL
 #endif
-
-/* Style lookup tables */
+  /* Style lookup tables */
 #define INCBIN_STYLE_0_DATA Data
 #define INCBIN_STYLE_0_END End
 #define INCBIN_STYLE_0_SIZE Size
 #define INCBIN_STYLE_1_DATA _data
 #define INCBIN_STYLE_1_END _end
 #define INCBIN_STYLE_1_SIZE _size
-
 /* Style lookup: returning identifier */
 #define INCBIN_STYLE_IDENT(TYPE) \
     INCBIN_CONCATENATE( \
@@ -255,12 +240,10 @@
         INCBIN_CONCATENATE( \
             INCBIN_EVAL(INCBIN_STYLE), \
             INCBIN_CONCATENATE(_, TYPE)))
-
 /* Style lookup: returning string literal */
 #define INCBIN_STYLE_STRING(TYPE) \
     INCBIN_STRINGIZE( \
         INCBIN_STYLE_IDENT(TYPE)) \
-
 /* Generate the global labels by indirectly invoking the macro with our style
  * type and concatenating the name against them. */
 #define INCBIN_GLOBAL_LABELS(NAME, TYPE) \
@@ -278,27 +261,26 @@
             INCBIN_INVOKE( \
                 INCBIN_STYLE_IDENT, \
                 TYPE)))
-
-/**
- * @brief Externally reference binary data included in another translation unit.
- *
- * Produces three external symbols that reference the binary data included in
- * another translation unit.
- *
- * The symbol names are a concatenation of `INCBIN_PREFIX' before *NAME*; with
- * "Data", as well as "End" and "Size" after. An example is provided below.
- *
- * @param NAME The name given for the binary data
- *
- * @code
- * INCBIN_EXTERN(Foo);
- *
- * // Now you have the following symbols:
- * // extern const unsigned char <prefix>FooData[];
- * // extern const unsigned char *const <prefix>FooEnd;
- * // extern const unsigned int <prefix>FooSize;
- * @endcode
- */
+ /**
+  * @brief Externally reference binary data included in another translation unit.
+  *
+  * Produces three external symbols that reference the binary data included in
+  * another translation unit.
+  *
+  * The symbol names are a concatenation of `INCBIN_PREFIX' before *NAME*; with
+  * "Data", as well as "End" and "Size" after. An example is provided below.
+  *
+  * @param NAME The name given for the binary data
+  *
+  * @code
+  * INCBIN_EXTERN(Foo);
+  *
+  * // Now you have the following symbols:
+  * // extern const unsigned char <prefix>FooData[];
+  * // extern const unsigned char *const <prefix>FooEnd;
+  * // extern const unsigned int <prefix>FooSize;
+  * @endcode
+  */
 #define INCBIN_EXTERN(NAME) \
     INCBIN_EXTERNAL const INCBIN_ALIGN unsigned char \
         INCBIN_CONCATENATE( \
@@ -312,34 +294,33 @@
         INCBIN_CONCATENATE( \
             INCBIN_CONCATENATE(INCBIN_PREFIX, NAME), \
             INCBIN_STYLE_IDENT(SIZE))
-
-/**
- * @brief Include a binary file into the current translation unit.
- *
- * Includes a binary file into the current translation unit, producing three symbols
- * for objects that encode the data and size respectively.
- *
- * The symbol names are a concatenation of `INCBIN_PREFIX' before *NAME*; with
- * "Data", as well as "End" and "Size" after. An example is provided below.
- *
- * @param NAME The name to associate with this binary data (as an identifier.)
- * @param FILENAME The file to include (as a string literal.)
- *
- * @code
- * INCBIN(Icon, "icon.png");
- *
- * // Now you have the following symbols:
- * // const unsigned char <prefix>IconData[];
- * // const unsigned char *const <prefix>IconEnd;
- * // const unsigned int <prefix>IconSize;
- * @endcode
- *
- * @warning This must be used in global scope
- * @warning The identifiers may be different if INCBIN_STYLE is not default
- *
- * To externally reference the data included by this in another translation unit
- * please @see INCBIN_EXTERN.
- */
+  /**
+   * @brief Include a binary file into the current translation unit.
+   *
+   * Includes a binary file into the current translation unit, producing three symbols
+   * for objects that encode the data and size respectively.
+   *
+   * The symbol names are a concatenation of `INCBIN_PREFIX' before *NAME*; with
+   * "Data", as well as "End" and "Size" after. An example is provided below.
+   *
+   * @param NAME The name to associate with this binary data (as an identifier.)
+   * @param FILENAME The file to include (as a string literal.)
+   *
+   * @code
+   * INCBIN(Icon, "icon.png");
+   *
+   * // Now you have the following symbols:
+   * // const unsigned char <prefix>IconData[];
+   * // const unsigned char *const <prefix>IconEnd;
+   * // const unsigned int <prefix>IconSize;
+   * @endcode
+   *
+   * @warning This must be used in global scope
+   * @warning The identifiers may be different if INCBIN_STYLE is not default
+   *
+   * To externally reference the data included by this in another translation unit
+   * please @see INCBIN_EXTERN.
+   */
 #ifdef _MSC_VER
 #define INCBIN(NAME, FILENAME) \
     INCBIN_EXTERN(NAME)
@@ -363,6 +344,5 @@
             ".text\n" \
     ); \
     INCBIN_EXTERN(NAME)
-
 #endif
 #endif
