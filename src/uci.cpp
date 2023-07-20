@@ -33,7 +33,7 @@ void new_game()
 	search::reset();
 }
 // initialize system
-void init(const int hash_size)
+int init(const int hash_size)
 {
 	thread_pool.start = now();
 	bitboard::init();
@@ -43,7 +43,7 @@ void init(const int hash_size)
 	search::reset();
 	main_hash.init(hash_size);
 	const char* filename = uci_nnue_evalfile.c_str();
-	nnue_init(filename);
+	return nnue_init(filename);
 }
 // create infinite loop while parsing for UCI input stream tokens (words)
 void uci_loop(const int argc, char* argv[])
