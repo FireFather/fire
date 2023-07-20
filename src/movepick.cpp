@@ -123,7 +123,7 @@ namespace movepick {
 			while (true)
 			{
 				if (begin == end) return begin;
-				if (!(end->value > val)) end--;
+				if (end->value <= val) end--;
 				else break;
 			}
 			const auto tmp = *begin;
