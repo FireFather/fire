@@ -22,9 +22,9 @@
 inline uint64_t pext(const uint64_t occupied, const uint64_t mask) { return _pext_u64(occupied, mask); }
 #endif
 #if defined(_MSC_VER)
-inline int popcnt(uint64_t bb) { return std::popcount(bb); }
-inline square lsb(uint64_t bb) { return static_cast<square>(std::countr_zero(bb)); }
-inline square msb(uint64_t bb) { unsigned long idx; _BitScanReverse64(&idx, bb); return static_cast<square>(idx); }
+inline int popcnt(const uint64_t bb) { return std::popcount(bb); }
+inline square lsb(const uint64_t bb) { return static_cast<square>(std::countr_zero(bb)); }
+inline square msb(const uint64_t bb) { unsigned long idx; _BitScanReverse64(&idx, bb); return static_cast<square>(idx); }
 inline void prefetch(void* address) { _mm_prefetch(static_cast<char*>(address), _MM_HINT_T0); }
 inline void prefetch2(void* address) { _mm_prefetch(static_cast<char*>(address), _MM_HINT_T0); _mm_prefetch(static_cast<char*>(address) + 64, _MM_HINT_T0); }
 #define CACHE_ALIGN __declspec(align(64))

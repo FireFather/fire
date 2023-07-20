@@ -29,7 +29,7 @@ inline std::string uci_nnue_evalfile = "05152023-045758.bin";
 inline std::string engine_mode = "nnue";
 inline bool bench_active = false;
 // function declarations
-void init(int hash_size);
+int init(int hash_size);
 void new_game();
 void uci_loop(int argc, char* argv[]);
 void set_position(position& pos, std::istringstream& is);

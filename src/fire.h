@@ -178,8 +178,8 @@ enum stage
 // constant expressions
 constexpr score make_score(const int mg, const int eg) { return static_cast<score>((static_cast<int>(mg * score_factor) << 16) + static_cast<int>(eg * score_factor)); }
 constexpr int remake_score(const int mg, const int eg) { return (static_cast<int>(mg) << 16) + static_cast<int>(eg); }
-inline int mg_value(const int score) { const union { uint16_t u;		int16_t s; } mg = { static_cast<uint16_t>(static_cast<unsigned>(score + 0x8000) >> 16) };	return mg.s; }
-inline int eg_value(const int score) { const union { uint16_t u;		int16_t s; } eg = { static_cast<uint16_t>(static_cast<unsigned>(score)) }; return eg.s; }
+inline int mg_value(const int score) { const union { uint16_t u; int16_t s; } mg = { static_cast<uint16_t>(static_cast<unsigned>(score + 0x8000) >> 16) }; return mg.s; }
+inline int eg_value(const int score) { const union { uint16_t u; int16_t s; } eg = { static_cast<uint16_t>(static_cast<unsigned>(score)) }; return eg.s; }
 inline int operator/(const score score, const int i) { return remake_score(mg_value(score) / i, eg_value(score) / i); }
 constexpr side operator~(const side color) { return static_cast<side>(color ^ 1); }
 constexpr square operator~(const square sq) { return static_cast<square>(sq ^ 56); }
@@ -198,12 +198,12 @@ constexpr square from_square(const uint32_t move) { return static_cast<square>(m
 constexpr square to_square(const uint32_t move) { return static_cast<square>(move & 0x3F); }
 constexpr int move_type(const uint32_t move) { return static_cast<int>(move & 15 << 12); }
 constexpr uint8_t promotion_piece(const uint32_t move) { return static_cast<uint8_t>(pt_knight + ((move >> 12 & 15) - (promotion_p >> 12))); }
-constexpr uint8_t piece_moved(const uint32_t move) { assert(move < castle_move);	return static_cast<uint8_t>(move >> 12 & 7); }
+constexpr uint8_t piece_moved(const uint32_t move) { assert(move < castle_move); return static_cast<uint8_t>(move >> 12 & 7); }
 constexpr uint32_t make_move(const square from, const square to) { return static_cast<uint32_t>(to + (from << 6)); }
 constexpr uint32_t make_move(const int type, const square from, const square to) { return static_cast<uint32_t>(to + (from << 6) + type); }
 constexpr bool is_ok(const uint32_t move) { return move != no_move && move != null_move; }
 template <int capacity>struct movelist {
-	int move_number;	uint32_t moves[capacity] = {};	movelist() : move_number(0) {}
+	int move_number; uint32_t moves[capacity] = {}; movelist() : move_number(0) {}
 	void add(uint32_t move) { if (move_number < capacity) moves[move_number++] = move; }
 	uint32_t& operator[](int index) { return moves[index]; }
 	const uint32_t& operator[](int index) const { return moves[index]; }
@@ -211,5 +211,5 @@ template <int capacity>struct movelist {
 	void resize(const int new_size) { move_number = new_size; }
 	void clear() { move_number = 0; }
 	[[nodiscard]] bool empty() const { return move_number == 0; }
-	int find(uint32_t move) { for (auto i = 0; i < move_number; i++)			if (moves[i] == move)				return i;		return -1; }
+	int find(uint32_t move) { for (auto i = 0; i < move_number; i++) if (moves[i] == move)return i; return -1; }
 };
