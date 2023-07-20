@@ -157,8 +157,8 @@ sfactor endgame_knpk(const position& pos)
 	const auto pawn = endgame::normalize_pawn_side(pos, strong, pos.piece_square(strong, pt_pawn));
 	const auto black_king = endgame::normalize_pawn_side(pos, strong, pos.king(weak));
 	if (pawn == a7 && distance(a8, black_king) <= 1) return draw_factor;
-	if (pawn == a7 && white_king == a8 && (black_king == c7	&& !(pos.on_move() == strong) ^ !(~dark_squares & knight)
-		|| black_king == c8 && !(pos.on_move() == strong) ^ !(dark_squares & knight))) return draw_factor;
+	if (pawn == a7 && white_king == a8 && (black_king == c7	&& pos.on_move() != strong ^ !(~dark_squares & knight)
+		|| black_king == c8 && pos.on_move() != strong ^ !(dark_squares & knight))) return draw_factor;
 	return no_factor;
 }
 template <side strong>
