@@ -22,6 +22,7 @@
 #include "../movegen.h"
 #include "../position.h"
 #include "../zobrist.h"
+
 constexpr auto tb_max_piece = 254;
 constexpr auto tb_max_pawn = 256;
 constexpr auto hash_max = 7;
@@ -80,36 +81,22 @@ static void close_tb(FD const fd)
 static char* map_file(const char* name, const char* suffix, uint64* mapping)
 {
 	FD const fd = open_tb(name, suffix);
-	if (fd == FD_ERR)
-		return nullptr;
+	if (fd == FD_ERR) return nullptr;
 #ifndef _WIN32
 	struct stat statbuf {};
 	fstat(fd, &statbuf);
 	*mapping = statbuf.st_size;
-	char* data = (char*)mmap(NULL, statbuf.st_size, PROT_READ,
-		MAP_SHARED, fd, 0);
-	if (data == (char*)(-1)) {
-		printf("Could not mmap() %s.\n", name);
-		exit(1);
-	}
+	char* data = (char*)mmap(NULL, statbuf.st_size, PROT_READ, MAP_SHARED, fd, 0);
+	if (data == (char*)(-1)) { printf("Could not mmap() %s.\n", name); exit(1); }
 #else
 	DWORD size_high;
 	const auto size_low = GetFileSize(fd, &size_high);
 	//  *size = ((uint64)size_high) << 32 | ((uint64)size_low);
-	auto* map = CreateFileMapping(fd, nullptr, PAGE_READONLY, size_high, size_low,
-		nullptr);
-	if (map == nullptr)
-	{
-		printf("CreateFileMapping() failed.\n");
-		exit(1);
-	}
+	auto* map = CreateFileMapping(fd, nullptr, PAGE_READONLY, size_high, size_low, nullptr);
+	if (map == nullptr) { printf("CreateFileMapping() failed.\n"); exit(1); }
 	*mapping = reinterpret_cast<uint64>(map);
 	auto* const data = static_cast<char*>(MapViewOfFile(map, FILE_MAP_READ, 0, 0, 0));
-	if (data == nullptr)
-	{
-		printf("MapViewOfFile() failed, name = %s%s, error = %lu.\n", name, suffix, GetLastError());
-		exit(1);
-	}
+	if (data == nullptr) { printf("MapViewOfFile() failed, name = %s%s, error = %lu.\n", name, suffix, GetLastError()); exit(1); }
 #endif
 	close_tb(fd);
 	return data;
@@ -134,11 +121,7 @@ static void add_to_hash(tb_entry* ptr, const uint64 key)
 	auto i = 0;
 	while (i < hash_max && tb_hash[hshidx][i].ptr)
 		i++;
-	if (i == hash_max)
-	{
-		printf("HSHMAX too low!\n");
-		exit(1);
-	}
+	if (i == hash_max) { printf("HSHMAX too low!\n"); exit(1); }
 	tb_hash[hshidx][i].key = key;
 	tb_hash[hshidx][i].ptr = ptr;
 }
@@ -150,74 +133,54 @@ static void init_tb(const char* str)
 	FD fd = open_tb(str, wdl_suffix);
 	if (fd == FD_ERR) return;
 	close_tb(fd);
-	for (i = 0; i < 16; i++)
-		pcs[i] = 0;
+	for (i = 0; i < 16; i++)pcs[i] = 0;
 	auto color = 0;
 	for (const auto* s = str; *s; s++)
 		switch (*s)
 		{
 		case 'P':
-			pcs[tb_pawn | color]++;
-			break;
+			pcs[tb_pawn | color]++;	break;
 		case 'N':
-			pcs[tb_knight | color]++;
-			break;
+			pcs[tb_knight | color]++; break;
 		case 'B':
-			pcs[tb_bishop | color]++;
-			break;
+			pcs[tb_bishop | color]++; break;
 		case 'R':
-			pcs[tb_rook | color]++;
-			break;
+			pcs[tb_rook | color]++; break;
 		case 'Q':
-			pcs[tb_queen | color]++;
-			break;
+			pcs[tb_queen | color]++; break;
 		case 'K':
-			pcs[tb_king | color]++;
-			break;
+			pcs[tb_king | color]++; break;
 		case 'v':
-			color = 0x08;
-			break;
+			color = 0x08; break;
 		default:;
 		}
 	for (i = 0; i < 8; i++)
-		if (pcs[i] != pcs[i + 8])
-			break;
+		if (pcs[i] != pcs[i + 8])break;
 	const auto key = calc_key_from_pcs(pcs, 0);
 	const auto key2 = calc_key_from_pcs(pcs, 1);
 	if (pcs[TB_W_PAWN] + pcs[TB_B_PAWN] == 0)
 	{
-		if (tb_num_piece == tb_max_piece)
-		{
-			printf("TBMAX_PIECE limit too low!\n");
-			exit(1);
-		}
+		if (tb_num_piece == tb_max_piece) { printf("TBMAX_PIECE limit too low!\n"); exit(1); }
 		entry = reinterpret_cast<tb_entry*>(&tb_piece[tb_num_piece++]);
 	}
 	else
 	{
-		if (tb_num_pawn == tb_max_pawn)
-		{
-			printf("TBMAX_PAWN limit too low!\n");
-			exit(1);
-		}
+		if (tb_num_pawn == tb_max_pawn) { printf("TBMAX_PAWN limit too low!\n"); exit(1); }
 		entry = reinterpret_cast<tb_entry*>(&tb_pawns[tb_num_pawn++]);
 	}
 	entry->key = key;
 	entry->ready = 0;
 	entry->num = 0;
-	for (i = 0; i < 16; i++)
-		entry->num += static_cast<ubyte>(pcs[i]);
+	for (i = 0; i < 16; i++)	entry->num += static_cast<ubyte>(pcs[i]);
 	entry->symmetric = key == key2;
 	entry->has_pawns = pcs[TB_W_PAWN] + pcs[TB_B_PAWN] > 0;
-	if (entry->num > tb_max_men)
-		tb_max_men = entry->num;
+	if (entry->num > tb_max_men)tb_max_men = entry->num;
 	if (entry->has_pawns)
 	{
 		auto* ptr = reinterpret_cast<struct tb_entry_pawn*>(entry);
 		ptr->pawns[0] = static_cast<ubyte>(pcs[TB_W_PAWN]);
 		ptr->pawns[1] = static_cast<ubyte>(pcs[TB_B_PAWN]);
-		if (pcs[TB_B_PAWN] > 0
-			&& (pcs[TB_W_PAWN] == 0 || pcs[TB_B_PAWN] < pcs[TB_W_PAWN]))
+		if (pcs[TB_B_PAWN] > 0 && (pcs[TB_W_PAWN] == 0 || pcs[TB_B_PAWN] < pcs[TB_W_PAWN]))
 		{
 			ptr->pawns[0] = static_cast<ubyte>(pcs[TB_B_PAWN]);
 			ptr->pawns[1] = static_cast<ubyte>(pcs[TB_W_PAWN]);
@@ -235,134 +198,71 @@ static void init_tb(const char* str)
 		{
 			/* only for suicide */
 			j = 16;
-			for (i = 0; i < 16; i++)
-			{
-				if (pcs[i] < j && pcs[i] > 1) j = pcs[i];
-				ptr->enc_type = static_cast<ubyte>(1 + j);
-			}
+			for (i = 0; i < 16; i++) { if (pcs[i] < j && pcs[i] > 1) j = pcs[i]; ptr->enc_type = static_cast<ubyte>(1 + j); }
 		}
 	}
 	add_to_hash(entry, key);
 	if (key2 != key) add_to_hash(entry, key2);
 }
-void syzygy_path_init(const std::string& path)
+int syzygy_path_init(const std::string& path)
 {
 	char str[16];
-	int i;
-	int j;
-	int k;
-	int l;
+	int i, j, k, l, r = 0;
 	if (initialized)
 	{
 		free(path_string);
 		free(paths);
 		tb_entry* entry;
-		for (i = 0; i < tb_num_piece; i++)
-		{
-			entry = reinterpret_cast<tb_entry*>(&tb_piece[i]);
-			free_wdl_entry(entry);
-		}
-		for (i = 0; i < tb_num_pawn; i++)
-		{
-			entry = reinterpret_cast<tb_entry*>(&tb_pawns[i]);
-			free_wdl_entry(entry);
-		}
+		for (i = 0; i < tb_num_piece; i++) { entry = reinterpret_cast<tb_entry*>(&tb_piece[i]); free_wdl_entry(entry); }
+		for (i = 0; i < tb_num_pawn; i++) { entry = reinterpret_cast<tb_entry*>(&tb_pawns[i]); free_wdl_entry(entry); }
 		for (i = 0; i < dtz_entries; i++)
-			if (dtz_table[i].entry)
-				free_dtz_entry(dtz_table[i].entry);
+			if (dtz_table[i].entry)	free_dtz_entry(dtz_table[i].entry);
 	}
-	else
-	{
-		init_indices();
-		initialized = true;
-	}
+	else { init_indices(); initialized = true; }
 	const auto* const p = path.c_str();
-	if (strlen(p) == 0 || !strcmp(p, "<empty>")) return;
+	if (strlen(p) == 0 || !strcmp(p, "<empty>")) return 0;
 	path_string = static_cast<char*>(malloc(strlen(p) + 1));
 	strcpy(path_string, p);
 	num_paths = 0;
 	for (i = 0; i <= static_cast<int>(strlen(p)); i++)
 	{
-		if (path_string[i] != sep_char)
-			num_paths++;
-		while (path_string[i] && path_string[i] != sep_char)
-			i++;
+		if (path_string[i] != sep_char)	num_paths++;
+		while (path_string[i] && path_string[i] != sep_char)i++;
 		if (!path_string[i]) break;
 		path_string[i] = 0;
 	}
 	paths = static_cast<char**>(malloc(num_paths * sizeof(char*)));
-	for (i = j = 0; i < num_paths; i++)
-	{
-		while (!path_string[j]) j++;
-		paths[i] = &path_string[j];
-		while (path_string[j]) j++;
-	}
+	for (i = j = 0; i < num_paths; i++) { while (!path_string[j]) j++; paths[i] = &path_string[j]; while (path_string[j]) j++; }
 	LOCK_INIT(tb_mutex);
 	tb_num_piece = tb_num_pawn = 0;
 	tb_max_men = 0;
 	for (i = 0; i < 1 << tb_hash_bits; i++)
-		for (j = 0; j < hash_max; j++)
-		{
-			tb_hash[i][j].key = 0ULL;
-			tb_hash[i][j].ptr = nullptr;
-		}
-	for (i = 0; i < dtz_entries; i++)
-		dtz_table[i].entry = nullptr;
+		for (j = 0; j < hash_max; j++) { tb_hash[i][j].key = 0ULL; tb_hash[i][j].ptr = nullptr; }
+	for (i = 0; i < dtz_entries; i++)dtz_table[i].entry = nullptr;
+	for (i = 1; i < 6; i++) { r = sprintf(str, "K%cvK", pchr[i]); init_tb(str); }
 	for (i = 1; i < 6; i++)
-	{
-		sprintf(str, "K%cvK", pchr[i]);
-		init_tb(str);
-	}
+		for (j = i; j < 6; j++) { r = sprintf(str, "K%cvK%c", pchr[i], pchr[j]); init_tb(str); }
+	for (i = 1; i < 6; i++)
+		for (j = i; j < 6; j++) { r = sprintf(str, "K%c%cvK", pchr[i], pchr[j]); init_tb(str); }
 	for (i = 1; i < 6; i++)
 		for (j = i; j < 6; j++)
-		{
-			sprintf(str, "K%cvK%c", pchr[i], pchr[j]);
-			init_tb(str);
-		}
+			for (k = 1; k < 6; k++) { r = sprintf(str, "K%c%cvK%c", pchr[i], pchr[j], pchr[k]); init_tb(str); }
 	for (i = 1; i < 6; i++)
 		for (j = i; j < 6; j++)
-		{
-			sprintf(str, "K%c%cvK", pchr[i], pchr[j]);
-			init_tb(str);
-		}
-	for (i = 1; i < 6; i++)
-		for (j = i; j < 6; j++)
-			for (k = 1; k < 6; k++)
-			{
-				sprintf(str, "K%c%cvK%c", pchr[i], pchr[j], pchr[k]);
-				init_tb(str);
-			}
-	for (i = 1; i < 6; i++)
-		for (j = i; j < 6; j++)
-			for (k = j; k < 6; k++)
-			{
-				sprintf(str, "K%c%c%cvK", pchr[i], pchr[j], pchr[k]);
-				init_tb(str);
-			}
+			for (k = j; k < 6; k++) { r = sprintf(str, "K%c%c%cvK", pchr[i], pchr[j], pchr[k]); init_tb(str); }
 	for (i = 1; i < 6; i++)
 		for (j = i; j < 6; j++)
 			for (k = i; k < 6; k++)
-				for (l = i == k ? j : k; l < 6; l++)
-				{
-					sprintf(str, "K%c%cvK%c%c", pchr[i], pchr[j], pchr[k], pchr[l]);
-					init_tb(str);
-				}
+				for (l = i == k ? j : k; l < 6; l++) { r = sprintf(str, "K%c%cvK%c%c", pchr[i], pchr[j], pchr[k], pchr[l]); init_tb(str); }
 	for (i = 1; i < 6; i++)
 		for (j = i; j < 6; j++)
 			for (k = j; k < 6; k++)
-				for (l = 1; l < 6; l++)
-				{
-					sprintf(str, "K%c%c%cvK%c", pchr[i], pchr[j], pchr[k], pchr[l]);
-					init_tb(str);
-				}
+				for (l = 1; l < 6; l++) { r = sprintf(str, "K%c%c%cvK%c", pchr[i], pchr[j], pchr[k], pchr[l]); init_tb(str); }
 	for (i = 1; i < 6; i++)
 		for (j = i; j < 6; j++)
 			for (k = j; k < 6; k++)
-				for (l = k; l < 6; l++)
-				{
-					sprintf(str, "K%c%c%c%cvK", pchr[i], pchr[j], pchr[k], pchr[l]);
-					init_tb(str);
-				}
+				for (l = k; l < 6; l++) { r = sprintf(str, "K%c%c%c%cvK", pchr[i], pchr[j], pchr[k], pchr[l]);	init_tb(str); }
+	return r;
 }
 static constexpr signed char offdiag[] = {
 	0, -1, -1, -1, -1, -1, -1, -1,
@@ -557,42 +457,22 @@ static void init_indices()
 		{
 			auto f = j;
 			auto l = 1;
-			for (auto k = 1; k <= i; k++)
-			{
-				f *= j - k;
-				l *= k + 1;
-			}
+			for (auto k = 1; k <= i; k++) { f *= j - k; l *= k + 1; }
 			binomial[i][j] = f / l;
 		}
 	for (i = 0; i < 5; i++)
 	{
 		auto s = 0;
-		for (j = 0; j < 6; j++)
-		{
-			pawnidx[i][j] = s;
-			s += i == 0 ? 1 : binomial[i - 1][ptwist[invflap[j]]];
-		}
+		for (j = 0; j < 6; j++) { pawnidx[i][j] = s; s += i == 0 ? 1 : binomial[i - 1][ptwist[invflap[j]]]; }
 		pfactor[i][0] = s;
 		s = 0;
-		for (; j < 12; j++)
-		{
-			pawnidx[i][j] = s;
-			s += i == 0 ? 1 : binomial[i - 1][ptwist[invflap[j]]];
-		}
+		for (; j < 12; j++) { pawnidx[i][j] = s; s += i == 0 ? 1 : binomial[i - 1][ptwist[invflap[j]]]; }
 		pfactor[i][1] = s;
 		s = 0;
-		for (; j < 18; j++)
-		{
-			pawnidx[i][j] = s;
-			s += i == 0 ? 1 : binomial[i - 1][ptwist[invflap[j]]];
-		}
+		for (; j < 18; j++) { pawnidx[i][j] = s; s += i == 0 ? 1 : binomial[i - 1][ptwist[invflap[j]]]; }
 		pfactor[i][2] = s;
 		s = 0;
-		for (; j < 24; j++)
-		{
-			pawnidx[i][j] = s;
-			s += i == 0 ? 1 : binomial[i - 1][ptwist[invflap[j]]];
-		}
+		for (; j < 24; j++) { pawnidx[i][j] = s; s += i == 0 ? 1 : binomial[i - 1][ptwist[invflap[j]]]; }
 		pfactor[i][3] = s;
 	}
 }
@@ -601,55 +481,34 @@ static uint64 encode_piece(const tb_entry_piece* ptr, const ubyte* norm, int* po
 	uint64 idx;
 	int i, j, l;
 	const int n = ptr->num;
-	if (pos[0] & 0x04)
-	{
-		for (i = 0; i < n; i++)
-			pos[i] ^= 0x07;
-	}
-	if (pos[0] & 0x20)
-	{
-		for (i = 0; i < n; i++)
-			pos[i] ^= 0x38;
-	}
-	for (i = 0; i < n; i++)
-		if (offdiag[pos[i]]) break;
+	if (pos[0] & 0x04) { for (i = 0; i < n; i++)pos[i] ^= 0x07; }
+	if (pos[0] & 0x20) { for (i = 0; i < n; i++)pos[i] ^= 0x38; }
+	for (i = 0; i < n; i++)if (offdiag[pos[i]]) break;
 	if (i < (ptr->enc_type == 0 ? 3 : 2) && offdiag[pos[i]] > 0)
-		for (i = 0; i < n; i++)
-			pos[i] = flipdiag[pos[i]];
+		for (i = 0; i < n; i++)pos[i] = flipdiag[pos[i]];
 	switch (ptr->enc_type)
 	{
 	case 0: /* 111 */
 		i = pos[1] > pos[0];
 		j = (pos[2] > pos[0]) + (pos[2] > pos[1]);
-		if (offdiag[pos[0]])
-			idx = triangle[pos[0]] * static_cast<uint64_t>(63 * 62) + (static_cast<int64_t>(pos[1]) - static_cast<
-				int64_t>(i)) * static_cast<uint64_t>(62) + (static_cast<uint64_t>(pos[2]) - static_cast<uint64_t>(j));
-		else if (offdiag[pos[1]])
-			idx = static_cast<uint64_t>(6 * 63 * 62) + static_cast<uint64_t>(diag[pos[0]]) * static_cast<uint64_t>(28 *
-				62) + static_cast<uint64_t>(lower[pos[1]]) * static_cast<uint64_t>(62) + static_cast<uint64_t>(pos[
-					2]) -
-			static_cast<uint64_t>(j);
-		else if (offdiag[pos[2]])
-			idx = static_cast<uint64_t>(6 * 63 * 62 + 4 * 28 * 62) + static_cast<uint64_t>(diag[pos[0]]) * static_cast<
-			uint64_t>(7 * 28) + (static_cast<uint64_t>(diag[pos[1]]) - static_cast<uint64_t>(i)) * static_cast<
-			uint64_t>(28) + lower[pos[2]];
-		else
-			idx = static_cast<uint64_t>(6 * 63 * 62 + 4 * 28 * 62 + 4 * 7 * 28) + static_cast<uint64_t>(diag[pos[0]]) *
-			static_cast<uint64_t>(7 * 6) + (static_cast<uint64_t>(diag[pos[1]]) - static_cast<uint64_t>(i)) *
-			static_cast<uint64_t>(6) + (static_cast<uint64_t>(diag[pos[2]]) - static_cast<uint64_t>(j));
+		if (offdiag[pos[0]])idx = triangle[pos[0]] * static_cast<uint64_t>(63 * 62) + (static_cast<int64_t>(pos[1])
+			- static_cast<int64_t>(i)) * static_cast<uint64_t>(62) + (static_cast<uint64_t>(pos[2]) - static_cast<uint64_t>(j));
+		else if (offdiag[pos[1]])idx = static_cast<uint64_t>(6 * 63 * 62) + static_cast<uint64_t>(diag[pos[0]]) * static_cast<uint64_t>(28 * 62)
+			+ static_cast<uint64_t>(lower[pos[1]]) * static_cast<uint64_t>(62) + static_cast<uint64_t>(pos[2]) - static_cast<uint64_t>(j);
+		else if (offdiag[pos[2]])idx = static_cast<uint64_t>(6 * 63 * 62 + 4 * 28 * 62) + static_cast<uint64_t>(diag[pos[0]]) * static_cast<uint64_t>(7 * 28)
+			+ (static_cast<uint64_t>(diag[pos[1]]) - static_cast<uint64_t>(i)) * static_cast<uint64_t>(28) + lower[pos[2]];
+		else idx = static_cast<uint64_t>(6 * 63 * 62 + 4 * 28 * 62 + 4 * 7 * 28) + static_cast<uint64_t>(diag[pos[0]]) * static_cast<uint64_t>(7 * 6)
+			+ (static_cast<uint64_t>(diag[pos[1]]) - static_cast<uint64_t>(i)) * static_cast<uint64_t>(6) + (static_cast<uint64_t>(diag[pos[2]]) - static_cast<uint64_t>(j));
 		i = 3;
 		break;
 	case 1: /* K3 */
 		j = (pos[2] > pos[0]) + (pos[2] > pos[1]);
 		idx = kk_idx[triangle[pos[0]]][pos[1]];
-		if (idx < 441)
-			idx = idx + static_cast<uint64_t>(441) * (static_cast<uint64_t>(pos[2]) - static_cast<uint64_t>(j));
+		if (idx < 441)idx = idx + static_cast<uint64_t>(441) * (static_cast<uint64_t>(pos[2]) - static_cast<uint64_t>(j));
 		else
 		{
-			idx = static_cast<uint64_t>(441) * static_cast<uint64_t>(62) + (idx - static_cast<uint64_t>(441)) +
-				static_cast<uint64_t>(21) * static_cast<uint64_t>(lower[pos[2]]);
-			if (!offdiag[pos[2]])
-				idx -= static_cast<uint64_t>(j) * static_cast<uint64_t>(21);
+			idx = static_cast<uint64_t>(441) * static_cast<uint64_t>(62) + (idx - static_cast<uint64_t>(441)) + static_cast<uint64_t>(21) * static_cast<uint64_t>(lower[pos[2]]);
+			if (!offdiag[pos[2]])idx -= static_cast<uint64_t>(j) * static_cast<uint64_t>(21);
 		}
 		i = 3;
 		break;
@@ -669,8 +528,7 @@ static uint64 encode_piece(const tb_entry_piece* ptr, const ubyte* norm, int* po
 		for (auto m = i; m < i + t; m++)
 		{
 			const auto p = pos[m];
-			for (l = 0, j = 0; l < i; l++)
-				j += p > pos[l];
+			for (l = 0, j = 0; l < i; l++)j += p > pos[l];
 			s += binomial[m - i][p - j];
 		}
 		idx += static_cast<uint64>(s) * static_cast<uint64>(factor[i]);
@@ -690,17 +548,14 @@ static uint64 encode_pawn(const tb_entry_pawn* ptr, const ubyte* norm, int* pos,
 {
 	int i, j, k, m, s;
 	const int n = ptr->num;
-	if (pos[0] & 0x04)
-		for (i = 0; i < n; i++)
-			pos[i] ^= 0x07;
+	if (pos[0] & 0x04)for (i = 0; i < n; i++)pos[i] ^= 0x07;
 	for (i = 1; i < ptr->pawns[0]; i++)
 		for (j = i + 1; j < ptr->pawns[0]; j++)
 			if (ptwist[pos[i]] < ptwist[pos[j]])
 				SWAP(pos[i], pos[j])
 				auto t = ptr->pawns[0] - 1;
 	uint64 idx = pawnidx[t][flap[pos[0]]];
-	for (i = t; i > 0; i--)
-		idx += binomial[t - i][ptwist[pos[i]]];
+	for (i = t; i > 0; i--)idx += binomial[t - i][ptwist[pos[i]]];
 	idx *= factor[0];
 	// remaining pawns
 	i = ptr->pawns[0];
@@ -714,8 +569,7 @@ static uint64 encode_pawn(const tb_entry_pawn* ptr, const ubyte* norm, int* pos,
 		for (m = i; m < t; m++)
 		{
 			const auto p = pos[m];
-			for (k = 0, j = 0; k < i; k++)
-				j += p > pos[k];
+			for (k = 0, j = 0; k < i; k++)j += p > pos[k];
 			s += binomial[m - i][p - j - 8];
 		}
 		idx += static_cast<uint64>(s) * static_cast<uint64>(factor[i]);
@@ -731,8 +585,7 @@ static uint64 encode_pawn(const tb_entry_pawn* ptr, const ubyte* norm, int* pos,
 		for (m = i; m < i + t; m++)
 		{
 			const auto p = pos[m];
-			for (k = 0, j = 0; k < i; k++)
-				j += p > pos[k];
+			for (k = 0, j = 0; k < i; k++)j += p > pos[k];
 			s += binomial[m - i][p - j];
 		}
 		idx += static_cast<uint64>(s) * static_cast<uint64>(factor[i]);
@@ -745,11 +598,7 @@ static int subfactor(const int k, const int n)
 {
 	auto f = n;
 	auto l = 1;
-	for (auto i = 1; i < k; i++)
-	{
-		f *= n - i;
-		l *= i + 1;
-	}
+	for (auto i = 1; i < k; i++) { f *= n - i; l *= i + 1; }
 	return f / l;
 }
 static uint64 calc_factors_piece(int* factor, const int num, const int order, const ubyte* norm, const ubyte enc_type)
@@ -760,18 +609,8 @@ static uint64 calc_factors_piece(int* factor, const int num, const int order, co
 	uint64 f = 1;
 	for (i = norm[0], k = 0; i < num || k == order; k++)
 	{
-		if (k == order)
-		{
-			factor[0] = static_cast<int>(f);
-			f *= pivfac[enc_type];
-		}
-		else
-		{
-			factor[i] = static_cast<int>(f);
-			f *= subfactor(norm[i], n);
-			n -= norm[i];
-			i += norm[i];
-		}
+		if (k == order) { factor[0] = static_cast<int>(f); f *= pivfac[enc_type]; }
+		else { factor[i] = static_cast<int>(f); f *= subfactor(norm[i], n); n -= norm[i]; i += norm[i]; }
 	}
 	return f;
 }
@@ -784,42 +623,24 @@ static uint64 calc_factors_pawn(int* factor, const int num, const int order, con
 	uint64 f = 1;
 	for (auto k = 0; i < num || k == order || k == order2; k++)
 	{
-		if (k == order)
-		{
-			factor[0] = static_cast<int>(f);
-			f *= pfactor[norm[0] - 1][file];
-		}
-		else if (k == order2)
-		{
-			factor[norm[0]] = static_cast<int>(f);
-			f *= subfactor(norm[norm[0]], 48 - norm[0]);
-		}
-		else
-		{
-			factor[i] = static_cast<int>(f);
-			f *= subfactor(norm[i], n);
-			n -= norm[i];
-			i += norm[i];
-		}
+		if (k == order) { factor[0] = static_cast<int>(f); f *= pfactor[norm[0] - 1][file]; }
+		else if (k == order2) { factor[norm[0]] = static_cast<int>(f); f *= subfactor(norm[norm[0]], 48 - norm[0]); }
+		else { factor[i] = static_cast<int>(f); f *= subfactor(norm[i], n); n -= norm[i]; i += norm[i]; }
 	}
 	return f;
 }
 static void set_norm_piece(const tb_entry_piece* ptr, ubyte* norm, const ubyte* pieces)
 {
 	int i;
-	for (i = 0; i < ptr->num; i++)
-		norm[i] = 0;
+	for (i = 0; i < ptr->num; i++)norm[i] = 0;
 	switch (ptr->enc_type)
 	{
 	case 0:
-		norm[0] = 3;
-		break;
+		norm[0] = 3; break;
 	case 2:
-		norm[0] = 2;
-		break;
+		norm[0] = 2; break;
 	default:
-		norm[0] = static_cast<ubyte>(ptr->enc_type - 1);
-		break;
+		norm[0] = static_cast<ubyte>(ptr->enc_type - 1); break;
 	}
 	for (i = norm[0]; i < ptr->num; i += norm[i])
 		for (auto j = i; j < ptr->num && pieces[j] == pieces[i]; j++)
@@ -828,32 +649,27 @@ static void set_norm_piece(const tb_entry_piece* ptr, ubyte* norm, const ubyte* 
 static void set_norm_pawn(const tb_entry_pawn* ptr, ubyte* norm, const ubyte* pieces)
 {
 	int i;
-	for (i = 0; i < ptr->num; i++)
-		norm[i] = 0;
+	for (i = 0; i < ptr->num; i++)norm[i] = 0;
 	norm[0] = ptr->pawns[0];
 	if (ptr->pawns[1]) norm[ptr->pawns[0]] = ptr->pawns[1];
 	for (i = ptr->pawns[0] + ptr->pawns[1]; i < ptr->num; i += norm[i])
-		for (auto j = i; j < ptr->num && pieces[j] == pieces[i]; j++)
-			norm[i]++;
+		for (auto j = i; j < ptr->num && pieces[j] == pieces[i]; j++)norm[i]++;
 }
 static void setup_pieces_piece(tb_entry_piece* ptr, const unsigned char* data, uint64* tb_size)
 {
 	int i;
-	for (i = 0; i < ptr->num; i++)
-		ptr->pieces[0][i] = static_cast<ubyte>(data[i + 1] & 0x0f);
+	for (i = 0; i < ptr->num; i++)ptr->pieces[0][i] = static_cast<ubyte>(data[i + 1] & 0x0f);
 	auto order = data[0] & 0x0f;
 	set_norm_piece(ptr, ptr->norm[0], ptr->pieces[0]);
 	tb_size[0] = calc_factors_piece(ptr->factor[0], ptr->num, order, ptr->norm[0], ptr->enc_type);
-	for (i = 0; i < ptr->num; i++)
-		ptr->pieces[1][i] = static_cast<ubyte>(data[i + 1] >> 4);
+	for (i = 0; i < ptr->num; i++)ptr->pieces[1][i] = static_cast<ubyte>(data[i + 1] >> 4);
 	order = data[0] >> 4;
 	set_norm_piece(ptr, ptr->norm[1], ptr->pieces[1]);
 	tb_size[1] = calc_factors_piece(ptr->factor[1], ptr->num, order, ptr->norm[1], ptr->enc_type);
 }
 static void setup_pieces_piece_dtz(dtz_entry_piece* ptr, const unsigned char* data, uint64* tb_size)
 {
-	for (auto i = 0; i < ptr->num; i++)
-		ptr->pieces[i] = static_cast<ubyte>(data[i + 1] & 0x0f);
+	for (auto i = 0; i < ptr->num; i++)ptr->pieces[i] = static_cast<ubyte>(data[i + 1] & 0x0f);
 	const auto order = data[0] & 0x0f;
 	set_norm_piece(reinterpret_cast<tb_entry_piece*>(ptr), ptr->norm, ptr->pieces);
 	tb_size[0] = calc_factors_piece(ptr->factor, ptr->num, order, ptr->norm, ptr->enc_type);
@@ -864,14 +680,12 @@ static void setup_pieces_pawn(tb_entry_pawn* ptr, const unsigned char* data, uin
 	const auto j = 1 + (ptr->pawns[1] > 0);
 	auto order = data[0] & 0x0f;
 	auto order2 = ptr->pawns[1] ? data[1] & 0x0f : 0x0f;
-	for (i = 0; i < ptr->num; i++)
-		ptr->file[f].pieces[0][i] = static_cast<ubyte>(data[i + j] & 0x0f);
+	for (i = 0; i < ptr->num; i++)ptr->file[f].pieces[0][i] = static_cast<ubyte>(data[i + j] & 0x0f);
 	set_norm_pawn(ptr, ptr->file[f].norm[0], ptr->file[f].pieces[0]);
 	tb_size[0] = calc_factors_pawn(ptr->file[f].factor[0], ptr->num, order, order2, ptr->file[f].norm[0], f);
 	order = data[0] >> 4;
 	order2 = ptr->pawns[1] ? data[1] >> 4 : 0x0f;
-	for (i = 0; i < ptr->num; i++)
-		ptr->file[f].pieces[1][i] = static_cast<ubyte>(data[i + j] >> 4);
+	for (i = 0; i < ptr->num; i++)ptr->file[f].pieces[1][i] = static_cast<ubyte>(data[i + j] >> 4);
 	set_norm_pawn(ptr, ptr->file[f].norm[1], ptr->file[f].pieces[1]);
 	tb_size[1] = calc_factors_pawn(ptr->file[f].factor[1], ptr->num, order, order2, ptr->file[f].norm[1], f);
 }
@@ -880,16 +694,14 @@ static void setup_pieces_pawn_dtz(dtz_entry_pawn* ptr, const unsigned char* data
 	const auto j = 1 + (ptr->pawns[1] > 0);
 	const auto order = data[0] & 0x0f;
 	const auto order2 = ptr->pawns[1] ? data[1] & 0x0f : 0x0f;
-	for (auto i = 0; i < ptr->num; i++)
-		ptr->file[f].pieces[i] = static_cast<ubyte>(data[i + j] & 0x0f);
+	for (auto i = 0; i < ptr->num; i++)ptr->file[f].pieces[i] = static_cast<ubyte>(data[i + j] & 0x0f);
 	set_norm_pawn(reinterpret_cast<tb_entry_pawn*>(ptr), ptr->file[f].norm, ptr->file[f].pieces);
 	tb_size[0] = calc_factors_pawn(ptr->file[f].factor, ptr->num, order, order2, ptr->file[f].norm, f);
 }
 static void calc_symlen(pairs_data* d, const int s, char* tmp)
 {
 	const auto* const w = d->sympat + 3 * static_cast<int>(s);
-	if (const auto s2 = w[2] << 4 | w[1] >> 4; s2 == 0x0fff)
-		d->symlen[s] = 0;
+	if (const auto s2 = w[2] << 4 | w[1] >> 4; s2 == 0x0fff)	d->symlen[s] = 0;
 	else
 	{
 		const auto s1 = (w[1] & 0xf) << 8 | w[0];
@@ -899,16 +711,9 @@ static void calc_symlen(pairs_data* d, const int s, char* tmp)
 	}
 	tmp[s] = 1;
 }
-ushort read_ushort(const ubyte* d)
-{
-	return static_cast<ushort>(d[0] | d[1] << 8);
-}
-uint32 read_uint32(const ubyte* d)
-{
-	return d[0] | d[1] << 8 | d[2] << 16 | d[3] << 24;
-}
-static pairs_data* setup_pairs(unsigned char* data, const uint64 tb_size, uint64* size, unsigned char** next,
-	ubyte* flags, const int wdl)
+ushort read_ushort(const ubyte* d) { return static_cast<ushort>(d[0] | d[1] << 8); }
+uint32 read_uint32(const ubyte* d) { return d[0] | d[1] << 8 | d[2] << 16 | d[3] << 24; }
+static pairs_data* setup_pairs(unsigned char* data, const uint64 tb_size, uint64* size, unsigned char** next, ubyte* flags, const int wdl)
 {
 	pairs_data* d;
 	int i;
@@ -917,10 +722,8 @@ static pairs_data* setup_pairs(unsigned char* data, const uint64 tb_size, uint64
 	{
 		d = static_cast<pairs_data*>(malloc(sizeof(pairs_data)));
 		d->idxbits = 0;
-		if (wdl)
-			d->min_len = data[1];
-		else
-			d->min_len = 0;
+		if (wdl)d->min_len = data[1];
+		else d->min_len = 0;
 		*next = data + 2;
 		size[0] = size[1] = size[2] = 0;
 		return d;
@@ -947,17 +750,13 @@ static pairs_data* setup_pairs(unsigned char* data, const uint64 tb_size, uint64
 	size[2] = (1ULL << blocksize) * real_num_blocks;
 	// char tmp[num_syms];
 	char tmp[4096]{};
-	for (i = 0; i < num_syms; i++)
-		tmp[i] = 0;
+	for (i = 0; i < num_syms; i++)tmp[i] = 0;
 	for (i = 0; i < num_syms; i++)
 		if (!tmp[i])
 			calc_symlen(d, i, tmp);
 	d->base[h - 1] = 0;
-	for (i = h - 2; i >= 0; i--)
-		d->base[i] = (d->base[i + 1] + read_ushort(reinterpret_cast<ubyte*>(d->offset + i)) - read_ushort(
-			reinterpret_cast<ubyte*>(d->offset + i + 1))) / 2;
-	for (i = 0; i < h; i++)
-		d->base[i] <<= 64 - (min_len + i);
+	for (i = h - 2; i >= 0; i--) d->base[i] = (d->base[i + 1] + read_ushort(reinterpret_cast<ubyte*>(d->offset + i)) - read_ushort(reinterpret_cast<ubyte*>(d->offset + i + 1))) / 2;
+	for (i = 0; i < h; i++)d->base[i] <<= 64 - (min_len + i);
 	d->offset -= d->min_len;
 	return d;
 }
@@ -969,16 +768,9 @@ static int init_table_wdl(tb_entry* entry, char* str)
 	ubyte flags = 0;
 	// first mmap the table into memory
 	entry->data = map_file(str, wdl_suffix, &entry->mapping);
-	if (!entry->data)
-	{
-		printf("Could not find %s" "wdl_suffix", str);
-		return 0;
-	}
+	if (!entry->data) { printf("Could not find %s" "wdl_suffix", str); return 0; }
 	auto* data = reinterpret_cast<ubyte*>(entry->data);
-	if (data[0] != wdl_magic[0] ||
-		data[1] != wdl_magic[1] ||
-		data[2] != wdl_magic[2] ||
-		data[3] != wdl_magic[3])
+	if (data[0] != wdl_magic[0] || data[1] != wdl_magic[1] || data[2] != wdl_magic[2] || data[3] != wdl_magic[3])
 	{
 		printf("Corrupted table.\n");
 		unmap_file(entry->data, entry->mapping);
@@ -996,90 +788,51 @@ static int init_table_wdl(tb_entry* entry, char* str)
 		data += reinterpret_cast<uintptr_t>(data) & 0x01;
 		ptr->precomp[0] = setup_pairs(data, tb_size[0], &size[0], &next, &flags, 1);
 		data = next;
-		if (split)
-		{
-			ptr->precomp[1] = setup_pairs(data, tb_size[1], &size[3], &next, &flags, 1);
-			data = next;
-		}
-		else
-			ptr->precomp[1] = nullptr;
+		if (split) { ptr->precomp[1] = setup_pairs(data, tb_size[1], &size[3], &next, &flags, 1); data = next; }
+		else ptr->precomp[1] = nullptr;
 		ptr->precomp[0]->indextable = reinterpret_cast<char*>(data);
 		data += size[0];
-		if (split)
-		{
-			ptr->precomp[1]->indextable = reinterpret_cast<char*>(data);
-			data += size[3];
-		}
+		if (split) { ptr->precomp[1]->indextable = reinterpret_cast<char*>(data); data += size[3]; }
 		ptr->precomp[0]->sizetable = reinterpret_cast<ushort*>(data);
 		data += size[1];
-		if (split)
-		{
-			ptr->precomp[1]->sizetable = reinterpret_cast<ushort*>(data);
-			data += size[4];
-		}
+		if (split) { ptr->precomp[1]->sizetable = reinterpret_cast<ushort*>(data); data += size[4]; }
 		data = reinterpret_cast<ubyte*>(reinterpret_cast<uintptr_t>(data) + 0x3f & ~0x3f);
 		ptr->precomp[0]->data = data;
 		data += size[2];
-		if (split)
-		{
-			data = reinterpret_cast<ubyte*>(reinterpret_cast<uintptr_t>(data) + 0x3f & ~0x3f);
-			ptr->precomp[1]->data = data;
-		}
+		if (split) { data = reinterpret_cast<ubyte*>(reinterpret_cast<uintptr_t>(data) + 0x3f & ~0x3f); ptr->precomp[1]->data = data; }
 	}
 	else
 	{
 		int f;
 		auto* ptr = reinterpret_cast<struct tb_entry_pawn*>(entry);
 		const auto s = 1 + (ptr->pawns[1] > 0);
-		for (f = 0; f < 4; f++)
-		{
-			setup_pieces_pawn(ptr, data, &tb_size[2 * f], f);
-			data += ptr->num + static_cast<int>(s);
-		}
+		for (f = 0; f < 4; f++) { setup_pieces_pawn(ptr, data, &tb_size[2 * f], f); data += ptr->num + static_cast<int>(s); }
 		data += reinterpret_cast<uintptr_t>(data) & 0x01;
 		for (f = 0; f < files; f++)
 		{
 			ptr->file[f].precomp[0] = setup_pairs(data, tb_size[2 * f], &size[6 * f], &next, &flags, 1);
 			data = next;
-			if (split)
-			{
-				ptr->file[f].precomp[1] = setup_pairs(data, tb_size[2 * f + 1], &size[6 * f + 3], &next, &flags, 1);
-				data = next;
-			}
-			else
-				ptr->file[f].precomp[1] = nullptr;
+			if (split) { ptr->file[f].precomp[1] = setup_pairs(data, tb_size[2 * f + 1], &size[6 * f + 3], &next, &flags, 1); data = next; }
+			else ptr->file[f].precomp[1] = nullptr;
 		}
 		for (f = 0; f < files; f++)
 		{
 			ptr->file[f].precomp[0]->indextable = reinterpret_cast<char*>(data);
 			data += size[6 * f];
-			if (split)
-			{
-				ptr->file[f].precomp[1]->indextable = reinterpret_cast<char*>(data);
-				data += size[6 * f + 3];
-			}
+			if (split) { ptr->file[f].precomp[1]->indextable = reinterpret_cast<char*>(data); data += size[6 * f + 3]; }
 		}
 		for (f = 0; f < files; f++)
 		{
 			ptr->file[f].precomp[0]->sizetable = reinterpret_cast<ushort*>(data);
 			data += size[6 * f + 1];
-			if (split)
-			{
-				ptr->file[f].precomp[1]->sizetable = reinterpret_cast<ushort*>(data);
-				data += size[6 * f + 4];
-			}
+			if (split) { ptr->file[f].precomp[1]->sizetable = reinterpret_cast<ushort*>(data); data += size[6 * f + 4]; }
 		}
 		for (f = 0; f < files; f++)
 		{
 			data = reinterpret_cast<ubyte*>(reinterpret_cast<uintptr_t>(data) + 0x3f & ~0x3f);
 			ptr->file[f].precomp[0]->data = data;
 			data += size[6 * f + 2];
-			if (split)
-			{
-				data = reinterpret_cast<ubyte*>(reinterpret_cast<uintptr_t>(data) + 0x3f & ~0x3f);
-				ptr->file[f].precomp[1]->data = data;
-				data += size[6 * f + 5];
-			}
+			if (split) { data = reinterpret_cast<ubyte*>(reinterpret_cast<uintptr_t>(data) + 0x3f & ~0x3f); ptr->file[f].precomp[1]->data = data; data += size[6 * f + 5]; }
 		}
 	}
 	return 1;
@@ -1090,16 +843,8 @@ static int init_table_dtz(tb_entry* entry)
 	ubyte* next = nullptr;
 	uint64 tb_size[4]{};
 	uint64 size[4 * 3]{};
-	if (!data)
-		return 0;
-	if (data[0] != dtz_magic[0] ||
-		data[1] != dtz_magic[1] ||
-		data[2] != dtz_magic[2] ||
-		data[3] != dtz_magic[3])
-	{
-		printf("Corrupted table.\n");
-		return 0;
-	}
+	if (!data)return 0;
+	if (data[0] != dtz_magic[0] || data[1] != dtz_magic[1] || data[2] != dtz_magic[2] || data[3] != dtz_magic[3]) { printf("Corrupted table.\n"); return 0; }
 	const auto files = data[4] & 0x02 ? 4 : 1;
 	data += 5;
 	if (!entry->has_pawns)
@@ -1113,11 +858,7 @@ static int init_table_dtz(tb_entry* entry)
 		ptr->map = data;
 		if (ptr->flags & 2)
 		{
-			for (auto& i : ptr->map_idx)
-			{
-				i = static_cast<ushort>(data + 1 - ptr->map);
-				data += 1 + static_cast<int>(data[0]);
-			}
+			for (auto& i : ptr->map_idx) { i = static_cast<ushort>(data + 1 - ptr->map); data += 1 + static_cast<int>(data[0]); }
 			data += reinterpret_cast<uintptr_t>(data) & 0x01;
 		}
 		ptr->precomp->indextable = reinterpret_cast<char*>(data);
@@ -1133,75 +874,34 @@ static int init_table_dtz(tb_entry* entry)
 		int f;
 		auto* ptr = reinterpret_cast<struct dtz_entry_pawn*>(entry);
 		const auto s = 1 + (ptr->pawns[1] > 0);
-		for (f = 0; f < 4; f++)
-		{
-			setup_pieces_pawn_dtz(ptr, data, &tb_size[f], f);
-			data += ptr->num + static_cast<int>(s);
-		}
+		for (f = 0; f < 4; f++) { setup_pieces_pawn_dtz(ptr, data, &tb_size[f], f); data += ptr->num + static_cast<int>(s); }
 		data += reinterpret_cast<uintptr_t>(data) & 0x01;
-		for (f = 0; f < files; f++)
-		{
-			ptr->file[f].precomp = setup_pairs(data, tb_size[f], &size[3 * f], &next, &ptr->flags[f], 0);
-			data = next;
-		}
+		for (f = 0; f < files; f++) { ptr->file[f].precomp = setup_pairs(data, tb_size[f], &size[3 * f], &next, &ptr->flags[f], 0); data = next; }
 		ptr->map = data;
-		for (f = 0; f < files; f++)
-		{
-			if (ptr->flags[f] & 2)
-			{
-				for (auto i = 0; i < 4; i++)
-				{
-					ptr->map_idx[f][i] = static_cast<ushort>(data + 1 - ptr->map);
-					data += 1 + static_cast<int>(data[0]);
-				}
-			}
-		}
+		for (f = 0; f < files; f++) { if (ptr->flags[f] & 2) { for (auto i = 0; i < 4; i++) { ptr->map_idx[f][i] = static_cast<ushort>(data + 1 - ptr->map); data += 1 + static_cast<int>(data[0]); } } }
 		data += reinterpret_cast<uintptr_t>(data) & 0x01;
-		for (f = 0; f < files; f++)
-		{
-			ptr->file[f].precomp->indextable = reinterpret_cast<char*>(data);
-			data += size[3 * f];
-		}
-		for (f = 0; f < files; f++)
-		{
-			ptr->file[f].precomp->sizetable = reinterpret_cast<ushort*>(data);
-			data += size[3 * f + 1];
-		}
-		for (f = 0; f < files; f++)
-		{
-			data = reinterpret_cast<ubyte*>(reinterpret_cast<uintptr_t>(data) + 0x3f & ~0x3f);
-			ptr->file[f].precomp->data = data;
-			data += size[3 * f + 2];
-		}
+		for (f = 0; f < files; f++) { ptr->file[f].precomp->indextable = reinterpret_cast<char*>(data); data += size[3 * f]; }
+		for (f = 0; f < files; f++) { ptr->file[f].precomp->sizetable = reinterpret_cast<ushort*>(data); data += size[3 * f + 1]; }
+		for (f = 0; f < files; f++) { data = reinterpret_cast<ubyte*>(reinterpret_cast<uintptr_t>(data) + 0x3f & ~0x3f); ptr->file[f].precomp->data = data; data += size[3 * f + 2]; }
 	}
 	return 1;
 }
 template <bool LittleEndian>
 static ubyte decompress_pairs(pairs_data* d, const uint64 idx)
 {
-	if (!d->idxbits)
-		return static_cast<ubyte>(d->min_len);
+	if (!d->idxbits) return static_cast<ubyte>(d->min_len);
 	const auto mainidx = static_cast<uint32>(idx >> d->idxbits);
-	int litidx = (idx & (1ULL << d->idxbits) - 1) - (1ULL << d->idxbits - 1);
+	int litidx = static_cast<int>((idx & (1ULL << d->idxbits) - 1) - (1ULL << (d->idxbits - 1)));
 	auto block = *reinterpret_cast<uint32*>(d->indextable + 6 * static_cast<int>(mainidx));
-	if (!LittleEndian)
-		block = b_swap32(block);
+	if (!LittleEndian) block = b_swap32(block);
 	auto idx_offset = *reinterpret_cast<ushort*>(d->indextable + 6 * static_cast<int>(mainidx) + 4);
-	if (!LittleEndian)
-		idx_offset = static_cast<ushort>(idx_offset << 8 | idx_offset >> 8);
+	if (!LittleEndian) idx_offset = static_cast<ushort>(idx_offset << 8 | idx_offset >> 8);
 	litidx += idx_offset;
 	if (litidx < 0)
 	{
-		do
-		{
-			litidx += d->sizetable[--block] + 1;
-		} while (litidx < 0);
+		do { litidx += d->sizetable[--block] + 1; } while (litidx < 0);
 	}
-	else
-	{
-		while (litidx > d->sizetable[block])
-			litidx -= d->sizetable[block++] + 1;
-	}
+	else { while (litidx > d->sizetable[block])litidx -= d->sizetable[block++] + 1; }
 	auto* ptr = reinterpret_cast<uint32*>(d->data + (block << static_cast<uint32>(d->blocksize)));
 	const auto m = d->min_len;
 	const auto* const offset = d->offset;
@@ -1209,8 +909,7 @@ static ubyte decompress_pairs(pairs_data* d, const uint64 idx)
 	const auto* const symlen = d->symlen;
 	int sym;
 	auto code = *reinterpret_cast<uint64*>(ptr);
-	if (LittleEndian)
-		code = b_swap64(code);
+	if (LittleEndian)code = b_swap64(code);
 	ptr += 2;
 	auto bitcnt = 0; // number of "empty bits" in code
 	for (;;)
@@ -1218,8 +917,7 @@ static ubyte decompress_pairs(pairs_data* d, const uint64 idx)
 		auto l = m;
 		while (code < base[l]) l++;
 		sym = offset[l];
-		if (!LittleEndian)
-			sym = (sym & 0xff) << 8 | sym >> 8;
+		if (!LittleEndian)sym = (sym & 0xff) << 8 | sym >> 8;
 		sym += static_cast<int>((code - base[l]) >> (64 - l));
 		if (litidx < static_cast<int>(symlen[sym]) + 1) break;
 		litidx -= static_cast<int>(symlen[sym]) + 1;
@@ -1229,8 +927,7 @@ static ubyte decompress_pairs(pairs_data* d, const uint64 idx)
 		{
 			bitcnt -= 32;
 			auto tmp = *ptr++;
-			if (LittleEndian)
-				tmp = b_swap32(tmp);
+			if (LittleEndian)tmp = b_swap32(tmp);
 			code |= static_cast<uint64>(tmp) << bitcnt;
 		}
 	}
@@ -1238,8 +935,7 @@ static ubyte decompress_pairs(pairs_data* d, const uint64 idx)
 	while (symlen[sym] != 0)
 	{
 		const auto* const w = sympat + 3 * sym;
-		if (const auto s1 = (w[1] & 0xf) << 8 | w[0]; litidx < static_cast<int>(symlen[s1]) + 1)
-			sym = s1;
+		if (const auto s1 = (w[1] & 0xf) << 8 | w[0]; litidx < static_cast<int>(symlen[s1]) + 1) sym = s1;
 		else
 		{
 			litidx -= static_cast<int>(symlen[s1]) + 1;
@@ -1248,6 +944,7 @@ static ubyte decompress_pairs(pairs_data* d, const uint64 idx)
 	}
 	return sympat[3 * sym];
 }
+
 void load_dtz_table(const char* str, const uint64 key1, const uint64 key2)
 {
 	int i;
@@ -1256,33 +953,19 @@ void load_dtz_table(const char* str, const uint64 key1, const uint64 key2)
 	dtz_table[0].entry = nullptr;
 	// find corresponding WDL entry
 	const auto* const ptr2 = tb_hash[key1 >> (64 - tb_hash_bits)];
-	for (i = 0; i < hash_max; i++)
-		if (ptr2[i].key == key1) break;
+	for (i = 0; i < hash_max; i++)if (ptr2[i].key == key1) break;
 	if (i == hash_max) return;
 	auto* const ptr = ptr2[i].ptr;
-	auto* ptr3 = static_cast<struct tb_entry*>(malloc(ptr->has_pawns
-		? sizeof(struct dtz_entry_pawn)
-		: sizeof(struct dtz_entry_piece)));
+	auto* ptr3 = static_cast<struct tb_entry*>(malloc(ptr->has_pawns ? sizeof(struct dtz_entry_pawn) : sizeof(struct dtz_entry_piece)));
 	ptr3->data = map_file(str, dtz_suffix, &ptr3->mapping);
 	ptr3->key = ptr->key;
 	ptr3->num = ptr->num;
 	ptr3->symmetric = ptr->symmetric;
 	ptr3->has_pawns = ptr->has_pawns;
-	if (ptr3->has_pawns)
-	{
-		auto* entry = reinterpret_cast<struct dtz_entry_pawn*>(ptr3);
-		entry->pawns[0] = reinterpret_cast<tb_entry_pawn*>(ptr)->pawns[0];
-		entry->pawns[1] = reinterpret_cast<tb_entry_pawn*>(ptr)->pawns[1];
-	}
-	else
-	{
-		auto* const entry = reinterpret_cast<struct dtz_entry_piece*>(ptr3);
-		entry->enc_type = reinterpret_cast<tb_entry_piece*>(ptr)->enc_type;
-	}
-	if (!init_table_dtz(ptr3))
-		free(ptr3);
-	else
-		dtz_table[0].entry = ptr3;
+	if (ptr3->has_pawns) { auto* entry = reinterpret_cast<struct dtz_entry_pawn*>(ptr3); entry->pawns[0] = reinterpret_cast<tb_entry_pawn*>(ptr)->pawns[0]; entry->pawns[1] = reinterpret_cast<tb_entry_pawn*>(ptr)->pawns[1]; }
+	else { auto* const entry = reinterpret_cast<struct dtz_entry_piece*>(ptr3); entry->enc_type = reinterpret_cast<tb_entry_piece*>(ptr)->enc_type; }
+	if (!init_table_dtz(ptr3))free(ptr3);
+	else dtz_table[0].entry = ptr3;
 }
 static void free_wdl_entry(tb_entry* entry)
 {
@@ -1291,76 +974,39 @@ static void free_wdl_entry(tb_entry* entry)
 	{
 		const auto* ptr = reinterpret_cast<struct tb_entry_piece*>(entry);
 		free(ptr->precomp[0]);
-		if (ptr->precomp[1])
-			free(ptr->precomp[1]);
+		if (ptr->precomp[1])free(ptr->precomp[1]);
 	}
 	else
 	{
 		for (auto* ptr = reinterpret_cast<struct tb_entry_pawn*>(entry); const auto & [precomp, factor, pieces, norm] :
-		ptr->file)
-		{
-			free(precomp[0]);
-			if (precomp[1])
-				free(precomp[1]);
-		}
+		ptr->file) { free(precomp[0]); if (precomp[1])free(precomp[1]); }
 	}
 }
 static void free_dtz_entry(tb_entry* entry)
 {
 	unmap_file(entry->data, entry->mapping);
-	if (!entry->has_pawns)
-	{
-		const auto* const ptr = reinterpret_cast<struct dtz_entry_piece*>(entry);
-		free(ptr->precomp);
-	}
-	else
-	{
-		for (auto* ptr = reinterpret_cast<struct dtz_entry_pawn*>(entry); const auto & [precomp, factor, pieces, norm] :
-		ptr->file)
-			free(precomp);
-	}
+	if (!entry->has_pawns) { const auto* const ptr = reinterpret_cast<struct dtz_entry_piece*>(entry); free(ptr->precomp); }
+	else { for (auto* ptr = reinterpret_cast<struct dtz_entry_pawn*>(entry); const auto & [precomp, factor, pieces, norm] :ptr->file)free(precomp); }
 	free(entry);
 }
 static int wdl_to_map[5] = { 1, 3, 0, 2, 0 };
 static ubyte pa_flags[5] = { 8, 0, 0, 0, 4 };
-enum syzygy_piece_type
-{
-	syz_none,
-	syz_pawn,
-	syz_knight,
-	syz_bishop,
-	syz_rook,
-	syz_queen,
-	syz_king,
-	syz_nb
-};
-inline syzygy_piece_type& operator++(syzygy_piece_type& d)
-{
-	return d = static_cast<syzygy_piece_type>(static_cast<int>(d) + 1);
-}
-inline syzygy_piece_type& operator--(syzygy_piece_type& d)
-{
-	return d = static_cast<syzygy_piece_type>(static_cast<int>(d) - 1);
-}
-constexpr uint8_t pt_from_syz[syz_nb] = {
-	no_piecetype, pt_pawn, pt_knight, pt_bishop, pt_rook, pt_queen, pt_king
-};
-constexpr syzygy_piece_type syz_from_pt[num_piecetypes] = {
-	syz_none, syz_king, syz_pawn, syz_knight, syz_bishop, syz_rook, syz_queen
-};
+enum syzygy_piece_type { syz_none, syz_pawn, syz_knight, syz_bishop, syz_rook, syz_queen, syz_king, syz_nb };
+inline syzygy_piece_type& operator++(syzygy_piece_type& d) { return d = static_cast<syzygy_piece_type>(static_cast<int>(d) + 1); }
+inline syzygy_piece_type& operator--(syzygy_piece_type& d) { return d = static_cast<syzygy_piece_type>(static_cast<int>(d) - 1); }
+constexpr uint8_t pt_from_syz[syz_nb] = { no_piecetype, pt_pawn, pt_knight, pt_bishop, pt_rook, pt_queen, pt_king };
+constexpr syzygy_piece_type syz_from_pt[num_piecetypes] = { syz_none, syz_king, syz_pawn, syz_knight, syz_bishop, syz_rook, syz_queen };
 static void prt_str(const position& pos, char* str, const int mirror)
 {
 	syzygy_piece_type pt;
 	int i;
 	auto color = !mirror ? white : black;
 	for (pt = syz_king; pt >= syz_pawn; --pt)
-		for (i = pos.number(color, pt_from_syz[pt]); i > 0; i--)
-			*str++ = pchr[6 - pt];
+		for (i = pos.number(color, pt_from_syz[pt]); i > 0; i--)*str++ = pchr[6 - pt];
 	*str++ = 'v';
 	color = ~color;
 	for (pt = syz_king; pt >= syz_pawn; --pt)
-		for (i = pos.number(color, pt_from_syz[pt]); i > 0; i--)
-			*str++ = pchr[6 - pt];
+		for (i = pos.number(color, pt_from_syz[pt]); i > 0; i--)*str++ = pchr[6 - pt];
 	*str++ = 0;
 }
 static uint64 calc_key(const position& pos, const int mirror)
@@ -1369,13 +1015,9 @@ static uint64 calc_key(const position& pos, const int mirror)
 	int i;
 	uint64 key = 0;
 	auto color = !mirror ? white : black;
-	for (pt = syz_pawn; pt <= syz_king; ++pt)
-		for (i = pos.number(color, pt_from_syz[pt]); i > 0; i--)
-			key ^= zobrist::psq[make_piece(white, pt_from_syz[pt])][i - 1];
+	for (pt = syz_pawn; pt <= syz_king; ++pt)for (i = pos.number(color, pt_from_syz[pt]); i > 0; i--)key ^= zobrist::psq[make_piece(white, pt_from_syz[pt])][i - 1];
 	color = ~color;
-	for (pt = syz_pawn; pt <= syz_king; ++pt)
-		for (i = pos.number(color, pt_from_syz[pt]); i > 0; i--)
-			key ^= zobrist::psq[make_piece(black, pt_from_syz[pt])][i - 1];
+	for (pt = syz_pawn; pt <= syz_king; ++pt)for (i = pos.number(color, pt_from_syz[pt]); i > 0; i--)key ^= zobrist::psq[make_piece(black, pt_from_syz[pt])][i - 1];
 	return key;
 }
 static uint64 calc_key_from_pcs(const int* pcs, const int mirror)
@@ -1384,31 +1026,21 @@ static uint64 calc_key_from_pcs(const int* pcs, const int mirror)
 	int i;
 	uint64 key = 0;
 	auto color = !mirror ? 0 : 8;
-	for (pt = syz_pawn; pt <= syz_king; ++pt)
-		for (i = 0; i < pcs[color + pt]; i++)
-			key ^= zobrist::psq[make_piece(white, pt_from_syz[pt])][i];
+	for (pt = syz_pawn; pt <= syz_king; ++pt)for (i = 0; i < pcs[color + pt]; i++)key ^= zobrist::psq[make_piece(white, pt_from_syz[pt])][i];
 	color ^= 8;
-	for (pt = syz_pawn; pt <= syz_king; ++pt)
-		for (i = 0; i < pcs[color + pt]; i++)
-			key ^= zobrist::psq[make_piece(black, pt_from_syz[pt])][i];
+	for (pt = syz_pawn; pt <= syz_king; ++pt)for (i = 0; i < pcs[color + pt]; i++)key ^= zobrist::psq[make_piece(black, pt_from_syz[pt])][i];
 	return key;
 }
 bool is_little_endian()
 {
-	union
-	{
-		int i;
-		char c[sizeof(int)];
-	} x;
+	union { int i; char c[sizeof(int)]; } x;
 	x.i = 1;
 	return x.c[0] == 1;
 }
 static ubyte decompress_pairs(pairs_data* d, const uint64 idx)
 {
 	static const auto islittleendian = is_little_endian();
-	return islittleendian
-		? decompress_pairs<true>(d, idx)
-		: decompress_pairs<false>(d, idx);
+	return islittleendian ? decompress_pairs<true>(d, idx) : decompress_pairs<false>(d, idx);
 }
 static int probe_wdl_table(const position& pos, int* success)
 {
@@ -1416,16 +1048,10 @@ static int probe_wdl_table(const position& pos, int* success)
 	ubyte res;
 	int p[tb_pieces];
 	const auto key = pos.material_key();
-	if (key == (zobrist::psq[w_king][0] ^ zobrist::psq[b_king][0]))
-		return 0;
+	if (key == (zobrist::psq[w_king][0] ^ zobrist::psq[b_king][0]))	return 0;
 	auto* ptr2 = tb_hash[key >> (64 - tb_hash_bits)];
-	for (i = 0; i < hash_max; i++)
-		if (ptr2[i].key == key) break;
-	if (i == hash_max)
-	{
-		*success = 0;
-		return 0;
-	}
+	for (i = 0; i < hash_max; i++)if (ptr2[i].key == key) break;
+	if (i == hash_max) { *success = 0; return 0; }
 	auto* ptr = ptr2[i].ptr;
 	if (!ptr->ready)
 	{
@@ -1434,13 +1060,7 @@ static int probe_wdl_table(const position& pos, int* success)
 		{
 			char str[16];
 			prt_str(pos, str, ptr->key != key);
-			if (!init_table_wdl(ptr, str))
-			{
-				ptr2[i].key = 0ULL;
-				*success = 0;
-				unlock(tb_mutex);
-				return 0;
-			}
+			if (!init_table_wdl(ptr, str)) { ptr2[i].key = 0ULL; *success = 0; unlock(tb_mutex); return 0; }
 #ifdef _MSC_VER
 			_ReadWriteBarrier();
 #else
@@ -1453,39 +1073,13 @@ static int probe_wdl_table(const position& pos, int* success)
 	int b_side;
 	int mirror;
 	int c_mirror;
-	if (!ptr->symmetric)
-	{
-		if (key != ptr->key)
-		{
-			c_mirror = 8;
-			mirror = 0x38;
-			b_side = pos.on_move() == white;
-		}
-		else
-		{
-			c_mirror = mirror = 0;
-			b_side = !(pos.on_move() == white);
-		}
-	}
-	else
-	{
-		c_mirror = pos.on_move() == white ? 0 : 8;
-		mirror = pos.on_move() == white ? 0 : 0x38;
-		b_side = 0;
-	}
+	if (!ptr->symmetric) { if (key != ptr->key) { c_mirror = 8; mirror = 0x38; b_side = pos.on_move() == white; } else { c_mirror = mirror = 0; b_side = pos.on_move() != white; } }
+	else { c_mirror = pos.on_move() == white ? 0 : 8; mirror = pos.on_move() == white ? 0 : 0x38; b_side = 0; }
 	if (uint64 idx; !ptr->has_pawns)
 	{
 		const auto* entry = reinterpret_cast<struct tb_entry_piece*>(ptr);
 		const auto* pc = entry->pieces[b_side];
-		for (i = 0; i < entry->num;)
-		{
-			auto bb = pos.pieces(static_cast<side>((pc[i] ^ c_mirror) >> 3),
-				pt_from_syz[pc[i] & 0x07]);
-			do
-			{
-				p[i++] = pop_lsb(&bb);
-			} while (bb);
-		}
+		for (i = 0; i < entry->num;) { auto bb = pos.pieces(static_cast<side>((pc[i] ^ c_mirror) >> 3), pt_from_syz[pc[i] & 0x07]); do { p[i++] = pop_lsb(&bb); } while (bb); }
 		idx = encode_piece(entry, entry->norm[b_side], p, entry->factor[b_side]);
 		res = decompress_pairs(entry->precomp[b_side], idx);
 	}
@@ -1495,21 +1089,10 @@ static int probe_wdl_table(const position& pos, int* success)
 		const auto k = entry->file[0].pieces[0][0] ^ c_mirror;
 		auto bb = pos.pieces(static_cast<side>(k >> 3), pt_from_syz[k & 0x07]);
 		i = 0;
-		do
-		{
-			p[i++] = pop_lsb(&bb) ^ mirror;
-		} while (bb);
+		do { p[i++] = pop_lsb(&bb) ^ mirror; } while (bb);
 		const auto f = pawn_file(entry, p);
 		const auto* pc = entry->file[f].pieces[b_side];
-		while (i < entry->num)
-		{
-			bb = pos.pieces(static_cast<side>((pc[i] ^ c_mirror) >> 3),
-				pt_from_syz[pc[i] & 0x07]);
-			do
-			{
-				p[i++] = pop_lsb(&bb) ^ mirror;
-			} while (bb);
-		}
+		while (i < entry->num) { bb = pos.pieces(static_cast<side>((pc[i] ^ c_mirror) >> 3), pt_from_syz[pc[i] & 0x07]); do { p[i++] = pop_lsb(&bb) ^ mirror; } while (bb); }
 		idx = encode_pawn(entry, entry->file[f].norm[b_side], p, entry->file[f].factor[b_side]);
 		res = decompress_pairs(entry->file[f].precomp[b_side], idx);
 	}
@@ -1524,89 +1107,39 @@ static int probe_dtz_table(const position& pos, const int wdl, int* success)
 	const auto key = pos.material_key();
 	if (dtz_table[0].key1 != key && dtz_table[0].key2 != key)
 	{
-		for (i = 1; i < dtz_entries; i++)
-			if (dtz_table[i].key1 == key) break;
-		if (i < dtz_entries)
-		{
-			const auto table_entry = dtz_table[i];
-			for (; i > 0; i--)
-				dtz_table[i] = dtz_table[i - 1];
-			dtz_table[0] = table_entry;
-		}
+		for (i = 1; i < dtz_entries; i++)if (dtz_table[i].key1 == key) break;
+		if (i < dtz_entries) { const auto table_entry = dtz_table[i]; for (; i > 0; i--)	dtz_table[i] = dtz_table[i - 1]; dtz_table[0] = table_entry; }
 		else
 		{
 			const auto* ptr2 = tb_hash[key >> (64 - tb_hash_bits)];
-			for (i = 0; i < hash_max; i++)
-				if (ptr2[i].key == key) break;
-			if (i == hash_max)
-			{
-				*success = 0;
-				return 0;
-			}
+			for (i = 0; i < hash_max; i++)if (ptr2[i].key == key) break;
+			if (i == hash_max) { *success = 0; return 0; }
 			ptr = ptr2[i].ptr;
 			char str[16];
 			const int mirror = ptr->key != key;
 			prt_str(pos, str, mirror);
-			if (dtz_table[dtz_entries - 1].entry)
-				free_dtz_entry(dtz_table[dtz_entries - 1].entry);
-			for (i = dtz_entries - 1; i > 0; i--)
-				dtz_table[i] = dtz_table[i - 1];
+			if (dtz_table[dtz_entries - 1].entry)free_dtz_entry(dtz_table[dtz_entries - 1].entry);
+			for (i = dtz_entries - 1; i > 0; i--)dtz_table[i] = dtz_table[i - 1];
 			load_dtz_table(str, calc_key(pos, mirror), calc_key(pos, !mirror));
 		}
 	}
 	ptr = dtz_table[0].entry;
-	if (!ptr)
-	{
-		*success = 0;
-		return 0;
-	}
+	if (!ptr) { *success = 0; return 0; }
 	int b_side;
 	int mirror;
 	int c_mirror;
-	if (!ptr->symmetric)
-	{
-		if (key != ptr->key)
-		{
-			c_mirror = 8;
-			mirror = 0x38;
-			b_side = pos.on_move() == white;
-		}
-		else
-		{
-			c_mirror = mirror = 0;
-			b_side = !(pos.on_move() == white);
-		}
-	}
-	else
-	{
-		c_mirror = pos.on_move() == white ? 0 : 8;
-		mirror = pos.on_move() == white ? 0 : 0x38;
-		b_side = 0;
-	}
+	if (!ptr->symmetric) { if (key != ptr->key) { c_mirror = 8; mirror = 0x38; b_side = pos.on_move() == white; } else { c_mirror = mirror = 0; b_side = pos.on_move() != white; } }
+	else { c_mirror = pos.on_move() == white ? 0 : 8; mirror = pos.on_move() == white ? 0 : 0x38; b_side = 0; }
 	if (uint64 idx; !ptr->has_pawns)
 	{
 		auto* entry = reinterpret_cast<struct dtz_entry_piece*>(ptr);
-		if ((entry->flags & 1) != b_side && !entry->symmetric)
-		{
-			*success = -1;
-			return 0;
-		}
+		if ((entry->flags & 1) != b_side && !entry->symmetric) { *success = -1; return 0; }
 		const auto* pc = entry->pieces;
-		for (i = 0; i < entry->num;)
-		{
-			auto bb = pos.pieces(static_cast<side>((pc[i] ^ c_mirror) >> 3),
-				pt_from_syz[pc[i] & 0x07]);
-			do
-			{
-				p[i++] = pop_lsb(&bb);
-			} while (bb);
-		}
+		for (i = 0; i < entry->num;) { auto bb = pos.pieces(static_cast<side>((pc[i] ^ c_mirror) >> 3), pt_from_syz[pc[i] & 0x07]);	do { p[i++] = pop_lsb(&bb); } while (bb); }
 		idx = encode_piece(reinterpret_cast<tb_entry_piece*>(entry), entry->norm, p, entry->factor);
 		res = decompress_pairs(entry->precomp, idx);
-		if (entry->flags & 2)
-			res = entry->map[entry->map_idx[wdl_to_map[wdl + 2]] + res];
-		if (!(entry->flags & pa_flags[wdl + 2]) || wdl & 1)
-			res *= 2;
+		if (entry->flags & 2)res = entry->map[entry->map_idx[wdl_to_map[wdl + 2]] + res];
+		if (!(entry->flags & pa_flags[wdl + 2]) || wdl & 1)res *= 2;
 	}
 	else
 	{
@@ -1614,32 +1147,15 @@ static int probe_dtz_table(const position& pos, const int wdl, int* success)
 		const auto k = entry->file[0].pieces[0] ^ c_mirror;
 		auto bb = pos.pieces(static_cast<side>(k >> 3), pt_from_syz[k & 0x07]);
 		i = 0;
-		do
-		{
-			p[i++] = pop_lsb(&bb) ^ mirror;
-		} while (bb);
+		do { p[i++] = pop_lsb(&bb) ^ mirror; } while (bb);
 		const auto f = pawn_file(reinterpret_cast<struct tb_entry_pawn*>(entry), p);
-		if ((entry->flags[f] & 1) != b_side)
-		{
-			*success = -1;
-			return 0;
-		}
+		if ((entry->flags[f] & 1) != b_side) { *success = -1;	return 0; }
 		const auto* pc = entry->file[f].pieces;
-		while (i < entry->num)
-		{
-			bb = pos.pieces(static_cast<side>((pc[i] ^ c_mirror) >> 3),
-				pt_from_syz[pc[i] & 0x07]);
-			do
-			{
-				p[i++] = pop_lsb(&bb) ^ mirror;
-			} while (bb);
-		}
+		while (i < entry->num) { bb = pos.pieces(static_cast<side>((pc[i] ^ c_mirror) >> 3), pt_from_syz[pc[i] & 0x07]); do { p[i++] = pop_lsb(&bb) ^ mirror; } while (bb); }
 		idx = encode_pawn(reinterpret_cast<tb_entry_pawn*>(entry), entry->file[f].norm, p, entry->file[f].factor);
 		res = decompress_pairs(entry->file[f].precomp, idx);
-		if (entry->flags[f] & 2)
-			res = entry->map[entry->map_idx[f][wdl_to_map[wdl + 2]] + res];
-		if (!(entry->flags[f] & pa_flags[wdl + 2]) || wdl & 1)
-			res *= 2;
+		if (entry->flags[f] & 2)res = entry->map[entry->map_idx[f][wdl_to_map[wdl + 2]] + res];
+		if (!(entry->flags[f] & pa_flags[wdl + 2]) || wdl & 1)res *= 2;
 	}
 	return res;
 }
@@ -1649,11 +1165,7 @@ static s_move* add_underprom_caps(const position& pos, const s_move* stack, s_mo
 	for (const auto* moves = stack; moves < end; moves++)
 	{
 		if (const auto move = moves->move; move_type(move) >= promotion_p && !pos.empty_square(to_square(move)))
-		{
-			(*extra++).move = move - (1 << 12);
-			(*extra++).move = move - (2 << 12);
-			(*extra++).move = move - (3 << 12);
-		}
+		{ (*extra++).move = move - (1 << 12); (*extra++).move = move - (2 << 12); (*extra++).move = move - (3 << 12); }
 	}
 	return extra;
 }
@@ -1662,40 +1174,21 @@ static int probe_ab(position& pos, int alpha, const int beta, int* success)
 	int val;
 	s_move stack[64];
 	s_move* end;
-	if (!pos.is_in_check())
-	{
-		end = generate_moves<captures_promotions>(pos, stack);
-		end = add_underprom_caps(pos, stack, end);
-	}
-	else
-		end = generate_moves<evade_check>(pos, stack);
+	if (!pos.is_in_check()) { end = generate_moves<captures_promotions>(pos, stack); end = add_underprom_caps(pos, stack, end); }
+	else end = generate_moves<evade_check>(pos, stack);
 	for (const auto* moves = stack; moves < end; moves++)
 	{
 		const auto capture = moves->move;
-		if (!pos.is_capture_move(capture) || move_type(capture) == enpassant
-			|| !pos.legal_move(capture))
-			continue;
+		if (!pos.is_capture_move(capture) || move_type(capture) == enpassant || !pos.legal_move(capture))continue;
 		pos.play_move(capture);
 		val = -probe_ab(pos, -beta, -alpha, success);
 		pos.take_move_back(capture);
 		if (*success == 0) return 0;
-		if (val > alpha)
-		{
-			if (val >= beta)
-			{
-				*success = 2;
-				return val;
-			}
-			alpha = val;
-		}
+		if (val > alpha) { if (val >= beta) { *success = 2; return val; }alpha = val; }
 	}
 	val = probe_wdl_table(pos, success);
 	if (*success == 0) return 0;
-	if (alpha >= val)
-	{
-		*success = 1 + (alpha > 0);
-		return alpha;
-	}
+	if (alpha >= val) { *success = 1 + (alpha > 0); return alpha; }
 	*success = 1;
 	return val;
 }
@@ -1703,23 +1196,18 @@ int syzygy_probe_wdl(position& pos, int* success)
 {
 	*success = 1;
 	auto val = probe_ab(pos, -2, 2, success);
-	if (pos.enpassant_square() == no_square)
-		return val;
+	if (pos.enpassant_square() == no_square)return val;
 	if (!*success) return 0;
 	auto v1 = -3;
 	s_move stack[192];
 	s_move* moves;
 	s_move* end;
-	if (!pos.is_in_check())
-		end = generate_moves<captures_promotions>(pos, stack);
-	else
-		end = generate_moves<evade_check>(pos, stack);
+	if (!pos.is_in_check())end = generate_moves<captures_promotions>(pos, stack);
+	else end = generate_moves<evade_check>(pos, stack);
 	for (moves = stack; moves < end; moves++)
 	{
 		const auto capture = moves->move;
-		if (move_type(capture) != enpassant
-			|| !pos.legal_move(capture))
-			continue;
+		if (move_type(capture) != enpassant || !pos.legal_move(capture))	continue;
 		pos.play_move(capture);
 		const auto v0 = -probe_ab(pos, -2, 2, success);
 		pos.take_move_back(capture);
@@ -1728,26 +1216,11 @@ int syzygy_probe_wdl(position& pos, int* success)
 	}
 	if (v1 > -3)
 	{
-		if (v1 >= val) val = v1;
-		else if (val == 0)
+		if (v1 >= val) val = v1; else if (val == 0)
 		{
-			for (moves = stack; moves < end; moves++)
-			{
-				const auto capture = moves->move;
-				if (move_type(capture) == enpassant) continue;
-				if (pos.legal_move(capture)) break;
-			}
-			if (moves == end && !pos.is_in_check())
-			{
-				end = generate_moves<quiet_moves>(pos, end);
-				for (; moves < end; moves++)
-				{
-					if (const auto move = moves->move; pos.legal_move(move))
-						break;
-				}
-			}
-			if (moves == end)
-				val = v1;
+			for (moves = stack; moves < end; moves++) { const auto capture = moves->move; if (move_type(capture) == enpassant) continue; if (pos.legal_move(capture)) break; }
+			if (moves == end && !pos.is_in_check()) { end = generate_moves<quiet_moves>(pos, end); for (; moves < end; moves++) { if (const auto move = moves->move; pos.legal_move(move))break; } }
+			if (moves == end)val = v1;
 		}
 	}
 	return val;
@@ -1757,113 +1230,76 @@ static int probe_dtz_no_ep(position& pos, int* success)
 	const auto wdl = probe_ab(pos, -2, 2, success);
 	if (*success == 0) return 0;
 	if (wdl == 0) return 0;
-	if (*success == 2)
-		return wdl == 2 ? 1 : 101;
+	if (*success == 2)return wdl == 2 ? 1 : 101;
 	s_move stack[192];
 	s_move* moves;
 	const s_move* end = nullptr;
 	if (wdl > 0)
 	{
-		if (!pos.is_in_check())
-			end = generate_moves<all_moves>(pos, stack);
-		else
-			end = generate_moves<evade_check>(pos, stack);
+		if (!pos.is_in_check())	end = generate_moves<all_moves>(pos, stack);
+		else end = generate_moves<evade_check>(pos, stack);
 		for (moves = stack; moves < end; moves++)
 		{
 			const auto move = moves->move;
-			if (piece_type(pos.moved_piece(move)) != pt_pawn || pos.is_capture_move(move)
-				|| !pos.legal_move(move))
-				continue;
+			if (piece_type(pos.moved_piece(move)) != pt_pawn || pos.is_capture_move(move) || !pos.legal_move(move))continue;
 			pos.play_move(move);
-			const auto val = pos.enpassant_square() != no_square
-				? -syzygy_probe_wdl(pos, success)
-				: -probe_ab(pos, -2, -wdl + 1, success);
+			const auto val = pos.enpassant_square() != no_square ? -syzygy_probe_wdl(pos, success) : -probe_ab(pos, -2, -wdl + 1, success);
 			pos.take_move_back(move);
 			if (*success == 0) return 0;
-			if (val == wdl)
-				return val == 2 ? 1 : 101;
+			if (val == wdl)return val == 2 ? 1 : 101;
 		}
 	}
 	auto dtz = 1 + probe_dtz_table(pos, wdl, success);
-	if (*success >= 0)
-	{
-		if (wdl & 1) dtz += 100;
-		return wdl >= 0 ? dtz : -dtz;
-	}
+	if (*success >= 0) { if (wdl & 1) dtz += 100; return wdl >= 0 ? dtz : -dtz; }
 	if (wdl > 0)
 	{
 		auto best = 0xffff;
 		for (moves = stack; moves < end; moves++)
 		{
 			const auto move = moves->move;
-			if (pos.is_capture_move(move) || piece_type(pos.moved_piece(move)) == pt_pawn
-				|| !pos.legal_move(move))
-				continue;
+			if (pos.is_capture_move(move) || piece_type(pos.moved_piece(move)) == pt_pawn || !pos.legal_move(move))continue;
 			pos.play_move(move);
 			const auto val = -syzygy_probe_dtz(pos, success);
 			pos.take_move_back(move);
 			if (*success == 0) return 0;
-			if (val > 0 && val + 1 < best)
-				best = val + 1;
+			if (val > 0 && val + 1 < best)best = val + 1;
 		}
 		return best;
 	}
 	auto best = -1;
-	if (!pos.is_in_check())
-		end = generate_moves<all_moves>(pos, stack);
-	else
-		end = generate_moves<evade_check>(pos, stack);
+	if (!pos.is_in_check())end = generate_moves<all_moves>(pos, stack);
+	else end = generate_moves<evade_check>(pos, stack);
 	for (moves = stack; moves < end; moves++)
 	{
 		int val;
 		const auto move = moves->move;
-		if (!pos.legal_move(move))
-			continue;
+		if (!pos.legal_move(move))continue;
 		pos.play_move(move);
-		if (pos.fifty_move_counter() == 0)
-		{
-			if (wdl == -2) val = -1;
-			else
-			{
-				val = probe_ab(pos, 1, 2, success);
-				val = val == 2 ? 0 : -101;
-			}
-		}
-		else
-		{
-			val = -syzygy_probe_dtz(pos, success) - 1;
-		}
+		if (pos.fifty_move_counter() == 0) { if (wdl == -2) val = -1; else { val = probe_ab(pos, 1, 2, success); val = val == 2 ? 0 : -101; } }
+		else { val = -syzygy_probe_dtz(pos, success) - 1; }
 		pos.take_move_back(move);
 		if (*success == 0) return 0;
-		if (val < best)
-			best = val;
+		if (val < best)best = val;
 	}
 	return best;
 }
-constexpr int wdl_to_dtz[] = {
-	-1, -101, 0, 101, 1
-};
+constexpr int wdl_to_dtz[] = { -1, -101, 0, 101, 1 };
 int syzygy_probe_dtz(position& pos, int* success)
 {
 	*success = 1;
 	auto val = probe_dtz_no_ep(pos, success);
-	if (pos.enpassant_square() == no_square)
-		return val;
+	if (pos.enpassant_square() == no_square)return val;
 	if (*success == 0) return 0;
 	auto v1 = -3;
 	s_move stack[192];
 	s_move* moves;
 	s_move* end;
-	if (!pos.is_in_check())
-		end = generate_moves<captures_promotions>(pos, stack);
-	else
-		end = generate_moves<evade_check>(pos, stack);
+	if (!pos.is_in_check())end = generate_moves<captures_promotions>(pos, stack);
+	else end = generate_moves<evade_check>(pos, stack);
 	for (moves = stack; moves < end; moves++)
 	{
 		const auto capture = moves->move;
-		if (move_type(capture) != enpassant
-			|| !pos.legal_move(capture))
-			continue;
+		if (move_type(capture) != enpassant || !pos.legal_move(capture))continue;
 		pos.play_move(capture);
 		const auto v0 = -probe_ab(pos, -2, 2, success);
 		pos.take_move_back(capture);
@@ -1873,49 +1309,16 @@ int syzygy_probe_dtz(position& pos, int* success)
 	if (v1 > -3)
 	{
 		v1 = wdl_to_dtz[v1 + 2];
-		if (val < -100)
-		{
-			if (v1 >= 0)
-				val = v1;
-		}
-		else if (val < 0)
-		{
-			if (v1 >= 0 || v1 < -100)
-				val = v1;
-		}
-		else if (val > 100)
-		{
-			if (v1 > 0)
-				val = v1;
-		}
-		else if (val > 0)
-		{
-			if (v1 == 1)
-				val = v1;
-		}
-		else if (v1 >= 0)
-		{
-			val = v1;
-		}
+		if (val < -100) { if (v1 >= 0)val = v1; }
+		else if (val < 0) { if (v1 >= 0 || v1 < -100) val = v1; }
+		else if (val > 100) { if (v1 > 0)val = v1; }
+		else if (val > 0) { if (v1 == 1)val = v1; }
+		else if (v1 >= 0) { val = v1; }
 		else
 		{
-			for (moves = stack; moves < end; moves++)
-			{
-				const auto move = moves->move;
-				if (move_type(move) == enpassant) continue;
-				if (pos.legal_move(move)) break;
-			}
-			if (moves == end && !pos.is_in_check())
-			{
-				end = generate_moves<quiet_moves>(pos, end);
-				for (; moves < end; moves++)
-				{
-					if (const auto move = moves->move; pos.legal_move(move))
-						break;
-				}
-			}
-			if (moves == end)
-				val = v1;
+			for (moves = stack; moves < end; moves++) { const auto move = moves->move;	if (move_type(move) == enpassant) continue; if (pos.legal_move(move)) break; }
+			if (moves == end && !pos.is_in_check()) { end = generate_moves<quiet_moves>(pos, end); for (; moves < end; moves++) { if (const auto move = moves->move; pos.legal_move(move))break; } }
+			if (moves == end)val = v1;
 		}
 	}
 	return val;
