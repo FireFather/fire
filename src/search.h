@@ -155,7 +155,7 @@ struct rootmoves
 	rootmoves() = default;
 	int move_number = 0, dummy = 0;
 	rootmove moves[max_moves];
-	void add(const rootmove root_move) { moves[move_number++] = root_move; }
+	void add(const rootmove& root_move) { moves[move_number++] = root_move; }
 	rootmove& operator[](const int index) { return moves[index]; }
 	const rootmove& operator[](const int index) const { return moves[index]; }
 	void clear() { move_number = 0; }

@@ -8,7 +8,7 @@
  */
 #ifndef INCBIN_HDR
 #define INCBIN_HDR
-#include <limits.h>
+#include <climits>
 #if   defined(__AVX512BW__) || \
       defined(__AVX512CD__) || \
       defined(__AVX512DQ__) || \
