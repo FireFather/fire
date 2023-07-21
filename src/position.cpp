@@ -171,13 +171,12 @@ bool position::give_check(const uint32_t move) const
 }
 void position::init()
 {
-	util::random rng(static_cast<uint32_t>(std::chrono::system_clock::now().time_since_epoch().count()));
 	for (auto color = white; color <= black; ++color)
 		for (auto piece = pt_king; piece <= pt_queen; ++piece)
 			for (auto sq = a1; sq <= h8; ++sq)
-				zobrist::psq[make_piece(color, piece)][sq] = rng.rand<uint64_t>();
+				zobrist::psq[make_piece(color, piece)][sq] = util::random::rand<uint64_t>();
 	for (auto f = file_a; f <= file_h; ++f)
-		zobrist::enpassant[f] = rng.rand<uint64_t>();
+		zobrist::enpassant[f] = util::random::rand<uint64_t>();
 	for (int castle = no_castle; castle <= all; ++castle)
 	{
 		zobrist::castle[castle] = 0;
@@ -185,10 +184,10 @@ void position::init()
 		while (b)
 		{
 			const auto k = zobrist::castle[1ULL << pop_lsb(&b)];
-			zobrist::castle[castle] ^= k ? k : rng.rand<uint64_t>();
+			zobrist::castle[castle] ^= k ? k : util::random::rand<uint64_t>();
 		}
 	}
-	zobrist::on_move = rng.rand<uint64_t>();
+	zobrist::on_move = util::random::rand<uint64_t>();
 	init_hash_move50(50);
 }
 void position::init_hash_move50(const int fifty_move_distance)
@@ -541,7 +540,8 @@ void position::set_position_info(position_info* si) const
 position& position::set(const std::string& fen_str, const bool is_chess960, thread* th)
 {
 	assert(th != nullptr);
-	uint8_t r = 0, token = 0;
+	uint8_t r = 0;
+	char token = 0;
 	size_t idx;
 	auto sq = a8;
 	std::istringstream ss(fen_str);
