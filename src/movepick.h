@@ -130,7 +130,7 @@ public:
 template <typename t, int d, int Size, int... sizes>
 struct pos_info : std::array<pos_info<t, d, sizes...>, Size>
 {
-	using stats = pos_info<t, d, Size, sizes...>;
+	using stats = pos_info;
 	void fill(const t& v)
 	{
 		assert(std::is_standard_layout<stats>::value);
