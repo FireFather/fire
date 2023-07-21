@@ -13,6 +13,7 @@
 #include "tbprobe.h"
 #include "../search.h"
 #include "../util/util.h"
+
 // syzygy initialization and probe functions
 namespace egtb {
 	int max_pieces_wdl = 0;
@@ -56,20 +57,10 @@ namespace egtb {
 			if (path != current_syzygy_path) { syzygy_path_init(path); current_syzygy_path = path; }
 			max_pieces_wdl = max_pieces_dtz = tb_max_men;
 			if (max_pieces_wdl) {
-				syzygy_in_use = true;
-				egtb_probe_wdl = &tb_probe_wdl;
-				egtb_probe_dtz = &tb_probe_dtz;
-				// notify the GUI via UCI if TBs are found, and how many
-				acout() << "info string Found " << tb_num_piece + tb_num_pawn << " tablebases" << std::endl;
-				return;
+				syzygy_in_use = true; egtb_probe_wdl = &tb_probe_wdl; egtb_probe_dtz = &tb_probe_dtz;
+				acout() << "info string Found " << tb_num_piece + tb_num_pawn << " tablebases" << std::endl; return;
 			}
 		}
-		if (path_specified || syzygy_in_use)
-		{
-			syzygy_in_use = false;
-			max_pieces_wdl = max_pieces_dtz = 0;
-			egtb_probe_wdl = nullptr;
-			egtb_probe_dtz = nullptr;
-		}
+		if (path_specified || syzygy_in_use) { syzygy_in_use = false; max_pieces_wdl = max_pieces_dtz = 0; egtb_probe_wdl = nullptr; egtb_probe_dtz = nullptr; }
 	}
 }
