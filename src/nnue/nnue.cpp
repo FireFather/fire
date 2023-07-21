@@ -25,11 +25,13 @@
   cast from 'const char *' to 'char *' dropped const qualifier [clang-diagnostic-cast-qual]
   redundant C-style casts removed
 */
+
 #include <cassert>
 #include <cstdio>
 #include <cstdint>
 #include <cstring>
 #include <cstdlib>
+
 //--------------------
 #ifdef _MSC_VER
 #define USE_AVX2   1
@@ -58,16 +60,17 @@
 //-------------------
 #include "../evaluate.h"
 #include "misc.h"
-//#define DLL_EXPORT
 #include "nnue.h"
 #include <iostream>
-//#undef DLL_EXPORT
+
 #ifdef NNUE_EMBEDDED
 #include "../incbin/incbin.h"
 INCBIN(Network, NNUE_EVAL_FILE);
 #endif
+
 #define KING(c)    ( (c) ? bking : wking )
 #define IS_KING(p) ( ((p) == wking) || ((p) == bking) )
+
 //-------------------
 // Old gcc on Windows is unable to provide a 32-byte aligned stack.
 // We need to hack around this when using AVX2 and AVX512.
@@ -76,12 +79,14 @@ INCBIN(Network, NNUE_EVAL_FILE);
     &&  defined(USE_AVX2)
 #define ALIGNMENT_HACK
 #endif
+
 #if defined(USE_NEON) && !defined(IS_64_BIT)
 inline int16x8_t vmovl_high_s16(int8x16_t v)
 {
 	return vmovl_s16(vget_high_s16(v));
 }
 #endif
+
 enum
 {
 	ps_w_pawn = 1,
@@ -106,10 +111,12 @@ static constexpr uint32_t nnue_version = 0x7AF32F16u;
 // Constants used in evaluation value calculation
 enum { fv_scale = 16, shift = 6 };
 enum { k_half_dimensions = 256, ft_in_dims = 64 * ps_end, ft_out_dims = k_half_dimensions * 2 };
+
 // USE_MMX generates _mm_empty() instructions, so un-define if not needed
 #if defined(USE_SSE2)
 #undef USE_MMX
 #endif
+
 static_assert(k_half_dimensions % 256 == 0, "k_half_dimensions should be a multiple of 256");
 #define VECTOR
 #ifdef USE_AVX512
@@ -1180,34 +1187,29 @@ static bool load_eval_file(const char* eval_file)
 	else
 #endif
 	{
-		FD fd = open_file(eval_file);
-		if (fd == FD_ERR)
-			return false;
+		const FD fd = open_file(eval_file);
+		if (fd == FD_ERR) return false;
 		eval_data = map_file(fd, &mapping);
 		size = file_size(fd);
 		close_file(fd);
 	}
 	const bool success = verify_net(eval_data, size);
-	if (success)
-		init_weights(eval_data);
-	if (mapping)
-		unmap_file(eval_data, mapping);
+	if (success) init_weights(eval_data);
+	if (mapping) unmap_file(eval_data, mapping);
 	return success;
 }
 /*
 Interfaces
 */
-void _CDECL nnue_init(const char* eval_file)
+int _CDECL nnue_init(const char* eval_file)
 {
-	fflush(stdout);
 	if (load_eval_file(eval_file))
 	{
 		printf("NNUE found: %s\n", eval_file);
-		fflush(stdout);
-		return;
+		return fflush(stdout);
 	}
 	printf("NNUE not found: %s\n", eval_file);
-	fflush(stdout);
+	return fflush(stdout);
 }
 int _CDECL nnue_evaluate(const int player, int* pieces, int* squares)
 {

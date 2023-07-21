@@ -19,6 +19,7 @@
 #include <unistd.h>
 #include <sys/mman.h>
 #endif
+
 #include <cinttypes>
 #ifdef _WIN32
 using FD = HANDLE;
@@ -29,6 +30,7 @@ typedef int FD;
 #define FD_ERR -1
 typedef size_t map_t;
 #endif
+
 FD open_file(const char* name);
 void close_file(FD fd);
 size_t file_size(FD fd);
