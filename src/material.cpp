@@ -111,7 +111,9 @@ namespace material {
 		if (hash_entry->key64 == key) return hash_entry;
 		std::memset(hash_entry, 0, sizeof(mat_hash_entry));
 		hash_entry->key64 = key;
+		hash_entry->factor[white] = hash_entry->factor[black] = static_cast<uint8_t>(normal_factor);
 		hash_entry->game_phase = static_cast<uint8_t>(pos.game_phase());
+		hash_entry->conversion = max_factor;
 		hash_entry->value_function_index = hash_entry->scale_function_index[white] = hash_entry->scale_function_index[black] = -1;
 		hash_entry->value = mat_imbalance(
 			pos.number(white, pt_pawn), pos.number(white, pt_knight), pos.number(white, pt_bishop),
@@ -156,7 +158,28 @@ namespace material {
 				hash_entry->scale_function_index[black] = 7;
 			}
 		}
+		if (!pos.number(white, pt_pawn) && npm_w - npm_b <= mat_bishop)
+			hash_entry->factor[white] = static_cast<uint8_t>(npm_w < mat_rook ? draw_factor : npm_b <= mat_bishop ? static_cast<sfactor>(6) : static_cast<sfactor>(22));
+		if (!pos.number(black, pt_pawn) && npm_b - npm_w <= mat_bishop)
+			hash_entry->factor[black] = static_cast<uint8_t>(npm_b < mat_rook ? draw_factor : npm_w <= mat_bishop ? static_cast<sfactor>(6) : static_cast<sfactor>(22));
+		if (pos.number(white, pt_pawn) == 1 && npm_w - npm_b <= mat_bishop)
+			hash_entry->factor[white] = static_cast<uint8_t>(one_pawn_factor);
+		if (pos.number(black, pt_pawn) == 1 && npm_b - npm_w <= mat_bishop)
+			hash_entry->factor[black] = static_cast<uint8_t>(one_pawn_factor);
 		hash_entry->conversion_is_estimated = true;
 		return hash_entry;
+	}
+	// retrieve endgame value from material hash
+	int mat_hash_entry::value_from_function(const position& pos) const { return (*thread_pool.end_games.value_functions[value_function_index])(pos); }
+	// retrieve scale factor from material hash
+	sfactor mat_hash_entry::scale_factor_from_function(const position& pos, const side color) const
+	{
+		if (scale_function_index[color] >= 0)
+		{
+			if (const auto scale_factor = (*thread_pool.end_games.factor_functions[scale_function_index[color]])(pos);
+				scale_factor != no_factor)
+				return scale_factor;
+		}
+		return static_cast<sfactor>(factor[color]);
 	}
 }

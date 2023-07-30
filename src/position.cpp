@@ -368,6 +368,7 @@ void position::play_move(const uint32_t move, const bool gives_check)
 			pos_info_->phase += static_cast<uint8_t>(piece_phase[promotion]);
 		}
 		pos_info_->pawn_key ^= zobrist::psq[piece][from] ^ zobrist::psq[piece][to];
+		prefetch2(thread_info_->pawn_table[pos_info_->pawn_key]);
 		pos_info_->draw50_moves = 0;
 	}
 	main_hash.prefetch_entry(key);

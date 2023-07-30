@@ -12,9 +12,9 @@
 */
 #include "movegen.h"
 #include "fire.h"
+#include "pawn.h"
 #include "position.h"
 #include "pragma.h"
-#include "macro/square.h"
 namespace movegen {
 	// generate all piece moves
 	template <side me, move_gen type>
@@ -59,7 +59,7 @@ namespace movegen {
 		while (squares)
 		{
 			const auto to = pop_lsb(&squares);
-			*moves++ = make_move(static_cast<square>(to - pawn_ahead(me)), to);
+			*moves++ = make_move(to - pawn_ahead(me), to);
 		}
 		return moves;
 	}
@@ -83,7 +83,7 @@ namespace movegen {
 		else
 		{
 			if (pos.attack_to(to_k) & pos.pieces(you)) return moves;
-			if (pos.attack_to(static_cast<square>(to_k + direction)) & pos.pieces(you)) return moves;
+			if (pos.attack_to(to_k + direction) & pos.pieces(you)) return moves;
 		}
 		const auto move = make_move(castle_move, from_k, to_k);
 		if (only_check_moves && !pos.give_check(move)) return moves;
@@ -95,14 +95,14 @@ namespace movegen {
 	s_move* get_promotions(const position& pos, s_move* moves, const square to)
 	{
 		const auto you = me == white ? black : white;
-		if (mg == captures_promotions || mg == evade_check || mg == all_moves) *moves++ = make_move(promotion_q, static_cast<square>(to - delta), to);
+		if (mg == captures_promotions || mg == evade_check || mg == all_moves) *moves++ = make_move(promotion_q, to - delta, to);
 		if (mg == quiet_moves || mg == evade_check || mg == all_moves)
 		{
-			*moves++ = make_move(promotion_r, static_cast<square>(to - delta), to);
-			*moves++ = make_move(promotion_b, static_cast<square>(to - delta), to);
-			*moves++ = make_move(promotion_p, static_cast<square>(to - delta), to);
+			*moves++ = make_move(promotion_r, to - delta, to);
+			*moves++ = make_move(promotion_b, to - delta, to);
+			*moves++ = make_move(promotion_p, to - delta, to);
 		}
-		if (mg == quiet_checks && empty_attack[pt_knight][to] & pos.king(you)) *moves++ = make_move(promotion_p, static_cast<square>(to - delta), to);
+		if (mg == quiet_checks && empty_attack[pt_knight][to] & pos.king(you)) *moves++ = make_move(promotion_p, to - delta, to);
 		return moves;
 	}
 	// generate pawn moves
@@ -145,12 +145,12 @@ namespace movegen {
 			while (multi_move_bb)
 			{
 				const auto to = pop_lsb(&multi_move_bb);
-				*moves++ = make_move(static_cast<square>(to - straight_ahead), to);
+				*moves++ = make_move(to - straight_ahead, to);
 			}
 			while (double_move_bb)
 			{
 				const auto to = pop_lsb(&double_move_bb);
-				*moves++ = make_move(static_cast<square>(to - straight_ahead - straight_ahead), to);
+				*moves++ = make_move(to - straight_ahead - straight_ahead, to);
 			}
 		}
 		if (pawns_7th_rank && (mg != evade_check || target & eighth_rank))
@@ -171,12 +171,12 @@ namespace movegen {
 			while (captureright)
 			{
 				const auto to = pop_lsb(&captureright);
-				*moves++ = make_move(static_cast<square>(to - capture_right), to);
+				*moves++ = make_move(to - capture_right, to);
 			}
 			while (captureleft)
 			{
 				const auto to = pop_lsb(&captureleft);
-				*moves++ = make_move(static_cast<square>(to - capture_left), to);
+				*moves++ = make_move(to - capture_left, to);
 			}
 			if (pos.enpassant_square() != no_square)
 			{

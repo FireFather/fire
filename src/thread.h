@@ -17,9 +17,11 @@
 #include <thread>
 #include <vector>
 #include "fire.h"
+#include "endgame.h"
 #include "material.h"
 #include "movepick.h"
 #include "mutex.h"
+#include "pawn.h"
 #include "position.h"
 #include "search.h"
 class thread
@@ -63,6 +65,7 @@ struct threadinfo
 	counter_follow_up_move_stats counter_followup_moves;
 	move_value_stats capture_history{};
 	material::material_hash material_table{};
+	pawn::pawn_hash pawn_table{};
 };
 struct mainthread final : thread
 {
@@ -100,6 +103,7 @@ struct threadpool : std::vector<thread*>
 	side contempt_color = num_sides;
 	int piece_contempt{};
 	int root_contempt_value = score_0;
+	endgames end_games;
 	position* root_position{};
 	rootmoves root_moves;
 	position_info* root_position_info{};

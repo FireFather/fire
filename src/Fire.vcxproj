@@ -152,6 +152,7 @@
     <ClInclude Include="chrono.h" />
     <ClInclude Include="egtb\tbcore.h" />
     <ClInclude Include="egtb\tbprobe.h" />
+    <ClInclude Include="endgame.h" />
     <ClInclude Include="evaluate.h" />
     <ClInclude Include="fire.h" />
     <ClInclude Include="hash.h" />
@@ -169,6 +170,7 @@
     <ClInclude Include="mutex.h" />
     <ClInclude Include="nnue\misc.h" />
     <ClInclude Include="nnue\nnue.h" />
+    <ClInclude Include="pawn.h" />
     <ClInclude Include="position.h" />
     <ClInclude Include="pragma.h" />
     <ClInclude Include="random\random.h" />

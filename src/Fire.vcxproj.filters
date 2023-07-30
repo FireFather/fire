@@ -113,6 +113,9 @@
     <ClInclude Include="chrono.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="endgame.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="evaluate.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -132,6 +135,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="mutex.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pawn.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="position.h">
