@@ -11,7 +11,6 @@
   this program: copying.txt.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "evaluate.h"
-#include "endgame.h"
 #include "fire.h"
 #include "nnue/nnue.h"
 #include "pragma.h"
@@ -63,10 +62,5 @@ namespace evaluate {
 	{
 		const int nnue_score = eval_nnue(pos);
 		return nnue_score;
-	}
-	int eval_after_null_move(const int eval)
-	{
-		const auto result = -eval + 2 * value_tempo;
-		return result;
 	}
 }

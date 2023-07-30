@@ -23,10 +23,10 @@ endif
 PGOBENCH = ./$(EXE) bench 12
 
 OBJS =
-	OBJS += bitbase/kpk.o bitboard.o chrono.o egtb/egtb.o egtb/tbprobe.o endgame.o evaluate.o \
+	OBJS += bitbase/kpk.o bitboard.o chrono.o egtb/egtb.o egtb/tbprobe.o evaluate.o \
 	hash.o main.o material.o mcts/mcts.o mcts/moves.o mcts/node.o mcts/output.o mcts/policy.o \
-	mcts/ucb.o movegen.o movepick.o nnue/nnue.o nnue/misc.o pawn.o position.o pst.o random/random.o \
-	search.o sfactor.o thread.o uci.o util/bench.o util/perft.o util/util.o zobrist.o \
+	mcts/ucb.o movegen.o movepick.o nnue/nnue.o nnue/misc.o position.o pst.o random/random.o \
+	search.o thread.o uci.o util/bench.o util/perft.o util/util.o zobrist.o \
 	
 optimize = yes
 debug = no

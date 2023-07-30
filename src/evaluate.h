@@ -19,5 +19,4 @@ class position;
 #endif
 namespace evaluate {
 	int eval(const position& pos);
-	int eval_after_null_move(int eval);
 }

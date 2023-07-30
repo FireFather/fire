@@ -21,9 +21,6 @@
     <ClCompile Include="chrono.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="endgame.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="evaluate.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -42,9 +39,6 @@
     <ClCompile Include="movepick.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="pawn.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="position.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -52,9 +46,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="search.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="sfactor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="thread.cpp">
@@ -122,9 +113,6 @@
     <ClInclude Include="chrono.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="endgame.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="evaluate.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -144,9 +132,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="mutex.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="pawn.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="position.h">

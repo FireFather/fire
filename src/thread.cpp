@@ -36,8 +36,6 @@ void threadpool::init()
 	cmh_data = static_cast<cmhinfo*>(calloc(sizeof(cmhinfo), true));
 	threads[0] = new mainthread;
 	thread_count = 1;
-	end_games.init_endgames();
-	end_games.init_scale_factors();
 	change_thread_count(thread_count);
 	fifty_move_distance = 50;
 	multi_pv = 1;

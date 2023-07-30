@@ -170,8 +170,7 @@ namespace search {
 		}
 		else
 		{
-			if (pi->previous_move != null_move)	eval = evaluate::eval(pos);
-			else eval = evaluate::eval_after_null_move((pi - 1)->position_value);
+			eval = evaluate::eval(pos);
 			pi->position_value = eval;
 			if (pi->eval_is_exact && !root_node) return eval;
 			hash_entry = main_hash.replace(key64);
@@ -181,7 +180,7 @@ namespace search {
 		{
 			constexpr auto max_gain_value = 500;
 			constexpr auto max_gain = static_cast<int>(max_gain_value);
-			auto gain = -pi->position_value - (pi - 1)->position_value + 2 * value_tempo;
+			auto gain = -pi->position_value - (pi - 1)->position_value;
 			gain = std::min(max_gain, std::max(-max_gain, gain));
 			pos.thread_info()->max_gain_table.update(pi->moved_piece, pi->previous_move, gain);
 		}
@@ -203,7 +202,7 @@ namespace search {
 			return eval - futility_margin(depth);
 		if (constexpr auto null_move_min_depth = 2; !pv_node
 			&& depth >= null_move_min_depth * plies
-			&& eval >= beta + null_move_tempo_mult * value_tempo
+			&& eval >= beta
 			&& (!pi->strong_threat || depth >= null_move_strong_threat_mult * plies)
 			&& (pi->position_value >= beta || depth >= null_move_pos_val_less_than_beta_mult * plies)
 			&& pi->non_pawn_material[pos.on_move()]
@@ -743,8 +742,7 @@ namespace search {
 			}
 			else
 			{
-				if (pi->previous_move != null_move)	best_value = evaluate::eval(pos);
-				else best_value = evaluate::eval_after_null_move((pi - 1)->position_value);
+				best_value = evaluate::eval(pos);
 				pi->position_value = best_value;
 				if (pi->eval_is_exact)	return best_value;
 				if (best_value >= beta)

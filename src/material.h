@@ -11,7 +11,6 @@
   this program: copying.txt.  If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
-#include "endgame.h"
 #include "fire.h"
 #include "position.h"
 namespace material {
@@ -21,12 +20,10 @@ namespace material {
 		[[nodiscard]] int get_game_phase() const { return game_phase; }
 		[[nodiscard]] bool has_value_function() const { return value_function_index >= 0; }
 		[[nodiscard]] int value_from_function(const position& pos) const;
-		[[nodiscard]] sfactor scale_factor_from_function(const position& pos, side color) const;
 		uint64_t key64;
 		int value_function_index;
 		int scale_function_index[num_sides];
 		int value;
-		sfactor conversion;
 		uint8_t factor[num_sides];
 		uint8_t game_phase;
 		bool conversion_is_estimated;
