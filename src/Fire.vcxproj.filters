@@ -137,9 +137,6 @@
     <ClInclude Include="mutex.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="pawn.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="position.h">
       <Filter>Header Files</Filter>
     </ClInclude>

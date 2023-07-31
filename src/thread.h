@@ -21,7 +21,6 @@
 #include "material.h"
 #include "movepick.h"
 #include "mutex.h"
-#include "pawn.h"
 #include "position.h"
 #include "search.h"
 class thread

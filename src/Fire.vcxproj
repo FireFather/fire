@@ -170,7 +170,6 @@
     <ClInclude Include="mutex.h" />
     <ClInclude Include="nnue\misc.h" />
     <ClInclude Include="nnue\nnue.h" />
-    <ClInclude Include="pawn.h" />
     <ClInclude Include="position.h" />
     <ClInclude Include="pragma.h" />
     <ClInclude Include="random\random.h" />

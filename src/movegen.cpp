@@ -12,9 +12,10 @@
 */
 #include "movegen.h"
 #include "fire.h"
-#include "pawn.h"
 #include "position.h"
 #include "pragma.h"
+#include "macro/square.h"
+
 namespace movegen {
 	// generate all piece moves
 	template <side me, move_gen type>
