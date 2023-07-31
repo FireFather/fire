@@ -65,7 +65,6 @@ struct threadinfo
 	counter_follow_up_move_stats counter_followup_moves;
 	move_value_stats capture_history{};
 	material::material_hash material_table{};
-	pawn::pawn_hash pawn_table{};
 };
 struct mainthread final : thread
 {

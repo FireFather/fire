@@ -26,13 +26,11 @@ inline int popcnt(const uint64_t bb) { return std::popcount(bb); }
 inline square lsb(const uint64_t bb) { return static_cast<square>(std::countr_zero(bb)); }
 inline square msb(const uint64_t bb) { unsigned long idx; _BitScanReverse64(&idx, bb); return static_cast<square>(idx); }
 inline void prefetch(void* address) { _mm_prefetch(static_cast<char*>(address), _MM_HINT_T0); }
-inline void prefetch2(void* address) { _mm_prefetch(static_cast<char*>(address), _MM_HINT_T0); _mm_prefetch(static_cast<char*>(address) + 64, _MM_HINT_T0); }
 #define CACHE_ALIGN __declspec(align(64))
 #elif defined(__GNUC__)
 inline int popcnt(uint64_t bb) { return __builtin_popcountll(bb); }
 inline square lsb(uint64_t bb) { return static_cast<square>(__builtin_ctzll(bb)); }
 inline square msb(uint64_t bb) { return static_cast<square>(63 ^ __builtin_clzll(bb)); }
 inline void prefetch(void* address) { __builtin_prefetch(address); }
-inline void prefetch2(void* address) { __builtin_prefetch(address);	__builtin_prefetch((char*)address + 64); }
 #define CACHE_ALIGN __attribute__ ((aligned(64)))
 #endif

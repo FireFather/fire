@@ -49,8 +49,8 @@ ucb.o: mcts/ucb.cpp mcts/mcts.h mcts/../position.h mcts/../bitboard.h \
  mcts/../material.h mcts/../movepick.h mcts/../movegen.h mcts/../mutex.h \
  mcts/../pawn.h mcts/../macro/square.h mcts/../search.h mcts/../chrono.h \
  mcts/../pragma.h
-movegen.o: movegen.cpp movegen.h fire.h pawn.h position.h bitboard.h \
- bitop.h macro/square.h pragma.h
+movegen.o: movegen.cpp movegen.h fire.h pawn.h macro/square.h position.h \
+ bitboard.h bitop.h pragma.h
 movepick.o: movepick.cpp movepick.h fire.h movegen.h position.h \
  bitboard.h bitop.h pragma.h thread.h endgame.h material.h mutex.h pawn.h \
  macro/square.h search.h chrono.h
