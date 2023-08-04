@@ -26,7 +26,7 @@ struct acout
 {
 	std::unique_lock<std::mutex> lk;
 	acout() : lk(std::unique_lock(mutex_cout)) {	}
-	template <typename T>	acout& operator<<(const T& _t) { std::cout << _t; return *this; }
+	template <typename T> acout& operator<<(const T& t) { std::cout << t; return *this; }
 	acout& operator<<(std::ostream& (*fp)(std::ostream&)) { std::cout << fp; return *this; }
 };
 namespace util {
@@ -44,8 +44,8 @@ namespace util {
 		static uint64_t rand64() { std::random_device rd; std::mt19937_64 gen(rd()); std::uniform_int_distribution<uint64_t> dis; return dis(gen); }
 	public:
 		explicit random(const uint64_t seed) : s_(seed) { assert(seed); }
-		template <typename t>
-		static t rand() { return t(rand64()); }
+		template <typename T>
+		static T rand() { return T(rand64()); }
 	};
 }
 std::ostream& operator<<(std::ostream& os, const position& pos);

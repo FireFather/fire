@@ -11,6 +11,7 @@
   this program: copying.txt.  If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
+#include "../fire.h"
 // these macros specify basic arithmetic operations on enumerated score values
 inline score operator+(const score s1, const score s2) { return static_cast<score>(static_cast<int>(s1) + static_cast<int>(s2)); }
 inline score operator-(const score s1, const score s2) { return static_cast<score>(static_cast<int>(s1) - static_cast<int>(s2)); }

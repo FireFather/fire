@@ -120,10 +120,10 @@ namespace kpk { bool probe(square wk_sq, square wp_sq, square bk_sq, side me); }
 // arrays of file & rank bitboards
 inline constexpr uint64_t file_bb[num_files] = { file_a_bb, file_b_bb, file_c_bb, file_d_bb, file_e_bb, file_f_bb, file_g_bb, file_h_bb };
 inline constexpr uint64_t rank_bb[num_ranks] = { rank_1_bb, rank_2_bb, rank_3_bb, rank_4_bb, rank_5_bb, rank_6_bb, rank_7_bb, rank_8_bb };
-template <square delta>uint64_t shift_bb(const uint64_t b)
+template <square Delta>uint64_t shift_bb(const uint64_t b)
 {
-	return delta == north ? b << 8 : delta == south ? b >> 8 : delta == north_east ? (b & ~file_h_bb) << 9 : delta == south_east
-		? (b & ~file_h_bb) >> 7 : delta == north_west ? (b & ~file_a_bb) << 7 : delta == south_west ? (b & ~file_a_bb) >> 9 : 0;
+	return Delta == north ? b << 8 : Delta == south ? b >> 8 : Delta == north_east ? (b & ~file_h_bb) << 9 : Delta == south_east
+		? (b & ~file_h_bb) >> 7 : Delta == north_west ? (b & ~file_a_bb) << 7 : Delta == south_west ? (b & ~file_a_bb) >> 9 : 0;
 }
 inline constexpr int kp_delta[][8] =
 {

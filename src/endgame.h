@@ -61,9 +61,3 @@ namespace endgame {
 	inline constexpr int draw_closer[8] = { 0, 0, 80, 64, 48, 32, 16, 8 };
 	inline constexpr int krppkrp_scale_factors[num_ranks] = { 0, 14, 16, 22, 33, 69, 0, 0 };
 }
-template <side strong>int endgame_kxk(const position& pos);
-template <side strong>sfactor endgame_kbpk(const position& pos);
-template <side strong>sfactor endgame_kqkrp(const position& pos);
-template <side strong>sfactor endgame_kpk(const position& pos);
-template <side strong>sfactor endgame_kpkp(const position& pos);
-inline int value_of_material(int val);
