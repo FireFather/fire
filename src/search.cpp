@@ -32,7 +32,7 @@ namespace search {
 	}
 	// alpha-beta pruning utilizing minimax algorithm, effectively eliminating 'unpromising' branches of the search tree...
 	// search time is consequently limited to a 'more promising' subtree, resulting in deeper searches
-	template <nodetype nt>
+	template <nodetype Nt>
 	int alpha_beta(position& pos, int alpha, int beta, int depth, bool cut_node)
 	{
 		// search constants (can be easily convert int global variables for tuning w/ CLOP, etc.)
@@ -48,7 +48,7 @@ namespace search {
 		constexpr auto late_move_count_max_depth = 16;
 		constexpr auto quiet_moves_max_gain_base = -44;
 		constexpr auto sort_cmp_sort_value = -200;
-		const auto pv_node = nt == PV;
+		const auto pv_node = Nt == PV;
 		constexpr auto max_quiet_moves = 64;
 		assert(-max_score <= alpha && alpha < beta && beta <= max_score);
 		assert(pv_node || alpha == beta - 1);
@@ -304,7 +304,7 @@ namespace search {
 		{
 			auto d = depth - 2 * plies - (pv_node ? depth_0 : static_cast<uint32_t>(depth) / plies / 4 * plies);
 			pi->no_early_pruning = true;
-			alpha_beta<nt>(pos, alpha, beta, d, !pv_node && cut_node);
+			alpha_beta<Nt>(pos, alpha, beta, d, !pv_node && cut_node);
 			pi->no_early_pruning = false;
 			hash_entry = main_hash.probe(key64);
 			hash_move = hash_entry ? hash_entry->move() : no_move;
@@ -664,7 +664,7 @@ namespace search {
 	// start at the leaf nodes of the main search and resolve all tactics/capture moves in "quiet" positions.
 	// extend search at all unstable nodes & perform an extension of the evaluation function in order to obtain a static
 	// evaluation ... greatly mitigating the effect of the horizon problem.
-	template <nodetype nt, bool state_check>
+	template <nodetype Nt, bool StateCheck>
 	int q_search(position& pos, int alpha, const int beta, const int depth)
 	{
 		constexpr auto qs_futility_value_0 = 102;
@@ -683,7 +683,7 @@ namespace search {
 			qs_futility_value_4, qs_futility_value_4, qs_futility_value_6, qs_futility_value_7
 		};
 		constexpr auto qs_stats_value_sortvalue = -12000;
-		const auto pv_node = nt == PV;
+		const auto pv_node = Nt == PV;
 		assert(alpha >= -max_score && alpha < beta && beta <= max_score);
 		assert(pv_node || alpha == beta - 1);
 		assert(depth <= depth_0);
@@ -702,11 +702,11 @@ namespace search {
 		auto best_move = no_move;
 		if (pi->move_repetition || pi->ply >= max_ply)
 			return pi->ply >= max_ply
-			&& !state_check
+			&& !StateCheck
 			? evaluate::eval(pos)
 			: draw[pos.on_move()];
 		assert(0 <= pi->ply && pi->ply < max_ply);
-		const auto hash_depth = state_check || depth == depth_0 ? depth_0 : -plies;
+		const auto hash_depth = StateCheck || depth == depth_0 ? depth_0 : -plies;
 		auto key64 = pi->key;
 		key64 ^= pos.draw50_key();
 		auto* hash_entry = main_hash.probe(key64);
@@ -726,7 +726,7 @@ namespace search {
 		{
 			if (const auto value = egtb::egtb_probe_wdl(pos); value != no_score)return value;
 		}
-		if (state_check)
+		if (StateCheck)
 		{
 			pi->position_value = no_score;
 			best_value = futility_basis = -max_score;
@@ -764,7 +764,7 @@ namespace search {
 			bool gives_check = move < static_cast<uint32_t>(castle_move) && !pos.discovered_check_possible()
 				? pi->check_squares[piece_type(pos.moved_piece(move))] & to_square(move)
 				: pos.give_check(move);
-			if (!state_check
+			if (!StateCheck
 				&& !gives_check
 				&& futility_basis > -win_score
 				&& !pos.advanced_pawn(move))
@@ -790,7 +790,7 @@ namespace search {
 					goto skip_see_test;
 				}
 			}
-			if (state_check)
+			if (StateCheck)
 			{
 				if (best_value > -longest_mate_score
 					&& !pos.is_capture_move(move)
@@ -817,8 +817,8 @@ namespace search {
 			if (!pos.legal_move(move))continue;
 			pos.play_move(move, gives_check);
 			const int value = gives_check
-				? -q_search<nt, true>(pos, -beta, -alpha, depth - plies)
-				: -q_search<nt, false>(pos, -beta, -alpha, depth - plies);
+				? -q_search<Nt, true>(pos, -beta, -alpha, depth - plies)
+				: -q_search<Nt, false>(pos, -beta, -alpha, depth - plies);
 			pos.take_move_back(move);
 			if ((pi + 1)->captured_piece)
 			{
@@ -851,7 +851,7 @@ namespace search {
 				}
 			}
 		}
-		if (state_check && best_value == -max_score)return gets_mated(pi->ply);
+		if (StateCheck && best_value == -max_score)return gets_mated(pi->ply);
 		hash_entry = main_hash.replace(key64);
 		hash_entry->save(key64, value_to_hash(best_value, pi->ply), (pv_node && best_value > orig_alpha ? exact_value : north_border) + pi->strong_threat,
 			hash_depth, best_move, pi->position_value, main_hash.age());

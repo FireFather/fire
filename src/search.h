@@ -58,8 +58,8 @@ namespace search {
 	inline easy_move_manager easy_move;
 	inline int draw[num_sides];
 	inline uint64_t previous_info_time;
-	template <nodetype nt>int alpha_beta(position& pos, int alpha, int beta, int depth, bool cut_node);
-	template <nodetype nt, bool state_check>int q_search(position& pos, int alpha, int beta, int depth);
+	template <nodetype Nt>int alpha_beta(position& pos, int alpha, int beta, int depth, bool cut_node);
+	template <nodetype Nt, bool StateCheck>int q_search(position& pos, int alpha, int beta, int depth);
 	int value_to_hash(int val, int ply);
 	int value_from_hash(int val, int ply);
 	void copy_pv(uint32_t* pv, uint32_t move, const uint32_t* pv_lower);
@@ -124,8 +124,7 @@ namespace search {
 		int move_count;
 	};
 }
-template <int max_plus, int max_min>
-struct piece_square_stats;
+template <int MaxPlus, int MaxMin> struct piece_square_stats;
 using counter_move_values = piece_square_stats<24576, 24576>;
 inline constexpr int egtb_helpful = 0 * plies;
 inline constexpr int egtb_not_helpful = 10 * plies;
