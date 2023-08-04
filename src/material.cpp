@@ -129,7 +129,6 @@ namespace material {
 				hash_entry->value_function_index = color == white ? 0 : 1;
 				return hash_entry;
 			}
-		auto strong_side = num_sides;
 		for (auto color = white; color <= black; ++color)
 		{
 			if (pos.non_pawn_material(color) == mat_bishop && pos.number(color, pt_bishop) == 1 && pos.number(color, pt_pawn) >= 1)

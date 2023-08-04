@@ -58,13 +58,13 @@ void position::calculate_check_pins() const
 	pos_info_->check_squares[pt_queen] = pos_info_->check_squares[pt_bishop] | pos_info_->check_squares[pt_rook];
 	pos_info_->check_squares[pt_king] = 0;
 }
-template <side color>
+template <side Color>
 void position::calculate_pins() const
 {
 	uint64_t result = 0;
-	const auto square_k = king(color);
-	auto pinners = (empty_attack[pt_rook][square_k] & pieces(~color, pt_queen, pt_rook))
-		| (empty_attack[pt_bishop][square_k] & pieces(~color, pt_queen, pt_bishop));
+	const auto square_k = king(Color);
+	auto pinners = (empty_attack[pt_rook][square_k] & pieces(~Color, pt_queen, pt_rook))
+		| (empty_attack[pt_bishop][square_k] & pieces(~Color, pt_queen, pt_bishop));
 	while (pinners)
 	{
 		const auto sq = pop_lsb(&pinners);
@@ -74,7 +74,7 @@ void position::calculate_pins() const
 			pos_info_->pin_by[lsb(b)] = sq;
 		}
 	}
-	pos_info_->x_ray[color] = result;
+	pos_info_->x_ray[Color] = result;
 }
 square position::calculate_threat() const
 {
@@ -248,23 +248,22 @@ bool position::legal_move(const uint32_t move) const
 	if (piece_type(piece_on_square(from)) == pt_king) return move_type(move) == castle_move || !(attack_to(to_square(move)) & pieces(~me));
 	return !(pos_info_->x_ray[on_move_] & from) || aligned(from, to_square(move), king(me));
 }
-template <bool yes>
-void position::do_castle_move(const side me, const square from, const square to, square& from_r, square& to_r)
+template <bool Yes> void position::do_castle_move(const side me, const square from, const square to, square& from_r, square& to_r)
 {
 	from_r = castle_rook_square(to);
 	to_r = relative_square(me, from_r > from ? f1 : d1);
 	if (!chess960_)
 	{
-		relocate_piece(me, make_piece(me, pt_king), yes ? from : to, yes ? to : from);
-		relocate_piece(me, make_piece(me, pt_rook), yes ? from_r : to_r, yes ? to_r : from_r);
+		relocate_piece(me, make_piece(me, pt_king), Yes ? from : to, Yes ? to : from);
+		relocate_piece(me, make_piece(me, pt_rook), Yes ? from_r : to_r, Yes ? to_r : from_r);
 	}
 	else
 	{
-		delete_piece(me, make_piece(me, pt_king), yes ? from : to);
-		delete_piece(me, make_piece(me, pt_rook), yes ? from_r : to_r);
-		board_[yes ? from : to] = board_[yes ? from_r : to_r] = no_piece;
-		move_piece(me, make_piece(me, pt_king), yes ? to : from);
-		move_piece(me, make_piece(me, pt_rook), yes ? to_r : from_r);
+		delete_piece(me, make_piece(me, pt_king), Yes ? from : to);
+		delete_piece(me, make_piece(me, pt_rook), Yes ? from_r : to_r);
+		board_[Yes ? from : to] = board_[Yes ? from_r : to_r] = no_piece;
+		move_piece(me, make_piece(me, pt_king), Yes ? to : from);
+		move_piece(me, make_piece(me, pt_rook), Yes ? to_r : from_r);
 	}
 }
 void position::play_move(const uint32_t move)

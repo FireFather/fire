@@ -32,16 +32,16 @@ namespace material {
 		bool conversion_is_estimated;
 	};
 	static_assert(sizeof(mat_hash_entry) == 32, "Material Entry size incorrect");
-	template <class entry, int Size>
+	template <class Entry, int Size>
 	struct material_hash_table
 	{
-		entry* operator[](const uint64_t key)
+		Entry* operator[](const uint64_t key)
 		{
-			static_assert(sizeof(entry) == 32 || sizeof(entry) == 128, "Wrong size");
-			return reinterpret_cast<entry*>(reinterpret_cast<char*>(mat_hash_mem_) + (static_cast<uint32_t>(key) & (Size - 1) * sizeof(entry)));
+			static_assert(sizeof(Entry) == 32 || sizeof(Entry) == 128, "Wrong size");
+			return reinterpret_cast<Entry*>(reinterpret_cast<char*>(mat_hash_mem_) + (static_cast<uint32_t>(key) & (Size - 1) * sizeof(Entry)));
 		}
 	private:
-		CACHE_ALIGN entry mat_hash_mem_[Size];
+		CACHE_ALIGN Entry mat_hash_mem_[Size];
 	};
 	// default material hash size = 16 MB;
 	constexpr int material_hash_size = 16384;

@@ -22,9 +22,9 @@ struct s_move
 };
 enum move_gen { captures_promotions, quiet_moves, quiet_checks, evade_check, all_moves, pawn_advances, queen_checks, castle_moves };
 namespace movegen {
-	template <side me, move_gen mg>	s_move* moves_for_pawn(const position& pos, s_move* moves, uint64_t target);
-	template <side me, uint8_t piece, bool only_check_moves>s_move* moves_for_piece(const position& pos, s_move* moves, uint64_t target);
-	template <uint8_t castle, bool only_check_moves, bool chess960>	s_move* get_castle(const position& pos, s_move* moves);
+	template <side Me, move_gen Mg>	s_move* moves_for_pawn(const position& pos, s_move* moves, uint64_t target);
+	template <side Me, uint8_t Piece, bool OnlyCheckMoves>s_move* moves_for_piece(const position& pos, s_move* moves, uint64_t target);
+	template <uint8_t Castle, bool OnlyCheckMoves, bool Chess960>	s_move* get_castle(const position& pos, s_move* moves);
 }
 inline bool operator<(const s_move& f, const s_move& s) { return f.value < s.value; }
 template <move_gen>s_move* generate_moves(const position& pos, s_move* moves);

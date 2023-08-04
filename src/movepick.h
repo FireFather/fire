@@ -36,7 +36,7 @@ struct piece_square_table
 protected:
 	Tn table_[num_pieces][num_squares];
 };
-template <int max_plus, int max_min>struct piece_square_stats : piece_square_table<int16_t>
+template <int MaxPlus, int MaxMin>struct piece_square_stats : piece_square_table<int16_t>
 {
 	static int calculate_offset(const ptype piece, const square to) { return 64 * static_cast<int>(piece) + static_cast<int>(to); }
 	[[nodiscard]] int16_t value_at_offset(const int offset) const { return *(reinterpret_cast<const int16_t*>(table_) + offset); }
@@ -48,13 +48,13 @@ template <int max_plus, int max_min>struct piece_square_stats : piece_square_tab
 	void update_plus(const int offset, const int val)
 	{
 		auto& elem = *(reinterpret_cast<int16_t*>(table_) + offset);
-		elem -= elem * static_cast<int16_t>(val) / max_plus;
+		elem -= elem * static_cast<int16_t>(val) / MaxPlus;
 		elem += static_cast<int16_t>(val);
 	}
 	void update_minus(const int offset, const int val)
 	{
 		auto& elem = *(reinterpret_cast<int16_t*>(table_) + offset);
-		elem -= elem * static_cast<int16_t>(val) / max_min;
+		elem -= elem * static_cast<int16_t>(val) / MaxMin;
 		elem -= static_cast<int16_t>(val);
 	}
 };
@@ -127,18 +127,18 @@ public:
 		assert(abs(entry) <= d);
 	}
 };
-template <typename t, int d, int Size, int... sizes>
-struct pos_info : std::array<pos_info<t, d, sizes...>, Size>
+template <typename T, int D, int Size, int... Sizes>
+struct pos_info : std::array<pos_info<T, D, Sizes...>, Size>
 {
 	using stats = pos_info;
-	void fill(const t& v)
+	void fill(const T& v)
 	{
 		assert(std::is_standard_layout<stats>::value);
-		using entry = pi_entry<t, d>;
+		using entry = pi_entry<T, D>;
 		entry* p = reinterpret_cast<entry*>(this);
 		std::fill(p, p + sizeof(*this) / sizeof(entry), v);
 	}
 };
-template <typename t, int d, int Size>struct pos_info<t, d, Size> : std::array<pi_entry<t, d>, Size>{};
+template <typename T, int D, int Size>struct pos_info<T, D, Size> : std::array<pi_entry<T, D>, Size>{};
 using piece_to_history = pos_info<int16_t, 29952, 16, 64>;
 using continuation_history = pos_info<piece_to_history, 0, 16, 64>;
