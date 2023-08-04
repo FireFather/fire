@@ -149,6 +149,9 @@ please see **http://chesslogik.wix.com/fire** for more info
 ![alt tag](https://raw.githubusercontent.com/FireFather/fire-zero/master/logos/fire_11.bmp)
 
 ## acknowledgements
+
+hindee kod anuvaad par kaam karane ke lie dhanyavaad sanjeeb patel!
+
 many of the ideas & techiques incorporated into Fire are documented in detail here
 - [Chess Programming Wiki](https://www.chessprogramming.org)
 
