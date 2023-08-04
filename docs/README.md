@@ -150,7 +150,7 @@ please see **http://chesslogik.wix.com/fire** for more info
 
 ## acknowledgements
 
-hindee kod anuvaad par kaam karane ke lie dhanyavaad sanjeeb patel!
+**hindee kod anuvaad par kaam karane ke lie dhanyavaad sanjeeb patel!**
 
 many of the ideas & techiques incorporated into Fire are documented in detail here
 - [Chess Programming Wiki](https://www.chessprogramming.org)
