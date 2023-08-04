@@ -98,7 +98,7 @@ Settings = Gauntlet/32MB/1000ms+100ms/M 500cp for 6 moves, D 120 moves/EPD:book.
   - [improving-the-nnue.md](improving-the-nnue.md)
 
 ## monte-carlo search mode:  
-![alt tag](https://raw.githubusercontent.com/FireFather/fire-NN/master/docs/Fire_8.NN.MCx64.png)
+![alt tag](https://raw.githubusercontent.com/FireFather/fire/master/docs/Fire_8.NN.MCx64.png)
 
 fire-9 has undergone months of meticulous analysis and refactoring using many of the most modern C++ tools available today, including Clang, ReSharper C++, and Visual Studio Code Analysis, ensuring the production of extremely fast highly optimized and stable executables.
 
