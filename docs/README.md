@@ -190,7 +190,7 @@ No. Here are the results of Don Daily's SIM program (default values) today to me
 
 As you can see Stockfish 14.1 and Stockfish 15 make the same moves ~64% of the time (see row 4, column 5)
 
-Fire 8.NN has an excellent score of ~43.34 % (see row 1), making different moves than SF almost 60% of the time.
+**Fire has proven incredibly unique...obtaining an excellent score of ~43.34 % (see row 1), making different moves than SF almost 60% of the time.**
 
 The Sim tool can be downloaded here:
 https://komodochess.com/downloads.htm
@@ -198,6 +198,9 @@ https://komodochess.com/downloads.htm
 If you're interested in similarity testing results, see also:
 https://github.com/FireFather/sim03
 
+**Fire is ranked #4! in Stefan Pohl's EAS (Engine Aggressiveness Score) Ratinglist:**
+
+https://www.sp-cc.de/eas-ratinglist.htm
 
 best regards-
 
