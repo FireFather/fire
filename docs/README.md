@@ -2,7 +2,9 @@
 
 ![alt tag](https://raw.githubusercontent.com/FireFather/fire-zero/master/bitmaps/nnue-gui.png)
 
-**fire self-play nnue** (code soon available in Hindi & Japanese)
+**fire self-play nnue** (comments/code soon available in Hindi)
+
+hindee kod anuvaad par kaam karane ke lie dhanyavaad sanjeeb patel! https://github.com/Sanjib-Patel/fire
 
 ## features
 - c++20
