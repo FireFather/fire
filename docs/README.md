@@ -202,7 +202,7 @@ https://komodochess.com/downloads.htm
 If you're interested in similarity testing results, see also:
 https://github.com/FireFather/sim03
 
-**Fire is ranked #4! in Stefan Pohl's EAS (Engine Aggressiveness Score) Ratinglist:**
+**Fire is ranked #3! in Stefan Pohl's EAS (Engine Aggressiveness Score) Ratinglist:**
 
 https://www.sp-cc.de/eas-ratinglist.htm
 
