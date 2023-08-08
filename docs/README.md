@@ -4,7 +4,9 @@
 
 **fire self-play nnue** (comments/code soon available in Hindi)
 
-hindee kod anuvaad par kaam karane ke lie dhanyavaad sanjeeb patel! https://github.com/Sanjib-Patel/fire
+hindee kod anuvaad par kaam karane ke lie dhanyavaad sanjeeb patel!
+https://github.com/Sanjib-Patel/fire &
+https://github.com/github/india
 
 ## features
 - c++20
