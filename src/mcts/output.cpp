@@ -14,7 +14,6 @@
 #include <cassert>
 #include <cmath>
 #include <sstream>
-#include <unordered_map>
 #include "mcts.h"
 #include "node.h"
 #include "../fire.h"

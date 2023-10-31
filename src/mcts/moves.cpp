@@ -13,7 +13,6 @@
 #include <algorithm>
 #include <cassert>
 #include <cmath>
-#include <unordered_map>
 #include "mcts.h"
 #include "node.h"
 #include "../fire.h"
@@ -48,14 +47,14 @@ void monte_carlo::generate_moves()
 	}
 	current_node()->lock.release();
 }
-reward monte_carlo::value_to_reward(const int v) const
+reward monte_carlo::value_to_reward(const int v)
 {
 	constexpr double k = -0.00490739829861;
 	const double r = 1.0 / (1 + exp(k * v));
 	assert(reward_mated <= r && r <= reward_mate);
 	return r;
 }
-int monte_carlo::reward_to_value(const reward r) const
+int monte_carlo::reward_to_value(const reward r)
 {
 	if (r > 0.99) return win_score;
 	if (r < 0.01) return -win_score;

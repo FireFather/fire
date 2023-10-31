@@ -1,6 +1,0 @@
-Fire 9 x64 bmi2
-perft 6
-rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
-nodes 119060324
-time 0.56 secs
-nps 212228742

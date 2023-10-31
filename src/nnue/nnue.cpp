@@ -61,7 +61,6 @@
 #include "../evaluate.h"
 #include "misc.h"
 #include "nnue.h"
-#include <iostream>
 
 #ifdef NNUE_EMBEDDED
 #include "../incbin/incbin.h"
@@ -200,7 +199,9 @@ using index_list = struct
 };
 inline int orient(const int c, const int s) { return s ^ (c == white_nnue ? 0x00 : 0x3f); }
 inline unsigned make_index(const int c, const int s, const int pc, const int ksq) { return orient(c, s) + piece_to_index[c][pc] + ps_end * ksq; }
-static void half_kp_append_active_indices(const Position* pos, const int c, index_list* active)
+namespace
+{
+	void half_kp_append_active_indices(const Position* pos, const int c, index_list* active)
 {
 	int ksq = pos->squares[c];
 	ksq = orient(c, ksq);
@@ -211,7 +212,7 @@ static void half_kp_append_active_indices(const Position* pos, const int c, inde
 		active->values[active->size++] = make_index(c, sq, pc, ksq);
 	}
 }
-static void half_kp_append_changed_indices(const Position* pos, const int c, const dirty_piece* dp, index_list* removed, index_list* added)
+	void half_kp_append_changed_indices(const Position* pos, const int c, const dirty_piece* dp, index_list* removed, index_list* added)
 {
 	int ksq = pos->squares[c];
 	ksq = orient(c, ksq);
@@ -223,11 +224,11 @@ static void half_kp_append_changed_indices(const Position* pos, const int c, con
 		if (dp->to[i] != 64) added->values[added->size++] = make_index(c, dp->to[i], pc, ksq);
 	}
 }
-static void append_active_indices(const Position* pos, index_list active[2])
+	void append_active_indices(const Position* pos, index_list active[2])
 {
 	for (int c = 0; c < 2; c++) half_kp_append_active_indices(pos, c, &active[c]);
 }
-static void append_changed_indices(const Position* pos, index_list removed[2], index_list added[2], bool reset[2])
+	void append_changed_indices(const Position* pos, index_list removed[2], index_list added[2], bool reset[2])
 {
 	if (const dirty_piece* dp = &(pos->nnue[0]->dirtyPiece); pos->nnue[1]->accumulator.computed_accumulation)
 	{
@@ -254,16 +255,17 @@ static void append_changed_indices(const Position* pos, index_list removed[2], i
 	}
 }
 #if !defined(USE_AVX512)
-static weight_t hidden1_weights alignas(64)[32 * 512];
-static weight_t hidden2_weights alignas(64)[32 * 32];
+	weight_t hidden1_weights alignas(64)[32 * 512];
+	weight_t hidden2_weights alignas(64)[32 * 32];
 #else
-static weight_t hidden1_weights alignas(64)[64 * 512];
-static weight_t hidden2_weights alignas(64)[64 * 32];
+weight_t hidden1_weights alignas(64)[64 * 512];
+weight_t hidden2_weights alignas(64)[64 * 32];
 #endif
-static weight_t output_weights alignas(64)[1 * 32];
-static int32_t hidden1_biases alignas(64)[32];
-static int32_t hidden2_biases alignas(64)[32];
-static int32_t output_biases[1];
+weight_t output_weights alignas(64)[1 * 32];
+int32_t hidden1_biases alignas(64)[32];
+int32_t hidden2_biases alignas(64)[32];
+int32_t output_biases[1];
+}
 inline int32_t affine_propagate(clipped_t* input, const int32_t* biases, weight_t* weights)
 {
 #if defined(USE_AVX2)
@@ -843,9 +845,11 @@ inline void affine_txfm(clipped_t* input, void* output, unsigned in_dims,
 		out_vec[i] = clamp(tmp[i] >> shift, 0, 127);
 }
 #endif
+namespace{
 // Input feature converter
-static int16_t ft_biases alignas(64)[k_half_dimensions];
-static int16_t ft_weights alignas(64)[k_half_dimensions * ft_in_dims];
+int16_t ft_biases alignas(64)[k_half_dimensions];
+int16_t ft_weights alignas(64)[k_half_dimensions * ft_in_dims];
+}
 #ifdef VECTOR
 constexpr int tile_height = num_regs * simd_width / 16;
 #endif
@@ -1049,7 +1053,8 @@ int nnue_evaluate_pos(const Position* pos)
 #endif
 	return out_value / fv_scale;
 }
-static void read_output_weights(weight_t* w, const char* d)
+namespace{
+	void read_output_weights(weight_t* w, const char* d)
 {
 	for (unsigned i = 0; i < 32; i++)
 	{
@@ -1062,7 +1067,7 @@ static void read_output_weights(weight_t* w, const char* d)
 		w[c] = *d++;
 	}
 }
-inline unsigned wt_idx(const unsigned r, unsigned c, const unsigned dims)
+	unsigned wt_idx(const unsigned r, unsigned c, const unsigned dims)
 {
 	(void)dims;
 #if defined(USE_AVX512)
@@ -1092,7 +1097,7 @@ inline unsigned wt_idx(const unsigned r, unsigned c, const unsigned dims)
 	return c * 32 + r;
 #endif
 }
-static const char* read_hidden_weights(weight_t* w, const unsigned dims, const char* d)
+const char* read_hidden_weights(weight_t* w, const unsigned dims, const char* d)
 {
 	for (unsigned r = 0; r < 32; r++)
 		for (unsigned c = 0; c < dims; c++)
@@ -1100,7 +1105,7 @@ static const char* read_hidden_weights(weight_t* w, const unsigned dims, const c
 	return d;
 }
 #ifdef USE_AVX2
-static void permute_biases(int32_t* biases)
+	void permute_biases(int32_t* biases)
 {
 	const auto b = reinterpret_cast<__m128i*>(biases);
 	__m128i tmp[8]{};
@@ -1133,7 +1138,7 @@ enum
 	transformer_start = 3 * 4 + 177,
 	network_start = transformer_start + 4 + 2 * 256 + 2 * 256 * 64 * 641
 };
-static bool verify_net(const void* eval_data, const size_t size)
+bool verify_net(const void* eval_data, const size_t size)
 {
 	if (size != 21022697) return false;
 	const auto d = static_cast<const char*>(eval_data);
@@ -1149,7 +1154,7 @@ static bool verify_net(const void* eval_data, const size_t size)
 		return false;
 	return true;
 }
-static void init_weights(const void* eval_data)
+void init_weights(const void* eval_data)
 {
 	const char* d = static_cast<const char*>(eval_data) + transformer_start + 4;
 	// Read transformer
@@ -1173,7 +1178,7 @@ static void init_weights(const void* eval_data)
 	permute_biases(hidden2_biases);
 #endif
 }
-static bool load_eval_file(const char* eval_file)
+bool load_eval_file(const char* eval_file)
 {
 	const void* eval_data;
 	map_t mapping;
@@ -1198,10 +1203,11 @@ static bool load_eval_file(const char* eval_file)
 	if (mapping) unmap_file(eval_data, mapping);
 	return success;
 }
+}
 /*
 Interfaces
 */
-int _CDECL nnue_init(const char* eval_file)
+int nnue_init(const char* eval_file)
 {
 	if (load_eval_file(eval_file))
 	{
@@ -1211,7 +1217,7 @@ int _CDECL nnue_init(const char* eval_file)
 	printf("NNUE not found: %s\n", eval_file);
 	return fflush(stdout);
 }
-int _CDECL nnue_evaluate(const int player, int* pieces, int* squares)
+int nnue_evaluate(const int player, int* pieces, int* squares)
 {
 	nnue_data nnue{};
 	nnue.accumulator.computed_accumulation = 0;

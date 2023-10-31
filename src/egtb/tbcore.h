@@ -13,7 +13,6 @@ constexpr auto sep_char = ';';
 #define FD HANDLE
 #define FD_ERR INVALID_HANDLE_VALUE
 #endif
-
 #ifndef _WIN32
 #define LOCK_T pthread_mutex_t
 #define LOCK_INIT(x) pthread_mutex_init(&(x), NULL)
@@ -25,7 +24,6 @@ constexpr auto sep_char = ';';
 template <typename T>constexpr auto lock(T x) { return WaitForSingleObject(x, INFINITE); }
 template <typename T>constexpr auto unlock(T x) { return ReleaseMutex(x); }
 #endif
-
 #ifndef _MSC_VER
 #define b_swap32(v) __builtin_bswap32(v)
 #define b_swap64(v) __builtin_bswap64(v)
@@ -33,7 +31,6 @@ template <typename T>constexpr auto unlock(T x) { return ReleaseMutex(x); }
 template <typename T>constexpr auto b_swap32(T v) { return _byteswap_ulong(v); }
 template <typename T>constexpr auto b_swap64(T v) { return _byteswap_uint64(v); }
 #endif
-
 inline constexpr auto wdl_suffix = ".rtbw";
 inline constexpr auto dtz_suffix = ".rtbz";
 inline constexpr auto wdl_dir = "RTBWDIR";
@@ -50,7 +47,6 @@ struct tb_hash_entry;
 using base_t = uint64;
 struct pairs_data { char* indextable; ushort* sizetable; ubyte* data; ushort* offset; ubyte* symlen; ubyte* sympat; int blocksize; int idxbits; int min_len; base_t base[1]; };
 struct tb_entry { char* data; uint64 key; uint64 mapping; ubyte ready; ubyte num; ubyte symmetric; ubyte has_pawns; }
-
 #ifndef _WIN32
 __attribute__((__may_alias__))
 #endif

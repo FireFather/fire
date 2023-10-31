@@ -47,8 +47,8 @@ public:
 	void do_move(uint32_t move);
 	void undo_move();
 	void generate_moves();
-	[[nodiscard]] reward value_to_reward(int v) const;
-	[[nodiscard]] int reward_to_value(reward r) const;
+	[[nodiscard]] static reward value_to_reward(int v);
+	[[nodiscard]] static int reward_to_value(reward r);
 	[[nodiscard]] int evaluate() const;
 	[[nodiscard]] reward evaluate_terminal() const;
 	reward calculate_prior(uint32_t move);

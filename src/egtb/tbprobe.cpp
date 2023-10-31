@@ -22,7 +22,8 @@
 #include "../movegen.h"
 #include "../position.h"
 #include "../zobrist.h"
-
+int tb_num_piece, tb_num_pawn, tb_max_men;
+namespace{
 constexpr auto tb_max_piece = 254;
 constexpr auto tb_max_pawn = 256;
 constexpr auto hash_max = 7;
@@ -35,22 +36,21 @@ constexpr auto tb_queen = 5;
 constexpr auto tb_king = 6;
 #define TB_W_PAWN tb_pawn
 #define TB_B_PAWN (tb_pawn | 8)
-static LOCK_T tb_mutex;
-static bool initialized = false;
-static int num_paths = 0;
-static char* path_string = nullptr;
-static char** paths = nullptr;
-int tb_num_piece, tb_num_pawn, tb_max_men;
-static tb_entry_piece tb_piece[tb_max_piece];
-static tb_entry_pawn tb_pawns[tb_max_pawn];
-static tb_hash_entry tb_hash[1 << tb_hash_bits][hash_max];
+LOCK_T tb_mutex;
+bool initialized = false;
+int num_paths = 0;
+char* path_string = nullptr;
+char** paths = nullptr;
+tb_entry_piece tb_piece[tb_max_piece];
+tb_entry_pawn tb_pawns[tb_max_pawn];
+tb_hash_entry tb_hash[1 << tb_hash_bits][hash_max];
 constexpr auto dtz_entries = 64;
-static dtz_table_entry dtz_table[dtz_entries];
-static void init_indices();
-static uint64 calc_key_from_pcs(const int* pcs, int mirror);
-static void free_wdl_entry(tb_entry* entry);
-static void free_dtz_entry(tb_entry* entry);
-static FD open_tb(const char* str, const char* suffix)
+dtz_table_entry dtz_table[dtz_entries];
+void init_indices();
+uint64 calc_key_from_pcs(const int* pcs, int mirror);
+void free_wdl_entry(tb_entry* entry);
+void free_dtz_entry(tb_entry* entry);
+FD open_tb(const char* str, const char* suffix)
 {
 	FD fd;
 	for (auto i = 0; i < num_paths; i++)
@@ -70,7 +70,7 @@ static FD open_tb(const char* str, const char* suffix)
 	}
 	return FD_ERR;
 }
-static void close_tb(FD const fd)
+void close_tb(FD const fd)
 {
 #ifndef _WIN32
 	close(fd);
@@ -78,7 +78,7 @@ static void close_tb(FD const fd)
 	CloseHandle(fd);
 #endif
 }
-static char* map_file(const char* name, const char* suffix, uint64* mapping)
+char* map_file(const char* name, const char* suffix, uint64* mapping)
 {
 	FD const fd = open_tb(name, suffix);
 	if (fd == FD_ERR) return nullptr;
@@ -102,20 +102,20 @@ static char* map_file(const char* name, const char* suffix, uint64* mapping)
 	return data;
 }
 #ifndef _WIN32
-static void unmap_file(char* data, uint64 size)
+void unmap_file(char* data, uint64 size)
 {
 	if (!data) return;
 	munmap(data, size);
 }
 #else
-static void unmap_file(const char* data, const uint64 mapping)
+void unmap_file(const char* data, const uint64 mapping)
 {
 	if (!data) return;
 	UnmapViewOfFile(data);
 	CloseHandle(reinterpret_cast<HANDLE>(mapping));
 }
 #endif
-static void add_to_hash(tb_entry* ptr, const uint64 key)
+void add_to_hash(tb_entry* ptr, const uint64 key)
 {
 	const int hshidx = static_cast<int>(key >> (64 - tb_hash_bits));
 	auto i = 0;
@@ -125,8 +125,8 @@ static void add_to_hash(tb_entry* ptr, const uint64 key)
 	tb_hash[hshidx][i].key = key;
 	tb_hash[hshidx][i].ptr = ptr;
 }
-static char pchr[] = { 'K', 'Q', 'R', 'B', 'N', 'P' };
-static void init_tb(const char* str)
+char pchr[] = { 'K', 'Q', 'R', 'B', 'N', 'P' };
+void init_tb(const char* str)
 {
 	tb_entry* entry;
 	int i, pcs[16]{};
@@ -204,67 +204,7 @@ static void init_tb(const char* str)
 	add_to_hash(entry, key);
 	if (key2 != key) add_to_hash(entry, key2);
 }
-int syzygy_path_init(const std::string& path)
-{
-	char str[16];
-	int i, j, k, l, r = 0;
-	if (initialized)
-	{
-		free(path_string);
-		free(paths);
-		tb_entry* entry;
-		for (i = 0; i < tb_num_piece; i++) { entry = reinterpret_cast<tb_entry*>(&tb_piece[i]); free_wdl_entry(entry); }
-		for (i = 0; i < tb_num_pawn; i++) { entry = reinterpret_cast<tb_entry*>(&tb_pawns[i]); free_wdl_entry(entry); }
-		for (i = 0; i < dtz_entries; i++)
-			if (dtz_table[i].entry)	free_dtz_entry(dtz_table[i].entry);
-	}
-	else { init_indices(); initialized = true; }
-	const auto* const p = path.c_str();
-	if (strlen(p) == 0 || !strcmp(p, "<empty>")) return 0;
-	path_string = static_cast<char*>(malloc(strlen(p) + 1));
-	strcpy(path_string, p);
-	num_paths = 0;
-	for (i = 0; i <= static_cast<int>(strlen(p)); i++)
-	{
-		if (path_string[i] != sep_char)	num_paths++;
-		while (path_string[i] && path_string[i] != sep_char)i++;
-		if (!path_string[i]) break;
-		path_string[i] = 0;
-	}
-	paths = static_cast<char**>(malloc(num_paths * sizeof(char*)));
-	for (i = j = 0; i < num_paths; i++) { while (!path_string[j]) j++; paths[i] = &path_string[j]; while (path_string[j]) j++; }
-	LOCK_INIT(tb_mutex);
-	tb_num_piece = tb_num_pawn = 0;
-	tb_max_men = 0;
-	for (i = 0; i < 1 << tb_hash_bits; i++)
-		for (j = 0; j < hash_max; j++) { tb_hash[i][j].key = 0ULL; tb_hash[i][j].ptr = nullptr; }
-	for (i = 0; i < dtz_entries; i++)dtz_table[i].entry = nullptr;
-	for (i = 1; i < 6; i++) { r = sprintf(str, "K%cvK", pchr[i]); init_tb(str); }
-	for (i = 1; i < 6; i++)
-		for (j = i; j < 6; j++) { r = sprintf(str, "K%cvK%c", pchr[i], pchr[j]); init_tb(str); }
-	for (i = 1; i < 6; i++)
-		for (j = i; j < 6; j++) { r = sprintf(str, "K%c%cvK", pchr[i], pchr[j]); init_tb(str); }
-	for (i = 1; i < 6; i++)
-		for (j = i; j < 6; j++)
-			for (k = 1; k < 6; k++) { r = sprintf(str, "K%c%cvK%c", pchr[i], pchr[j], pchr[k]); init_tb(str); }
-	for (i = 1; i < 6; i++)
-		for (j = i; j < 6; j++)
-			for (k = j; k < 6; k++) { r = sprintf(str, "K%c%c%cvK", pchr[i], pchr[j], pchr[k]); init_tb(str); }
-	for (i = 1; i < 6; i++)
-		for (j = i; j < 6; j++)
-			for (k = i; k < 6; k++)
-				for (l = i == k ? j : k; l < 6; l++) { r = sprintf(str, "K%c%cvK%c%c", pchr[i], pchr[j], pchr[k], pchr[l]); init_tb(str); }
-	for (i = 1; i < 6; i++)
-		for (j = i; j < 6; j++)
-			for (k = j; k < 6; k++)
-				for (l = 1; l < 6; l++) { r = sprintf(str, "K%c%c%cvK%c", pchr[i], pchr[j], pchr[k], pchr[l]); init_tb(str); }
-	for (i = 1; i < 6; i++)
-		for (j = i; j < 6; j++)
-			for (k = j; k < 6; k++)
-				for (l = k; l < 6; l++) { r = sprintf(str, "K%c%c%c%cvK", pchr[i], pchr[j], pchr[k], pchr[l]);	init_tb(str); }
-	return r;
-}
-static constexpr signed char offdiag[] = {
+constexpr signed char offdiag[] = {
 	0, -1, -1, -1, -1, -1, -1, -1,
 	1, 0, -1, -1, -1, -1, -1, -1,
 	1, 1, 0, -1, -1, -1, -1, -1,
@@ -274,7 +214,7 @@ static constexpr signed char offdiag[] = {
 	1, 1, 1, 1, 1, 1, 0, -1,
 	1, 1, 1, 1, 1, 1, 1, 0
 };
-static constexpr ubyte triangle[] = {
+constexpr ubyte triangle[] = {
 	6, 0, 1, 2, 2, 1, 0, 6,
 	0, 7, 3, 4, 4, 3, 7, 0,
 	1, 3, 8, 5, 5, 8, 3, 1,
@@ -284,7 +224,7 @@ static constexpr ubyte triangle[] = {
 	0, 7, 3, 4, 4, 3, 7, 0,
 	6, 0, 1, 2, 2, 1, 0, 6
 };
-static constexpr ubyte flipdiag[] = {
+constexpr ubyte flipdiag[] = {
 	0, 8, 16, 24, 32, 40, 48, 56,
 	1, 9, 17, 25, 33, 41, 49, 57,
 	2, 10, 18, 26, 34, 42, 50, 58,
@@ -294,7 +234,7 @@ static constexpr ubyte flipdiag[] = {
 	6, 14, 22, 30, 38, 46, 54, 62,
 	7, 15, 23, 31, 39, 47, 55, 63
 };
-static constexpr ubyte lower[] = {
+constexpr ubyte lower[] = {
 	28, 0, 1, 2, 3, 4, 5, 6,
 	0, 29, 7, 8, 9, 10, 11, 12,
 	1, 7, 30, 13, 14, 15, 16, 17,
@@ -304,7 +244,7 @@ static constexpr ubyte lower[] = {
 	5, 11, 16, 20, 23, 25, 34, 27,
 	6, 12, 17, 21, 24, 26, 27, 35
 };
-static constexpr ubyte diag[] = {
+constexpr ubyte diag[] = {
 	0, 0, 0, 0, 0, 0, 0, 8,
 	0, 1, 0, 0, 0, 0, 9, 0,
 	0, 0, 2, 0, 0, 10, 0, 0,
@@ -314,7 +254,7 @@ static constexpr ubyte diag[] = {
 	0, 14, 0, 0, 0, 0, 6, 0,
 	15, 0, 0, 0, 0, 0, 0, 7
 };
-static constexpr ubyte flap[] = {
+constexpr ubyte flap[] = {
 	0, 0, 0, 0, 0, 0, 0, 0,
 	0, 6, 12, 18, 18, 12, 6, 0,
 	1, 7, 13, 19, 19, 13, 7, 1,
@@ -324,7 +264,7 @@ static constexpr ubyte flap[] = {
 	5, 11, 17, 23, 23, 17, 11, 5,
 	0, 0, 0, 0, 0, 0, 0, 0
 };
-static constexpr ubyte ptwist[] = {
+constexpr ubyte ptwist[] = {
 	0, 0, 0, 0, 0, 0, 0, 0,
 	47, 35, 23, 11, 10, 22, 34, 46,
 	45, 33, 21, 9, 8, 20, 32, 44,
@@ -334,16 +274,16 @@ static constexpr ubyte ptwist[] = {
 	37, 25, 13, 1, 0, 12, 24, 36,
 	0, 0, 0, 0, 0, 0, 0, 0
 };
-static constexpr ubyte invflap[] = {
+constexpr ubyte invflap[] = {
 	8, 16, 24, 32, 40, 48,
 	9, 17, 25, 33, 41, 49,
 	10, 18, 26, 34, 42, 50,
 	11, 19, 27, 35, 43, 51
 };
-static constexpr ubyte file_to_file[] = {
+constexpr ubyte file_to_file[] = {
 	0, 1, 2, 3, 3, 2, 1, 0
 };
-static constexpr short kk_idx[10][64] = {
+constexpr short kk_idx[10][64] = {
 	{
 		-1, -1, -1, 0, 1, 2, 3, 4,
 		-1, -1, -1, 5, 6, 7, 8, 9,
@@ -445,10 +385,10 @@ static constexpr short kk_idx[10][64] = {
 		-1, -1, -1, -1, -1, -1, -1, 461
 	}
 };
-static int binomial[5][64];
-static int pawnidx[5][24];
-static int pfactor[5][4];
-static void init_indices()
+int binomial[5][64];
+int pawnidx[5][24];
+int pfactor[5][4];
+void init_indices()
 {
 	int i, j;
 	// binomial[k-1][n] = Bin(n, k)
@@ -476,7 +416,7 @@ static void init_indices()
 		pfactor[i][3] = s;
 	}
 }
-static uint64 encode_piece(const tb_entry_piece* ptr, const ubyte* norm, int* pos, const int* factor)
+uint64 encode_piece(const tb_entry_piece* ptr, const ubyte* norm, int* pos, const int* factor)
 {
 	uint64 idx;
 	int i, j, l;
@@ -537,14 +477,14 @@ static uint64 encode_piece(const tb_entry_piece* ptr, const ubyte* norm, int* po
 	return idx;
 }
 // determine file of leftmost pawn and sort pawns
-static int pawn_file(const tb_entry_pawn* ptr, int* pos)
+int pawn_file(const tb_entry_pawn* ptr, int* pos)
 {
 	for (auto i = 1; i < ptr->pawns[0]; i++)
 		if (flap[pos[0]] > flap[pos[i]])
 			SWAP(pos[0], pos[i])
 			return file_to_file[pos[0] & 0x07];
 }
-static uint64 encode_pawn(const tb_entry_pawn* ptr, const ubyte* norm, int* pos, const int* factor)
+uint64 encode_pawn(const tb_entry_pawn* ptr, const ubyte* norm, int* pos, const int* factor)
 {
 	int i, j, k, m, s;
 	const int n = ptr->num;
@@ -594,14 +534,14 @@ static uint64 encode_pawn(const tb_entry_pawn* ptr, const ubyte* norm, int* pos,
 	return idx;
 }
 // place k like pieces on n squares
-static int subfactor(const int k, const int n)
+int subfactor(const int k, const int n)
 {
 	auto f = n;
 	auto l = 1;
 	for (auto i = 1; i < k; i++) { f *= n - i; l *= i + 1; }
 	return f / l;
 }
-static uint64 calc_factors_piece(int* factor, const int num, const int order, const ubyte* norm, const ubyte enc_type)
+uint64 calc_factors_piece(int* factor, const int num, const int order, const ubyte* norm, const ubyte enc_type)
 {
 	int i, k;
 	static int pivfac[] = { 31332, 28056, 462 };
@@ -614,8 +554,8 @@ static uint64 calc_factors_piece(int* factor, const int num, const int order, co
 	}
 	return f;
 }
-static uint64 calc_factors_pawn(int* factor, const int num, const int order, const int order2, const ubyte* norm,
-	const int file)
+uint64 calc_factors_pawn(int* factor, const int num, const int order, const int order2, const ubyte* norm,
+                         const int file)
 {
 	int i = norm[0];
 	if (order2 < 0x0f) i += norm[i];
@@ -629,7 +569,7 @@ static uint64 calc_factors_pawn(int* factor, const int num, const int order, con
 	}
 	return f;
 }
-static void set_norm_piece(const tb_entry_piece* ptr, ubyte* norm, const ubyte* pieces)
+void set_norm_piece(const tb_entry_piece* ptr, ubyte* norm, const ubyte* pieces)
 {
 	int i;
 	for (i = 0; i < ptr->num; i++)norm[i] = 0;
@@ -646,7 +586,7 @@ static void set_norm_piece(const tb_entry_piece* ptr, ubyte* norm, const ubyte* 
 		for (auto j = i; j < ptr->num && pieces[j] == pieces[i]; j++)
 			norm[i]++;
 }
-static void set_norm_pawn(const tb_entry_pawn* ptr, ubyte* norm, const ubyte* pieces)
+void set_norm_pawn(const tb_entry_pawn* ptr, ubyte* norm, const ubyte* pieces)
 {
 	int i;
 	for (i = 0; i < ptr->num; i++)norm[i] = 0;
@@ -655,7 +595,7 @@ static void set_norm_pawn(const tb_entry_pawn* ptr, ubyte* norm, const ubyte* pi
 	for (i = ptr->pawns[0] + ptr->pawns[1]; i < ptr->num; i += norm[i])
 		for (auto j = i; j < ptr->num && pieces[j] == pieces[i]; j++)norm[i]++;
 }
-static void setup_pieces_piece(tb_entry_piece* ptr, const unsigned char* data, uint64* tb_size)
+void setup_pieces_piece(tb_entry_piece* ptr, const unsigned char* data, uint64* tb_size)
 {
 	int i;
 	for (i = 0; i < ptr->num; i++)ptr->pieces[0][i] = static_cast<ubyte>(data[i + 1] & 0x0f);
@@ -667,14 +607,14 @@ static void setup_pieces_piece(tb_entry_piece* ptr, const unsigned char* data, u
 	set_norm_piece(ptr, ptr->norm[1], ptr->pieces[1]);
 	tb_size[1] = calc_factors_piece(ptr->factor[1], ptr->num, order, ptr->norm[1], ptr->enc_type);
 }
-static void setup_pieces_piece_dtz(dtz_entry_piece* ptr, const unsigned char* data, uint64* tb_size)
+void setup_pieces_piece_dtz(dtz_entry_piece* ptr, const unsigned char* data, uint64* tb_size)
 {
 	for (auto i = 0; i < ptr->num; i++)ptr->pieces[i] = static_cast<ubyte>(data[i + 1] & 0x0f);
 	const auto order = data[0] & 0x0f;
 	set_norm_piece(reinterpret_cast<tb_entry_piece*>(ptr), ptr->norm, ptr->pieces);
 	tb_size[0] = calc_factors_piece(ptr->factor, ptr->num, order, ptr->norm, ptr->enc_type);
 }
-static void setup_pieces_pawn(tb_entry_pawn* ptr, const unsigned char* data, uint64* tb_size, const int f)
+void setup_pieces_pawn(tb_entry_pawn* ptr, const unsigned char* data, uint64* tb_size, const int f)
 {
 	int i;
 	const auto j = 1 + (ptr->pawns[1] > 0);
@@ -689,7 +629,7 @@ static void setup_pieces_pawn(tb_entry_pawn* ptr, const unsigned char* data, uin
 	set_norm_pawn(ptr, ptr->file[f].norm[1], ptr->file[f].pieces[1]);
 	tb_size[1] = calc_factors_pawn(ptr->file[f].factor[1], ptr->num, order, order2, ptr->file[f].norm[1], f);
 }
-static void setup_pieces_pawn_dtz(dtz_entry_pawn* ptr, const unsigned char* data, uint64* tb_size, const int f)
+void setup_pieces_pawn_dtz(dtz_entry_pawn* ptr, const unsigned char* data, uint64* tb_size, const int f)
 {
 	const auto j = 1 + (ptr->pawns[1] > 0);
 	const auto order = data[0] & 0x0f;
@@ -698,7 +638,7 @@ static void setup_pieces_pawn_dtz(dtz_entry_pawn* ptr, const unsigned char* data
 	set_norm_pawn(reinterpret_cast<tb_entry_pawn*>(ptr), ptr->file[f].norm, ptr->file[f].pieces);
 	tb_size[0] = calc_factors_pawn(ptr->file[f].factor, ptr->num, order, order2, ptr->file[f].norm, f);
 }
-static void calc_symlen(pairs_data* d, const int s, char* tmp)
+void calc_symlen(pairs_data* d, const int s, char* tmp)
 {
 	const auto* const w = d->sympat + 3 * static_cast<int>(s);
 	if (const auto s2 = w[2] << 4 | w[1] >> 4; s2 == 0x0fff)	d->symlen[s] = 0;
@@ -713,7 +653,7 @@ static void calc_symlen(pairs_data* d, const int s, char* tmp)
 }
 ushort read_ushort(const ubyte* d) { return static_cast<ushort>(d[0] | d[1] << 8); }
 uint32 read_uint32(const ubyte* d) { return d[0] | d[1] << 8 | d[2] << 16 | d[3] << 24; }
-static pairs_data* setup_pairs(unsigned char* data, const uint64 tb_size, uint64* size, unsigned char** next, ubyte* flags, const int wdl)
+pairs_data* setup_pairs(unsigned char* data, const uint64 tb_size, uint64* size, unsigned char** next, ubyte* flags, const int wdl)
 {
 	pairs_data* d;
 	int i;
@@ -731,7 +671,7 @@ static pairs_data* setup_pairs(unsigned char* data, const uint64 tb_size, uint64
 	const int blocksize = data[1];
 	const int idxbits = data[2];
 	const int real_num_blocks = static_cast<int>(read_uint32(&data[4]));
-	const auto num_blocks = real_num_blocks + *&data[3];
+	const auto num_blocks = real_num_blocks + data[3];
 	const int max_len = data[8];
 	const int min_len = data[9];
 	const auto h = max_len - min_len + 1;
@@ -760,7 +700,7 @@ static pairs_data* setup_pairs(unsigned char* data, const uint64 tb_size, uint64
 	d->offset -= d->min_len;
 	return d;
 }
-static int init_table_wdl(tb_entry* entry, char* str)
+int init_table_wdl(tb_entry* entry, char* str)
 {
 	ubyte* next = nullptr;
 	uint64 tb_size[8]{};
@@ -837,7 +777,7 @@ static int init_table_wdl(tb_entry* entry, char* str)
 	}
 	return 1;
 }
-static int init_table_dtz(tb_entry* entry)
+int init_table_dtz(tb_entry* entry)
 {
 	auto* data = reinterpret_cast<ubyte*>(entry->data);
 	ubyte* next = nullptr;
@@ -887,7 +827,7 @@ static int init_table_dtz(tb_entry* entry)
 	return 1;
 }
 template <bool LittleEndian>
-static ubyte decompress_pairs(pairs_data* d, const uint64 idx)
+ubyte decompress_pairs(pairs_data* d, const uint64 idx)
 {
 	if (!d->idxbits) return static_cast<ubyte>(d->min_len);
 	const auto mainidx = static_cast<uint32>(idx >> d->idxbits);
@@ -944,7 +884,6 @@ static ubyte decompress_pairs(pairs_data* d, const uint64 idx)
 	}
 	return sympat[3 * sym];
 }
-
 void load_dtz_table(const char* str, const uint64 key1, const uint64 key2)
 {
 	int i;
@@ -967,7 +906,7 @@ void load_dtz_table(const char* str, const uint64 key1, const uint64 key2)
 	if (!init_table_dtz(ptr3))free(ptr3);
 	else dtz_table[0].entry = ptr3;
 }
-static void free_wdl_entry(tb_entry* entry)
+void free_wdl_entry(tb_entry* entry)
 {
 	unmap_file(entry->data, entry->mapping);
 	if (!entry->has_pawns)
@@ -982,21 +921,20 @@ static void free_wdl_entry(tb_entry* entry)
 		ptr->file) { free(precomp[0]); if (precomp[1])free(precomp[1]); }
 	}
 }
-static void free_dtz_entry(tb_entry* entry)
+void free_dtz_entry(tb_entry* entry)
 {
 	unmap_file(entry->data, entry->mapping);
 	if (!entry->has_pawns) { const auto* const ptr = reinterpret_cast<struct dtz_entry_piece*>(entry); free(ptr->precomp); }
 	else { for (auto* ptr = reinterpret_cast<struct dtz_entry_pawn*>(entry); const auto & [precomp, factor, pieces, norm] :ptr->file)free(precomp); }
 	free(entry);
 }
-static int wdl_to_map[5] = { 1, 3, 0, 2, 0 };
-static ubyte pa_flags[5] = { 8, 0, 0, 0, 4 };
+int wdl_to_map[5] = { 1, 3, 0, 2, 0 };
+ubyte pa_flags[5] = { 8, 0, 0, 0, 4 };
 enum syzygy_piece_type { syz_none, syz_pawn, syz_knight, syz_bishop, syz_rook, syz_queen, syz_king, syz_nb };
-inline syzygy_piece_type& operator++(syzygy_piece_type& d) { return d = static_cast<syzygy_piece_type>(static_cast<int>(d) + 1); }
-inline syzygy_piece_type& operator--(syzygy_piece_type& d) { return d = static_cast<syzygy_piece_type>(static_cast<int>(d) - 1); }
+syzygy_piece_type& operator++(syzygy_piece_type& d) { return d = static_cast<syzygy_piece_type>(static_cast<int>(d) + 1); }
+syzygy_piece_type& operator--(syzygy_piece_type& d) { return d = static_cast<syzygy_piece_type>(static_cast<int>(d) - 1); }
 constexpr uint8_t pt_from_syz[syz_nb] = { no_piecetype, pt_pawn, pt_knight, pt_bishop, pt_rook, pt_queen, pt_king };
-constexpr syzygy_piece_type syz_from_pt[num_piecetypes] = { syz_none, syz_king, syz_pawn, syz_knight, syz_bishop, syz_rook, syz_queen };
-static void prt_str(const position& pos, char* str, const int mirror)
+void prt_str(const position& pos, char* str, const int mirror)
 {
 	syzygy_piece_type pt;
 	int i;
@@ -1009,7 +947,7 @@ static void prt_str(const position& pos, char* str, const int mirror)
 		for (i = pos.number(color, pt_from_syz[pt]); i > 0; i--)*str++ = pchr[6 - pt];
 	*str++ = 0;
 }
-static uint64 calc_key(const position& pos, const int mirror)
+uint64 calc_key(const position& pos, const int mirror)
 {
 	syzygy_piece_type pt;
 	int i;
@@ -1020,7 +958,7 @@ static uint64 calc_key(const position& pos, const int mirror)
 	for (pt = syz_pawn; pt <= syz_king; ++pt)for (i = pos.number(color, pt_from_syz[pt]); i > 0; i--)key ^= zobrist::psq[make_piece(black, pt_from_syz[pt])][i - 1];
 	return key;
 }
-static uint64 calc_key_from_pcs(const int* pcs, const int mirror)
+uint64 calc_key_from_pcs(const int* pcs, const int mirror)
 {
 	syzygy_piece_type pt;
 	int i;
@@ -1037,12 +975,12 @@ bool is_little_endian()
 	x.i = 1;
 	return x.c[0] == 1;
 }
-static ubyte decompress_pairs(pairs_data* d, const uint64 idx)
+ubyte decompress_pairs(pairs_data* d, const uint64 idx)
 {
 	static const auto islittleendian = is_little_endian();
 	return islittleendian ? decompress_pairs<true>(d, idx) : decompress_pairs<false>(d, idx);
 }
-static int probe_wdl_table(const position& pos, int* success)
+int probe_wdl_table(const position& pos, int* success)
 {
 	int i;
 	ubyte res;
@@ -1098,7 +1036,7 @@ static int probe_wdl_table(const position& pos, int* success)
 	}
 	return static_cast<int>(res) - 2;
 }
-static int probe_dtz_table(const position& pos, const int wdl, int* success)
+int probe_dtz_table(const position& pos, const int wdl, int* success)
 {
 	tb_entry* ptr;
 	int i;
@@ -1159,17 +1097,17 @@ static int probe_dtz_table(const position& pos, const int wdl, int* success)
 	}
 	return res;
 }
-static s_move* add_underprom_caps(const position& pos, const s_move* stack, s_move* end)
+s_move* add_underprom_caps(const position& pos, const s_move* stack, s_move* end)
 {
 	auto* extra = end;
 	for (const auto* moves = stack; moves < end; moves++)
 	{
 		if (const auto move = moves->move; move_type(move) >= promotion_p && !pos.empty_square(to_square(move)))
-		{ (*extra++).move = move - (1 << 12); (*extra++).move = move - (2 << 12); (*extra++).move = move - (3 << 12); }
+		{ (extra++)->move = move - (1 << 12); (extra++)->move = move - (2 << 12); (extra++)->move = move - (3 << 12); }
 	}
 	return extra;
 }
-static int probe_ab(position& pos, int alpha, const int beta, int* success)
+int probe_ab(position& pos, int alpha, const int beta, int* success)
 {
 	int val;
 	s_move stack[64];
@@ -1192,40 +1130,7 @@ static int probe_ab(position& pos, int alpha, const int beta, int* success)
 	*success = 1;
 	return val;
 }
-int syzygy_probe_wdl(position& pos, int* success)
-{
-	*success = 1;
-	auto val = probe_ab(pos, -2, 2, success);
-	if (pos.enpassant_square() == no_square)return val;
-	if (!*success) return 0;
-	auto v1 = -3;
-	s_move stack[192];
-	s_move* moves;
-	s_move* end;
-	if (!pos.is_in_check())end = generate_moves<captures_promotions>(pos, stack);
-	else end = generate_moves<evade_check>(pos, stack);
-	for (moves = stack; moves < end; moves++)
-	{
-		const auto capture = moves->move;
-		if (move_type(capture) != enpassant || !pos.legal_move(capture))	continue;
-		pos.play_move(capture);
-		const auto v0 = -probe_ab(pos, -2, 2, success);
-		pos.take_move_back(capture);
-		if (*success == 0) return 0;
-		if (v0 > v1) v1 = v0;
-	}
-	if (v1 > -3)
-	{
-		if (v1 >= val) val = v1; else if (val == 0)
-		{
-			for (moves = stack; moves < end; moves++) { const auto capture = moves->move; if (move_type(capture) == enpassant) continue; if (pos.legal_move(capture)) break; }
-			if (moves == end && !pos.is_in_check()) { end = generate_moves<quiet_moves>(pos, end); for (; moves < end; moves++) { if (const auto move = moves->move; pos.legal_move(move))break; } }
-			if (moves == end)val = v1;
-		}
-	}
-	return val;
-}
-static int probe_dtz_no_ep(position& pos, int* success)
+int probe_dtz_no_ep(position& pos, int* success)
 {
 	const auto wdl = probe_ab(pos, -2, 2, success);
 	if (*success == 0) return 0;
@@ -1283,6 +1188,40 @@ static int probe_dtz_no_ep(position& pos, int* success)
 	}
 	return best;
 }
+}
+int syzygy_probe_wdl(position& pos, int* success)
+{
+	*success = 1;
+	auto val = probe_ab(pos, -2, 2, success);
+	if (pos.enpassant_square() == no_square)return val;
+	if (!*success) return 0;
+	auto v1 = -3;
+	s_move stack[192];
+	s_move* moves;
+	s_move* end;
+	if (!pos.is_in_check())end = generate_moves<captures_promotions>(pos, stack);
+	else end = generate_moves<evade_check>(pos, stack);
+	for (moves = stack; moves < end; moves++)
+	{
+		const auto capture = moves->move;
+		if (move_type(capture) != enpassant || !pos.legal_move(capture))	continue;
+		pos.play_move(capture);
+		const auto v0 = -probe_ab(pos, -2, 2, success);
+		pos.take_move_back(capture);
+		if (*success == 0) return 0;
+		if (v0 > v1) v1 = v0;
+	}
+	if (v1 > -3)
+	{
+		if (v1 >= val) val = v1; else if (val == 0)
+		{
+			for (moves = stack; moves < end; moves++) { const auto capture = moves->move; if (move_type(capture) == enpassant) continue; if (pos.legal_move(capture)) break; }
+			if (moves == end && !pos.is_in_check()) { end = generate_moves<quiet_moves>(pos, end); for (; moves < end; moves++) { if (const auto move = moves->move; pos.legal_move(move))break; } }
+			if (moves == end)val = v1;
+		}
+	}
+	return val;
+}
 constexpr int wdl_to_dtz[] = { -1, -101, 0, 101, 1 };
 int syzygy_probe_dtz(position& pos, int* success)
 {
@@ -1322,4 +1261,64 @@ int syzygy_probe_dtz(position& pos, int* success)
 		}
 	}
 	return val;
+}
+int syzygy_path_init(const std::string& path)
+{
+	char str[16];
+	int i, j, k, l, r = 0;
+	if (initialized)
+	{
+		free(path_string);
+		free(paths);
+		tb_entry* entry;
+		for (i = 0; i < tb_num_piece; i++) { entry = reinterpret_cast<tb_entry*>(&tb_piece[i]); free_wdl_entry(entry); }
+		for (i = 0; i < tb_num_pawn; i++) { entry = reinterpret_cast<tb_entry*>(&tb_pawns[i]); free_wdl_entry(entry); }
+		for (i = 0; i < dtz_entries; i++)
+			if (dtz_table[i].entry)	free_dtz_entry(dtz_table[i].entry);
+	}
+	else { init_indices(); initialized = true; }
+	const auto* const p = path.c_str();
+	if (strlen(p) == 0 || !strcmp(p, "<empty>")) return 0;
+	path_string = static_cast<char*>(malloc(strlen(p) + 1));
+	strcpy(path_string, p);
+	num_paths = 0;
+	for (i = 0; i <= static_cast<int>(strlen(p)); i++)
+	{
+		if (path_string[i] != sep_char)	num_paths++;
+		while (path_string[i] && path_string[i] != sep_char)i++;
+		if (!path_string[i]) break;
+		path_string[i] = 0;
+	}
+	paths = static_cast<char**>(malloc(num_paths * sizeof(char*)));
+	for (i = j = 0; i < num_paths; i++) { while (!path_string[j]) j++; paths[i] = &path_string[j]; while (path_string[j]) j++; }
+	LOCK_INIT(tb_mutex);
+	tb_num_piece = tb_num_pawn = 0;
+	tb_max_men = 0;
+	for (i = 0; i < 1 << tb_hash_bits; i++)
+		for (j = 0; j < hash_max; j++) { tb_hash[i][j].key = 0ULL; tb_hash[i][j].ptr = nullptr; }
+	for (i = 0; i < dtz_entries; i++)dtz_table[i].entry = nullptr;
+	for (i = 1; i < 6; i++) { r = sprintf(str, "K%cvK", pchr[i]); init_tb(str); }
+	for (i = 1; i < 6; i++)
+		for (j = i; j < 6; j++) { r = sprintf(str, "K%cvK%c", pchr[i], pchr[j]); init_tb(str); }
+	for (i = 1; i < 6; i++)
+		for (j = i; j < 6; j++) { r = sprintf(str, "K%c%cvK", pchr[i], pchr[j]); init_tb(str); }
+	for (i = 1; i < 6; i++)
+		for (j = i; j < 6; j++)
+			for (k = 1; k < 6; k++) { r = sprintf(str, "K%c%cvK%c", pchr[i], pchr[j], pchr[k]); init_tb(str); }
+	for (i = 1; i < 6; i++)
+		for (j = i; j < 6; j++)
+			for (k = j; k < 6; k++) { r = sprintf(str, "K%c%c%cvK", pchr[i], pchr[j], pchr[k]); init_tb(str); }
+	for (i = 1; i < 6; i++)
+		for (j = i; j < 6; j++)
+			for (k = i; k < 6; k++)
+				for (l = i == k ? j : k; l < 6; l++) { r = sprintf(str, "K%c%cvK%c%c", pchr[i], pchr[j], pchr[k], pchr[l]); init_tb(str); }
+	for (i = 1; i < 6; i++)
+		for (j = i; j < 6; j++)
+			for (k = j; k < 6; k++)
+				for (l = 1; l < 6; l++) { r = sprintf(str, "K%c%c%cvK%c", pchr[i], pchr[j], pchr[k], pchr[l]); init_tb(str); }
+	for (i = 1; i < 6; i++)
+		for (j = i; j < 6; j++)
+			for (k = j; k < 6; k++)
+				for (l = k; l < 6; l++) { r = sprintf(str, "K%c%c%c%cvK", pchr[i], pchr[j], pchr[k], pchr[l]);	init_tb(str); }
+	return r;
 }

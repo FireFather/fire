@@ -29,13 +29,6 @@
 #   define EXTERNC
 #endif
 
-#if defined (_WIN32)
-#   define _CDECL __cdecl
-#else
-#   define _CDECL
-#   define DLLExport EXTERNC
-#endif
-
 /**
 * Internal piece representation
 *     wking=1, wqueen=2, wrook=3, wbishop= 4, wknight= 5, wpawn= 6,
@@ -66,7 +59,7 @@ int nnue_evaluate_pos(const Position* pos);
 * Load NNUE file
 */
 
-int _CDECL nnue_init(const char* eval_file /** Path to NNUE file */);
+int nnue_init(const char* eval_file /** Path to NNUE file */);
 /**
 * Evaluation subroutine suitable for chess engines.
 * -------------------------------------------------
@@ -88,7 +81,7 @@ int _CDECL nnue_init(const char* eval_file /** Path to NNUE file */);
 * Returns
 *   Score relative to side to move in approximate centipawns
 */
-int _CDECL nnue_evaluate
+int nnue_evaluate
 (
 	int player, /** Side to move: white=0 black=1 */
 	int* pieces, /** Array of pieces */

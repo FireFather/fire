@@ -13,7 +13,6 @@
 #include <algorithm>
 #include <cassert>
 #include <cmath>
-#include <unordered_map>
 #include "mcts.h"
 #include "../fire.h"
 #include "../pragma.h"

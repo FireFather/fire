@@ -11,7 +11,6 @@
   this program: copying.txt.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include <cassert>
-#include <unordered_map>
 #include "mcts.h"
 #include "node.h"
 #include "../pragma.h"

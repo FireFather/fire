@@ -23,8 +23,7 @@ namespace egtb {
 	egtb_probe egtb_probe_dtm = nullptr;
 	egtb_probe egtb_probe_dtz = nullptr;
 	bool use_rule50;
-	static bool syzygy_in_use = false;
-	static std::string current_syzygy_path;
+	namespace{bool syzygy_in_use = false; std::string current_syzygy_path;}
 	//probe distance-to-zero
 	int tb_probe_dtz(position& pos)
 	{

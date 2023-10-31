@@ -20,30 +20,28 @@
 #include "../position.h"
 #include "../thread.h"
 #include "../uci.h"
-// count leaf nodes for all legal moves at a specific depth
-static uint64_t perft(position& pos, const int depth)
-{
-	uint64_t cnt = 0;
-	const auto leaf = depth == 2;
-	for (const auto& m : legal_move_list(pos))
+namespace{
+	// count leaf nodes for all legal moves at a specific depth
+	uint64_t perft(position& pos, const int depth)
 	{
-		pos.play_move(m, pos.give_check(m));
-		cnt += leaf ? legal_move_list(pos).size() : perft(pos, depth - 1);
-		pos.take_move_back(m);
+		uint64_t cnt = 0;
+		const auto leaf = depth == 2;
+		for (const auto& m : legal_move_list(pos))
+		{
+			pos.play_move(m, pos.give_check(m));
+			cnt += leaf ? legal_move_list(pos).size() : perft(pos, depth - 1);
+			pos.take_move_back(m);
+		}
+		return cnt;
 	}
-	return cnt;
 }
-uint64_t start_perft(position& pos, const int depth)
-{
-	return depth > 1 ? perft(pos, depth) : legal_move_list(pos).size();
-}
+uint64_t start_perft(position& pos, const int depth){return depth > 1 ? perft(pos, depth) : legal_move_list(pos).size();}
 void perft(int depth, std::string& fen)
 {
 	char buf[32];
 	uint64_t nodes = 0;
 	if (depth < 1) depth = 1;
-	if (fen.empty())
-		fen = startpos;
+	if (fen.empty()) fen = startpos;
 	search::reset();
 	// if 'perft.epd' is specified as 4th function parameter
 	// read positions from that file
