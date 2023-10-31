@@ -2,11 +2,7 @@
 
 ![alt tag](https://raw.githubusercontent.com/FireFather/fire-zero/master/bitmaps/nnue-gui.png)
 
-**fire self-play nnue** (comments/code soon available in Hindi)
-
-hindee kod anuvaad par kaam karane ke lie dhanyavaad sanjeeb patel! https://github.com/Sanjib-Patel/fire
-
-dhanyavaad https://github.com/github/india
+**fire self-play nnue**
 
 ## features
 - c++20
@@ -201,10 +197,6 @@ https://komodochess.com/downloads.htm
 
 If you're interested in similarity testing results, see also:
 https://github.com/FireFather/sim03
-
-**Fire is ranked #3! in Stefan Pohl's EAS (Engine Aggressiveness Score) Ratinglist:**
-
-https://www.sp-cc.de/eas-ratinglist.htm
 
 best regards-
 
