@@ -25,7 +25,7 @@ inline bool uci_syzygy_50_move_rule = false;
 inline int uci_syzygy_probe_depth = 1;
 inline int uci_syzygy_probe_limit = 6;
 inline std::string uci_syzygy_path;
-inline std::string uci_nnue_evalfile = "05152023-045758.bin";
+inline std::string uci_nnue_evalfile = "11072023-223459.bin";
 inline std::string engine_mode = "nnue";
 inline bool bench_active = false;
 // function declarations

@@ -15,7 +15,7 @@
 class position;
 #if !defined(_MSC_VER)
 #define NNUE_EMBEDDED
-#define NNUE_EVAL_FILE "05152023-045758.bin"
+#define NNUE_EVAL_FILE "11072023-223459.bin"
 #endif
 namespace evaluate {
 	int eval(const position& pos);
