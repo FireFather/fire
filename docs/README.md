@@ -27,7 +27,7 @@
 - optional experimental MCTS-UCT search
  (Monte Carlo Tree Search w/ Upper Confidence Bounds Applied to Trees) pure/no minmax
 
-**fire-9 is now available**
+**fire-9 test results**
 
 |                                       |    |       |                    |      |
 | ------------------------------------- |--- | ----- | ------------------ | ---- |
