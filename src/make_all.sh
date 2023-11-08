@@ -16,17 +16,17 @@
 arch_cpu=x86-64-popc
 make --no-print-directory -j profile-build ARCH=${arch_cpu} COMP=mingw
 strip fire.exe
-mv fire.exe fire-9_x64_popc.exe
+mv fire.exe fire-9.1_x64_popc.exe
 make gcc-profile-clean 
 
 arch_cpu=x86-64-avx2
 make --no-print-directory -j profile-build ARCH=${arch_cpu} COMP=mingw
 strip fire.exe
-mv fire.exe fire-9_x64_avx2.exe 
+mv fire.exe fire-9.1_x64_avx2.exe 
 make gcc-profile-clean
 
 arch_cpu=x86-64-bmi2
 make --no-print-directory -j profile-build ARCH=${arch_cpu} COMP=mingw
 strip fire.exe
-mv fire.exe fire-9_x64_bmi2.exe 
+mv fire.exe fire-9.1_x64_bmi2.exe 
 make gcc-profile-clean
