@@ -16,7 +16,7 @@
 #include <mutex>
 #include <random>
 #include "../position.h"
-inline constexpr auto program = "Fire 9.1";
+inline constexpr auto program = "Fire 9.2";
 inline std::string version;
 inline constexpr auto author = "N. Schmidt";
 inline constexpr auto platform = "x64";
