@@ -1,8 +1,5 @@
 # fire
-
-![alt tag](https://raw.githubusercontent.com/FireFather/fire-zero/master/bitmaps/nnue-gui.png)
 <div align="left">
-  <br>
 
   [![Release][release-badge]][release-link]
   [![Commits][commits-badge]][commits-link]
@@ -11,6 +8,8 @@
   [![License][license-badge]][license-link]
  
 </div>
+
+![alt tag](https://raw.githubusercontent.com/FireFather/fire-zero/master/bitmaps/nnue-gui.png)
 
 ## features
 - c++20
