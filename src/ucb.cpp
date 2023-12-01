@@ -14,9 +14,9 @@
 #include <cassert>
 #include <cmath>
 #include "mcts.h"
-#include "../fire.h"
-#include "../pragma.h"
-#include "../thread.h"
+#include "fire.h"
+#include "pragma.h"
+#include "thread.h"
 void monte_carlo::set_exploration_constant(const double c)
 {
 	ucb_exploration_constant_ = c;

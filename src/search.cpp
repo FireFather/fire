@@ -16,13 +16,13 @@
 #include "evaluate.h"
 #include "fire.h"
 #include "hash.h"
-#include "mcts/mcts.h"
+#include "mcts.h"
 #include "movegen.h"
 #include "movepick.h"
 #include "pragma.h"
 #include "thread.h"
 #include "uci.h"
-#include "util/util.h"
+#include "util.h"
 namespace search {
 	void adjust_time_after_ponder_hit()
 	{

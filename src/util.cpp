@@ -16,12 +16,12 @@
 #include <unistd.h>
 #endif
 #include <sstream> // std::stringstream
-#include "../fire.h"
-#include "../movegen.h"
-#include "../position.h"
-#include "../macro/file.h"
-#include "../macro/rank.h"
-#include "../util/util.h"
+#include "fire.h"
+#include "movegen.h"
+#include "position.h"
+#include "file.h"
+#include "rank.h"
+#include "util.h"
 namespace util {
 	const std::string months("Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec");
 	std::string month, day, year;

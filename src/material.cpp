@@ -15,7 +15,7 @@
 #include "fire.h"
 #include "pragma.h"
 #include "thread.h"
-#include "macro/side.h"
+#include "side.h"
 namespace material {
 	// adapted, consolidated, and optimized from robbolito material routines
 	// https://github.com/FireFather/robbolito/blob/main/values.c

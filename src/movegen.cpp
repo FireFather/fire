@@ -14,7 +14,7 @@
 #include "fire.h"
 #include "position.h"
 #include "pragma.h"
-#include "macro/square.h"
+#include "square.h"
 
 namespace movegen {
 	// generate all piece moves

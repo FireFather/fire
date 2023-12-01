@@ -16,10 +16,10 @@
 #include <sstream>
 #include <string>
 #include "util.h"
-#include "../fire.h"
-#include "../position.h"
-#include "../thread.h"
-#include "../uci.h"
+#include "fire.h"
+#include "position.h"
+#include "thread.h"
+#include "uci.h"
 namespace{
 	// count leaf nodes for all legal moves at a specific depth
 	uint64_t perft(position& pos, const int depth)

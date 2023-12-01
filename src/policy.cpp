@@ -13,8 +13,8 @@
 #include <cassert>
 #include "mcts.h"
 #include "node.h"
-#include "../pragma.h"
-#include "../thread.h"
+#include "pragma.h"
+#include "thread.h"
 mc_node monte_carlo::tree_policy()
 {
 	assert(is_root(current_node()));

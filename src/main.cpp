@@ -10,7 +10,7 @@
   You should have received a copy of the GNU General Public License with
   this program: copying.txt.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "util/util.h"
+#include "util.h"
 #include "uci.h"
 int main(const int argc, char* argv[])
 {

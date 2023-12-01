@@ -15,14 +15,14 @@
 #include <unordered_map>
 #include "mcts.h"
 #include "node.h"
-#include "../fire.h"
-#include "../movepick.h"
-#include "../position.h"
-#include "../pragma.h"
-#include "../search.h"
-#include "../thread.h"
-#include "../uci.h"
-#include "../util/util.h"
+#include "fire.h"
+#include "movepick.h"
+#include "position.h"
+#include "pragma.h"
+#include "search.h"
+#include "thread.h"
+#include "uci.h"
+#include "util.h"
 mc_node get_node(const position& pos)
 {
 	uint64_t key1 = pos.key();

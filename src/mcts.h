@@ -13,10 +13,10 @@
 #pragma once
 #include <climits>
 #include <unordered_map>
-#include "../position.h"
-#include "../fire.h"
-#include "../thread.h"
-#include "../search.h"
+#include "position.h"
+#include "fire.h"
+#include "thread.h"
+#include "search.h"
 struct node_info;
 struct edge;
 using reward = double;

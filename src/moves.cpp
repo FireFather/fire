@@ -15,12 +15,12 @@
 #include <cmath>
 #include "mcts.h"
 #include "node.h"
-#include "../fire.h"
-#include "../movepick.h"
-#include "../position.h"
-#include "../pragma.h"
-#include "../search.h"
-#include "../thread.h"
+#include "fire.h"
+#include "movepick.h"
+#include "position.h"
+#include "pragma.h"
+#include "search.h"
+#include "thread.h"
 void monte_carlo::generate_moves()
 {
 	current_node()->lock.acquire();

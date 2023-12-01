@@ -13,8 +13,8 @@
 #include <sstream>
 #include <fstream>
 #include "bench.h"
-#include "../thread.h"
-#include "../uci.h"
+#include "thread.h"
+#include "uci.h"
 #include "util.h"
 // search 64 positions (startposition, 20 openings from ECO, 20 middlegame, 20 endgames from ECE, & 3 FRC start positions)
 // to depth 16 and write a time-stamped results file to disk

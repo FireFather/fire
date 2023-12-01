@@ -11,5 +11,5 @@
   this program: copying.txt.  If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
-#include "../position.h"
+#include "position.h"
 void random(position& pos);

@@ -15,11 +15,11 @@
 #include <unordered_map>
 #include "node.h"
 #include "mcts.h"
-#include "../evaluate.h"
-#include "../position.h"
-#include "../pragma.h"
-#include "../search.h"
-#include "../thread.h"
+#include "evaluate.h"
+#include "position.h"
+#include "pragma.h"
+#include "search.h"
+#include "thread.h"
 mcts_hash_table mcts;
 uint32_t monte_carlo::search()
 {

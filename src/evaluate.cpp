@@ -13,7 +13,7 @@
 #include "evaluate.h"
 #include "endgame.h"
 #include "fire.h"
-#include "nnue/nnue.h"
+#include "nnue.h"
 #include "pragma.h"
 namespace evaluate {
 	/*

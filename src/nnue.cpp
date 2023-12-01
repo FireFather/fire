@@ -58,12 +58,12 @@
 #include <arm_neon.h>
 #endif
 //-------------------
-#include "../evaluate.h"
+#include "evaluate.h"
 #include "misc.h"
 #include "nnue.h"
 
 #ifdef NNUE_EMBEDDED
-#include "../incbin/incbin.h"
+#include "incbin/incbin.h"
 INCBIN(Network, NNUE_EVAL_FILE);
 #endif
 

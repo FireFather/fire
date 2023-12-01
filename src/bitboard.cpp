@@ -13,10 +13,10 @@
 #include "bitboard.h"
 #include "fire.h"
 #include "pragma.h"
-#include "macro/file.h"
-#include "macro/rank.h"
-#include "macro/side.h"
-#include "macro/square.h"
+#include "file.h"
+#include "rank.h"
+#include "side.h"
+#include "square.h"
 // init all bitboard arrays
 void bitboard::init()
 {

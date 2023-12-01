@@ -16,14 +16,14 @@
 #include <sstream>
 #include "mcts.h"
 #include "node.h"
-#include "../fire.h"
-#include "../hash.h"
-#include "../position.h"
-#include "../pragma.h"
-#include "../search.h"
-#include "../thread.h"
-#include "../uci.h"
-#include "../util/util.h"
+#include "fire.h"
+#include "hash.h"
+#include "position.h"
+#include "pragma.h"
+#include "search.h"
+#include "thread.h"
+#include "uci.h"
+#include "util.h"
 bool monte_carlo::should_output_result() const
 {
 	const time_point elapsed = now() - start_time_ + 1;

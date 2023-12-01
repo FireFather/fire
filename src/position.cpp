@@ -19,10 +19,10 @@
 #include "pragma.h"
 #include "thread.h"
 #include "zobrist.h"
-#include "macro/file.h"
-#include "macro/side.h"
-#include "macro/square.h"
-#include "util/util.h"
+#include "file.h"
+#include "side.h"
+#include "square.h"
+#include "util.h"
 // position functions
 uint64_t position::attack_to(const square sq, const uint64_t occupied) const
 {

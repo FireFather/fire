@@ -18,12 +18,12 @@
 #include "chrono.h"
 #include "fire.h"
 #include "hash.h"
-#include "nnue/nnue.h"
-#include "random/random.h"
+#include "nnue.h"
+#include "random.h"
 #include "search.h"
 #include "thread.h"
-#include "util/perft.h"
-#include "util/util.h"
+#include "perft.h"
+#include "util.h"
 // stop threads, reset search
 void new_game()
 {

@@ -17,11 +17,11 @@
 #endif
 #include "tbprobe.h"
 #include "tbcore.h"
-#include "../pragma.h"
-#include "../bitboard.h"
-#include "../movegen.h"
-#include "../position.h"
-#include "../zobrist.h"
+#include "pragma.h"
+#include "bitboard.h"
+#include "movegen.h"
+#include "position.h"
+#include "zobrist.h"
 int tb_num_piece, tb_num_pawn, tb_max_men;
 namespace{
 constexpr auto tb_max_piece = 254;

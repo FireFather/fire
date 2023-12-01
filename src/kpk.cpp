@@ -10,9 +10,9 @@
   You should have received a copy of the GNU General Public License with
   this program: copying.txt.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "../bitboard.h"
-#include "../fire.h"
-#include "../macro/rank.h"
+#include "bitboard.h"
+#include "fire.h"
+#include "rank.h"
 namespace kpk {
 	constexpr uint32_t max_index = 196608;
 	uint32_t kpk_bitbase[max_index / 32] =

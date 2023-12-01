@@ -12,8 +12,8 @@
 */
 #pragma once
 #include "mcts.h"
-#include "../position.h"
-#include "../pragma.h"
+#include "position.h"
+#include "pragma.h"
 constexpr reward reward_none = 0.0;
 constexpr reward reward_mated = 0.0;
 constexpr reward reward_draw = 0.5;

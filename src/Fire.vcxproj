@@ -18,6 +18,72 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="bench.h" />
+    <ClInclude Include="bitboard.h" />
+    <ClInclude Include="bitop.h" />
+    <ClInclude Include="chrono.h" />
+    <ClInclude Include="endgame.h" />
+    <ClInclude Include="evaluate.h" />
+    <ClInclude Include="file.h" />
+    <ClInclude Include="fire.h" />
+    <ClInclude Include="hash.h" />
+    <ClInclude Include="incbin.h" />
+    <ClInclude Include="material.h" />
+    <ClInclude Include="mcts.h" />
+    <ClInclude Include="misc.h" />
+    <ClInclude Include="movegen.h" />
+    <ClInclude Include="movepick.h" />
+    <ClInclude Include="mutex.h" />
+    <ClInclude Include="nnue.h" />
+    <ClInclude Include="node.h" />
+    <ClInclude Include="perft.h" />
+    <ClInclude Include="position.h" />
+    <ClInclude Include="pragma.h" />
+    <ClInclude Include="random.h" />
+    <ClInclude Include="rank.h" />
+    <ClInclude Include="score.h" />
+    <ClInclude Include="search.h" />
+    <ClInclude Include="side.h" />
+    <ClInclude Include="square.h" />
+    <ClInclude Include="tbcore.h" />
+    <ClInclude Include="tbprobe.h" />
+    <ClInclude Include="thread.h" />
+    <ClInclude Include="uci.h" />
+    <ClInclude Include="util.h" />
+    <ClInclude Include="zobrist.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="bench.cpp" />
+    <ClCompile Include="bitboard.cpp" />
+    <ClCompile Include="chrono.cpp" />
+    <ClCompile Include="egtb.cpp" />
+    <ClCompile Include="evaluate.cpp" />
+    <ClCompile Include="hash.cpp" />
+    <ClCompile Include="kpk.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="material.cpp" />
+    <ClCompile Include="mcts.cpp" />
+    <ClCompile Include="misc.cpp" />
+    <ClCompile Include="movegen.cpp" />
+    <ClCompile Include="movepick.cpp" />
+    <ClCompile Include="moves.cpp" />
+    <ClCompile Include="nnue.cpp" />
+    <ClCompile Include="node.cpp" />
+    <ClCompile Include="output.cpp" />
+    <ClCompile Include="perft.cpp" />
+    <ClCompile Include="policy.cpp" />
+    <ClCompile Include="position.cpp" />
+    <ClCompile Include="pst.cpp" />
+    <ClCompile Include="random.cpp" />
+    <ClCompile Include="search.cpp" />
+    <ClCompile Include="tbprobe.cpp" />
+    <ClCompile Include="thread.cpp" />
+    <ClCompile Include="ucb.cpp" />
+    <ClCompile Include="uci.cpp" />
+    <ClCompile Include="util.cpp" />
+    <ClCompile Include="zobrist.cpp" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <ProjectGuid>{791F8C59-8D89-4A4D-8F5E-1C98540F8FAB}</ProjectGuid>
@@ -115,72 +181,6 @@
       <GenerateDebugInformation>false</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="bitbase\kpk.cpp" />
-    <ClCompile Include="bitboard.cpp" />
-    <ClCompile Include="chrono.cpp" />
-    <ClCompile Include="egtb\egtb.cpp" />
-    <ClCompile Include="egtb\tbprobe.cpp" />
-    <ClCompile Include="evaluate.cpp" />
-    <ClCompile Include="hash.cpp" />
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="material.cpp" />
-    <ClCompile Include="mcts\mcts.cpp" />
-    <ClCompile Include="mcts\moves.cpp" />
-    <ClCompile Include="mcts\node.cpp" />
-    <ClCompile Include="mcts\output.cpp" />
-    <ClCompile Include="mcts\policy.cpp" />
-    <ClCompile Include="mcts\ucb.cpp" />
-    <ClCompile Include="movegen.cpp" />
-    <ClCompile Include="movepick.cpp" />
-    <ClCompile Include="nnue\misc.cpp" />
-    <ClCompile Include="nnue\nnue.cpp" />
-    <ClCompile Include="position.cpp" />
-    <ClCompile Include="pst.cpp" />
-    <ClCompile Include="random\random.cpp" />
-    <ClCompile Include="search.cpp" />
-    <ClCompile Include="thread.cpp" />
-    <ClCompile Include="uci.cpp" />
-    <ClCompile Include="util\bench.cpp" />
-    <ClCompile Include="util\perft.cpp" />
-    <ClCompile Include="util\util.cpp" />
-    <ClCompile Include="zobrist.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="bitboard.h" />
-    <ClInclude Include="bitop.h" />
-    <ClInclude Include="chrono.h" />
-    <ClInclude Include="egtb\tbcore.h" />
-    <ClInclude Include="egtb\tbprobe.h" />
-    <ClInclude Include="endgame.h" />
-    <ClInclude Include="evaluate.h" />
-    <ClInclude Include="fire.h" />
-    <ClInclude Include="hash.h" />
-    <ClInclude Include="incbin\incbin.h" />
-    <ClInclude Include="macro\file.h" />
-    <ClInclude Include="macro\rank.h" />
-    <ClInclude Include="macro\score.h" />
-    <ClInclude Include="macro\side.h" />
-    <ClInclude Include="macro\square.h" />
-    <ClInclude Include="material.h" />
-    <ClInclude Include="mcts\mcts.h" />
-    <ClInclude Include="mcts\node.h" />
-    <ClInclude Include="movegen.h" />
-    <ClInclude Include="movepick.h" />
-    <ClInclude Include="mutex.h" />
-    <ClInclude Include="nnue\misc.h" />
-    <ClInclude Include="nnue\nnue.h" />
-    <ClInclude Include="position.h" />
-    <ClInclude Include="pragma.h" />
-    <ClInclude Include="random\random.h" />
-    <ClInclude Include="search.h" />
-    <ClInclude Include="thread.h" />
-    <ClInclude Include="uci.h" />
-    <ClInclude Include="util\bench.h" />
-    <ClInclude Include="util\perft.h" />
-    <ClInclude Include="util\util.h" />
-    <ClInclude Include="zobrist.h" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

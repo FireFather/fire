@@ -13,10 +13,10 @@
   and Daniel Shaw's Cfish nnue probe code https://github.com/dshawul/nnue-probe
 */
 #include <random>
-#include "../movepick.h"
-#include "../position.h"
-#include "../pragma.h"
-#include "../util/util.h"
+#include "movepick.h"
+#include "position.h"
+#include "pragma.h"
+#include "util.h"
 // use uniform_real_distribution to generate all possible value and avoid statistical bias
 void random(position& pos)
 {
