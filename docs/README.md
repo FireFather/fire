@@ -31,7 +31,6 @@
 - **Threads** number of processor threads to use. default is 1, max = 128.
 - **MultiPV** number of pv's/principal variations (lines of play) to be output. default is 1.
 - **MoveOverhead** Adjust this to compensate for network and GUI latency. This is useful to avoid losses on time.
-- **MinimumTime** Absolute minimum time (in ms) to spend on a single move. Also useful to avoid losses on time.
 - **Ponder** also think during opponent's time. default is false.
 - **UCI_Chess960** play chess960 (often called FRC or Fischer Random Chess). default is false.
 - **Clear Hash** clear the hash table. delete allocated memory and re-initialize.
