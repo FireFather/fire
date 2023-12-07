@@ -3,7 +3,7 @@
 
   [![Release][release-badge]][release-link]
   [![Commits][commits-badge]][commits-link]
-  ![commit-activity-badge]
+
   ![Downloads][downloads-badge]
   [![License][license-badge]][license-link]
  
@@ -80,5 +80,4 @@ http://www.chessdom.com/fire-the-chess-engine-releases-a-new-version/
 [release-link]:https://github.com/FireFather/fire/releases/latest
 [commits-badge]:https://img.shields.io/github/commits-since/FireFather/fire/latest?style=for-the-badge
 [commits-link]:https://github.com/FireFather/fire/commits/main
-[commit-activity-badge]:https://img.shields.io/github/commit-activity/w/looak/elephant?style=flat-square
 [downloads-badge]:https://img.shields.io/github/downloads/FireFather/fire/total?color=success&style=for-the-badge
