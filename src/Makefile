@@ -1,17 +1,3 @@
-# Fire is a freeware UCI chess playing engine authored by Norman Schmidt.
-#
-# Fire utilizes many state-of-the-art chess programming ideas and techniques
-# which have been documented in detail at https://www.chessprogramming.org/
-# and demonstrated via the very strong open-source chess engine Stockfish...
-# https://github.com/official-stockfish/Stockfish.
-#  
-# Fire is free software: you can redistribute it and/or modify it under the
-# terms of the GNU General Public License as published by the Free Software
-# Foundation, either version 3 of the License, or any later version.
-# 
-# You should have received a copy of the GNU General Public License with
-# this program: copying.txt.  If not, see <http://www.gnu.org/licenses/>.
-
 UNAME = $(shell uname)
 
 ifeq ($(COMP),mingw)
@@ -20,13 +6,13 @@ else
 	EXE = fire
 endif
 
-PGOBENCH = ./$(EXE) bench 12
+PGOBENCH = ./$(EXE) bench 14
 
 OBJS =
-	OBJS += bitbase/kpk.o bitboard.o chrono.o egtb/egtb.o egtb/tbprobe.o evaluate.o \
-	hash.o main.o material.o mcts/mcts.o mcts/moves.o mcts/node.o mcts/output.o mcts/policy.o \
-	mcts/ucb.o movegen.o movepick.o nnue/nnue.o nnue/misc.o position.o pst.o random/random.o \
-	search.o thread.o uci.o util/bench.o util/perft.o util/util.o zobrist.o \
+	OBJS += bench.o bitboard.o chrono.o \
+	evaluate.o hash.o main.o movegen.o \
+	movepick.o nnue.o perft.o position.o \
+	search.o thread.o uci.o util.o zobrist.o \
 	
 optimize = yes
 debug = no
@@ -40,9 +26,9 @@ sse2 = no
 ssse3 = no
 sse41 = no
 avx2 = no
-bmi2 = no
+pext = no
 
-ifeq ($(ARCH),x86-64-popc)
+ifeq ($(ARCH),x86-64-sse41)
 	arch = x86_64
 	bits = 64
 	prefetch = yes
@@ -64,7 +50,7 @@ ifeq ($(ARCH),x86-64-avx2)
 	avx2 = yes
 endif
 
-ifeq ($(ARCH),x86-64-bmi2)
+ifeq ($(ARCH),x86-64-pext)
 	arch = x86_64
 	bits = 64
 	popcnt = yes
@@ -73,7 +59,7 @@ ifeq ($(ARCH),x86-64-bmi2)
 	ssse3 = yes
 	sse41 = yes
 	avx2 = yes
-	bmi2 = yes
+	pext = yes
 endif
 
 ifeq ($(sse),yes)
@@ -81,7 +67,7 @@ ifeq ($(sse),yes)
 endif
 
 CXXFLAGS += -Wcast-qual -fno-exceptions $(EXTRACXXFLAGS)
-DEPENDFLAGS += -std=c++20
+DEPENDFLAGS += -std=c++17
 LDFLAGS += $(EXTRALDFLAGS)
 CC = gcc
 
@@ -172,6 +158,20 @@ ifeq ($(popcnt),yes)
 	endif
 endif
 
+ifeq ($(sse2),yes)
+	CXXFLAGS += -DUSE_SSE2
+	ifeq ($(comp),$(filter $(comp),gcc clang mingw))
+		CXXFLAGS += -msse2
+	endif
+endif
+
+ifeq ($(ssse3),yes)
+	CXXFLAGS += -DUSE_SSSE3
+	ifeq ($(comp),$(filter $(comp),gcc clang mingw))
+		CXXFLAGS += -mssse3
+	endif
+endif
+
 ifeq ($(sse41),yes)
 	CXXFLAGS += -DUSE_SSE41
 	ifeq ($(comp),$(filter $(comp),gcc clang mingw))
@@ -186,7 +186,7 @@ ifeq ($(avx2),yes)
 	endif
 endif
 
-ifeq ($(bmi2),yes)
+ifeq ($(pext),yes)
 	CXXFLAGS += -DUSE_PEXT
 	ifeq ($(comp),$(filter $(comp),gcc clang mingw))
 		CXXFLAGS += -mbmi -mbmi2
@@ -218,7 +218,7 @@ CXXFLAGS += -fno-rtti -std=c++20
 
 help:
 	@echo ""
-	@echo "To compile Fire, type: "
+	@echo "To compile fire, type: "
 	@echo "make target ARCH=arch [COMP=compiler] [COMPCXX=cxx]"
 	@echo ""
 	@echo "Supported targets:"
@@ -229,21 +229,21 @@ help:
 	@echo "gcc-profile-clean       > Clean up after PGO build"
 	@echo ""
 	@echo "Supported architectures:"
-	@echo "x86-64-popc             > x86 64-bit with popcnt support"
+	@echo "x86-64-sse41            > x86 64-bit with sse41 support"
 	@echo "x86-64-avx2             > x86 64-bit with avx2 support"	
-	@echo "x86-64-bmi2             > x86 64-bit with bmi2 support"
+	@echo "x86-64-pext             > x86 64-bit with pext support"
 	@echo ""
 	@echo "Supported compilers:"
 	@echo "gcc                     > Gnu compiler (default)"
 	@echo "mingw                   > Gnu compiler with MinGW under Windows"
 	@echo ""
-	@echo "make build ARCH=x86-64-popc"	
+	@echo "make build ARCH=x86-64-sse41"	
 	@echo "make build ARCH=x86-64-avx2"	
-	@echo "make build ARCH=x86-64-bmi2"
+	@echo "make build ARCH=x86-64-pext"
 	@echo ""
-	@echo "make profile-build ARCH=x86-64-popc"	
+	@echo "make profile-build ARCH=x86-64-sse41"	
 	@echo "make profile-build ARCH=x86-64-avx2"
-	@echo "make profile-build ARCH=x86-64-bmi2"	
+	@echo "make profile-build ARCH=x86-64-pext"	
 	@echo ""
 
 .PHONY: build profile-build
@@ -300,7 +300,7 @@ config-sanity:
 	@echo "ssse3: '$(ssse3)'"
 	@echo "sse41: '$(sse41)'"
 	@echo "avx2: '$(avx2)'"
-	@echo "bmi2: '$(bmi2)'"
+	@echo "pext: '$(pext)'"
 	@echo ""
 	@echo "Compiler:"
 	@echo "CXX: $(CXX)"
@@ -323,7 +323,7 @@ config-sanity:
 	@test "$(ssse3)" = "yes" || test "$(ssse3)" = "no"
 	@test "$(sse41)" = "yes" || test "$(sse41)" = "no"
 	@test "$(avx2)" = "yes" || test "$(avx2)" = "no"
-	@test "$(bmi2)" = "yes" || test "$(bmi2)" = "no"
+	@test "$(pext)" = "yes" || test "$(pext)" = "no"
 	@test "$(comp)" = "gcc" || test "$(comp)" = "mingw"
 
 $(EXE): $(OBJS) $(COBJS)
@@ -352,20 +352,6 @@ gcc-profile-clean:
 	@rm -rf *.map
 	@rm -rf *.gcda
 	@rm -rf *.o
-	@rm -rf bitbase/*.gcda
-	@rm -rf bitbase/*.o	
-	@rm -rf egtb/*.gcda
-	@rm -rf egtb/*.o	
-	@rm -rf macro/*.gcda
-	@rm -rf macro/*.o
-	@rm -rf mcts/*.gcda
-	@rm -rf mcts/*.o	
-	@rm -rf nnue/*.gcda
-	@rm -rf nnue/*.o	
-	@rm -rf random/*.gcda
-	@rm -rf random/*.o	
-	@rm -rf util/*.gcda
-	@rm -rf util/*.o
 	
 .depend:
 	-@$(CXX) $(DEPENDFLAGS) -MM $(OBJS:.o=.cpp) $(COBJS:.o=.c) > $@ 2> /dev/null

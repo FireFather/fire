@@ -18,75 +18,9 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="bench.h" />
-    <ClInclude Include="bitboard.h" />
-    <ClInclude Include="bitop.h" />
-    <ClInclude Include="chrono.h" />
-    <ClInclude Include="endgame.h" />
-    <ClInclude Include="evaluate.h" />
-    <ClInclude Include="file.h" />
-    <ClInclude Include="fire.h" />
-    <ClInclude Include="hash.h" />
-    <ClInclude Include="incbin.h" />
-    <ClInclude Include="material.h" />
-    <ClInclude Include="mcts.h" />
-    <ClInclude Include="misc.h" />
-    <ClInclude Include="movegen.h" />
-    <ClInclude Include="movepick.h" />
-    <ClInclude Include="mutex.h" />
-    <ClInclude Include="nnue.h" />
-    <ClInclude Include="node.h" />
-    <ClInclude Include="perft.h" />
-    <ClInclude Include="position.h" />
-    <ClInclude Include="pragma.h" />
-    <ClInclude Include="random.h" />
-    <ClInclude Include="rank.h" />
-    <ClInclude Include="score.h" />
-    <ClInclude Include="search.h" />
-    <ClInclude Include="side.h" />
-    <ClInclude Include="square.h" />
-    <ClInclude Include="tbcore.h" />
-    <ClInclude Include="tbprobe.h" />
-    <ClInclude Include="thread.h" />
-    <ClInclude Include="uci.h" />
-    <ClInclude Include="util.h" />
-    <ClInclude Include="zobrist.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="bench.cpp" />
-    <ClCompile Include="bitboard.cpp" />
-    <ClCompile Include="chrono.cpp" />
-    <ClCompile Include="egtb.cpp" />
-    <ClCompile Include="evaluate.cpp" />
-    <ClCompile Include="hash.cpp" />
-    <ClCompile Include="kpk.cpp" />
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="material.cpp" />
-    <ClCompile Include="mcts.cpp" />
-    <ClCompile Include="misc.cpp" />
-    <ClCompile Include="movegen.cpp" />
-    <ClCompile Include="movepick.cpp" />
-    <ClCompile Include="moves.cpp" />
-    <ClCompile Include="nnue.cpp" />
-    <ClCompile Include="node.cpp" />
-    <ClCompile Include="output.cpp" />
-    <ClCompile Include="perft.cpp" />
-    <ClCompile Include="policy.cpp" />
-    <ClCompile Include="position.cpp" />
-    <ClCompile Include="pst.cpp" />
-    <ClCompile Include="random.cpp" />
-    <ClCompile Include="search.cpp" />
-    <ClCompile Include="tbprobe.cpp" />
-    <ClCompile Include="thread.cpp" />
-    <ClCompile Include="ucb.cpp" />
-    <ClCompile Include="uci.cpp" />
-    <ClCompile Include="util.cpp" />
-    <ClCompile Include="zobrist.cpp" />
-  </ItemGroup>
   <PropertyGroup Label="Globals">
-    <VCProjectVersion>16.0</VCProjectVersion>
-    <ProjectGuid>{791F8C59-8D89-4A4D-8F5E-1C98540F8FAB}</ProjectGuid>
+    <VCProjectVersion>17.0</VCProjectVersion>
+    <ProjectGuid>{3FA3C54B-4EBF-4A5D-8149-3F03F4BD86CA}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
@@ -133,22 +67,31 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>$(SolutionDir)$(Platform)\</OutDir>
+    <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
-      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <Optimization>Disabled</Optimization>
     </ClCompile>
     <Link>
-      <TargetMachine>MachineX86</TargetMachine>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <WarningLevel>Level3</WarningLevel>
+    </ClCompile>
+    <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
     </Link>
@@ -156,12 +99,9 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
-      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
-      <TargetMachine>MachineX86</TargetMachine>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -170,17 +110,59 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <WarningLevel>Level4</WarningLevel>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <PreprocessorDefinitions>NDEBUG;_CRT_SECURE_NO_WARNINGS;USE_PEXT;USE_AVX2;USE_SSE41;USE_SSSE3;USE_SSE2;USE_POPCNT</PreprocessorDefinitions>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>false</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="bench.cpp" />
+    <ClCompile Include="bitboard.cpp" />
+    <ClCompile Include="chrono.cpp" />
+    <ClCompile Include="evaluate.cpp" />
+    <ClCompile Include="hash.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="movegen.cpp" />
+    <ClCompile Include="movepick.cpp" />
+    <ClCompile Include="nnue.cpp" />
+    <ClCompile Include="perft.cpp" />
+    <ClCompile Include="position.cpp" />
+    <ClCompile Include="search.cpp" />
+    <ClCompile Include="thread.cpp" />
+    <ClCompile Include="uci.cpp" />
+    <ClCompile Include="util.cpp" />
+    <ClCompile Include="zobrist.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="bench.h" />
+    <ClInclude Include="bitboard.h" />
+    <ClInclude Include="chrono.h" />
+    <ClInclude Include="evaluate.h" />
+    <ClInclude Include="hash.h" />
+    <ClInclude Include="incbin.h" />
+    <ClInclude Include="macro.h" />
+    <ClInclude Include="main.h" />
+    <ClInclude Include="movegen.h" />
+    <ClInclude Include="movepick.h" />
+    <ClInclude Include="mutex.h" />
+    <ClInclude Include="nnue.h" />
+    <ClInclude Include="perft.h" />
+    <ClInclude Include="position.h" />
+    <ClInclude Include="search.h" />
+    <ClInclude Include="thread.h" />
+    <ClInclude Include="uci.h" />
+    <ClInclude Include="util.h" />
+    <ClInclude Include="zobrist.h" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
