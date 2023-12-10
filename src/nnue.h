@@ -1,89 +1,152 @@
-/*
-  Fire is a freeware UCI chess playing engine authored by Norman Schmidt.
-  Fire utilizes many state-of-the-art chess programming ideas and techniques
-  which have been documented in detail at https://www.chessprogramming.org/
-  and demonstrated via the very strong open-source chess engine Stockfish...
-  https://github.com/official-stockfish/Stockfish.
-  Fire is free software: you can redistribute it and/or modify it under the
-  terms of the GNU General Public License as published by the Free Software
-  Foundation, either version 3 of the License, or any later version.
-  You should have received a copy of the GNU General Public License with
-  this program: copying.txt.  If not, see <http://www.gnu.org/licenses/>.
-  Thanks to Yu Nasu, Hisayori Noda. This implementation adapted from R. De Man
-  and Daniel Shaw's Cfish nnue probe code https://github.com/dshawul/nnue-probe
-*/
 #pragma once
+#ifdef _WIN32
+#include <Windows.h>
 
-#ifndef __cplusplus
-#ifndef _MSC_VER
-#include <stdalign.h>
-#endif
-#endif
-
-/**
-* Calling convention
-*/
-#ifdef __cplusplus
-#   define EXTERNC extern "C"
+#include <string>
 #else
-#   define EXTERNC
+#include <sys/mman.h>
+#include <unistd.h>
 #endif
 
-/**
-* Internal piece representation
-*     wking=1, wqueen=2, wrook=3, wbishop= 4, wknight= 5, wpawn= 6,
-*     bking=7, bqueen=8, brook=9, bbishop=10, bknight=11, bpawn=12
-*
-* Make sure the pieces you pass to the library from your engine
-* use this format.
-*/
+#include <immintrin.h>
 
-enum colors { white_nnue, black_nnue };
-enum pieces { blank = 0, wking, wqueen, wrook, wbishop, wknight, wpawn, bking, bqueen, brook, bbishop, bknight, bpawn };
+#ifdef _WIN32
+using FD = HANDLE;
+#define FD_ERR INVALID_HANDLE_VALUE
+using map_t = HANDLE;
+#else
+typedef int FD;
+#define FD_ERR -1
+typedef size_t map_t;
+#endif
 
-/**
-* nnue data structure
-*/
-using dirty_piece = struct dirty_piece { int dirty_num; int pc[3]; int from[3]; int to[3]; };
-using Accumulator = struct accumulator { alignas(64) int16_t accumulation[2][256];	int computed_accumulation; };
-using nnue_data = struct nnue_data { Accumulator accumulator;	dirty_piece dirtyPiece; };
+#ifdef _MSC_VER
+#else
+#pragma GCC diagnostic ignored "-Wcast-qual"
+#endif
 
-/**
-* position data structure passed to core subroutines
-*  See nnue_evaluate for a description of parameters
-*/
-using Position = struct Position { int player; int* pieces; int* squares; nnue_data* nnue[3]; };
+#if defined(__GNUC__) && (__GNUC__ < 9) && defined(_WIN32) && \
+    !defined(__clang__) && !defined(__INTEL_COMPILER) && defined(USE_AVX2)
+#define ALIGNMENT_HACK
+#endif
 
-int nnue_evaluate_pos(const Position* pos);
-/**
-* Load NNUE file
-*/
+#define KING(c) ((c) ? bking : wking)
+#define IS_KING(p) (((p) == wking) || ((p) == bking))
 
-int nnue_init(const char* eval_file /** Path to NNUE file */);
-/**
-* Evaluation subroutine suitable for chess engines.
-* -------------------------------------------------
-* Piece codes are
-*     wking=1, wqueen=2, wrook=3, wbishop= 4, wknight= 5, wpawn= 6,
-*     bking=7, bqueen=8, brook=9, bbishop=10, bknight=11, bpawn=12,
-*
-* Squares are
-*     A1=0, B1=1 ... H8=63
-*
-* Input format:
-*     piece[0] is white king, square[0] is its location
-*     piece[1] is black king, square[1] is its location
-*     ..
-*     piece[x], square[x] can be in any order
-*     ..
-*     piece[n+1] is set to 0 to represent end of array
-*
-* Returns
-*   Score relative to side to move in approximate centipawns
-*/
-int nnue_evaluate
-(
-	int player, /** Side to move: white=0 black=1 */
-	int* pieces, /** Array of pieces */
-	int* squares /** Corresponding array of squares each piece stands on */
-);
+#ifdef _MSC_VER
+#define USE_AVX2 1
+#define USE_SSE41 1
+#define USE_SSE3 1
+#define USE_SSE2 1
+#define USE_SSE 1
+#define IS_64BIT 1
+#endif
+
+#define TILE_HEIGHT (num_regs * simd_width / 16)
+#define CLAMP(a, b, c) ((a) < (b) ? (b) : (a) > (c) ? (c) : (a))
+
+#if !defined(_MSC_VER)
+#define NNUE_EMBEDDED
+#define NNUE_EVAL_FILE "fire-9.2.nnue"
+#endif
+
+static std::string nnue_evalfile = "fire-9.2.nnue";
+inline const char* nnue_file = nnue_evalfile.c_str();
+static constexpr uint32_t nnue_version = 0x7AF32F16u;
+
+enum pieces {
+  blank = 0,
+  wking,
+  wqueen,
+  wrook,
+  wbishop,
+  wknight,
+  wpawn,
+  bking,
+  bqueen,
+  brook,
+  bbishop,
+  bknight,
+  bpawn
+};
+enum {
+  ps_w_pawn = 1,
+  ps_b_pawn = 1 * 64 + 1,
+  ps_w_knight = 2 * 64 + 1,
+  ps_b_knight = 3 * 64 + 1,
+  ps_w_bishop = 4 * 64 + 1,
+  ps_b_bishop = 5 * 64 + 1,
+  ps_w_rook = 6 * 64 + 1,
+  ps_b_rook = 7 * 64 + 1,
+  ps_w_queen = 8 * 64 + 1,
+  ps_b_queen = 9 * 64 + 1,
+  ps_end = 10 * 64 + 1
+};
+enum { fv_scale = 16, shift_ = 6 };
+enum {
+  k_half_dimensions = 256,
+  ft_in_dims = 64 * ps_end,
+  ft_out_dims = k_half_dimensions * 2
+};
+enum { num_regs = 16, simd_width = 256 };
+
+using dirty_piece = struct dirty_piece {
+  int dirty_num;
+  int pc[3];
+  int from[3];
+  int to[3];
+};
+
+using Accumulator = struct Accumulator {
+  alignas(64) int16_t accumulation[2][256];
+  int computed_accumulation;
+};
+using nnue_data = struct nnue_data {
+  Accumulator accumulator;
+  dirty_piece dirty_piece;
+};
+using board = struct board {
+  int player;
+  int* pieces;
+  int* squares;
+  nnue_data* nnue[3];
+};
+
+using vec16_t = __m256i;
+using vec8_t = __m256i;
+using mask_t = uint32_t;
+using mask2_t = uint64_t;
+using clipped_t = int8_t;
+using weight_t = int8_t;
+using index_list = struct {
+  size_t size;
+  unsigned values[30];
+};
+
+#define VEC_ADD_16(a, b) _mm256_add_epi16(a, b)
+#define VEC_SUB_16(a, b) _mm256_sub_epi16(a, b)
+#define VEC_PACKS(a, b) _mm256_packs_epi16(a, b)
+#define VEC_MASK_POS(a) \
+  _mm256_movemask_epi8(_mm256_cmpgt_epi8(a, _mm256_setzero_si256()))
+
+static weight_t output_weights alignas(64)[1 * 32];
+static int32_t hidden1_biases alignas(64)[32];
+static int32_t hidden2_biases alignas(64)[32];
+static int32_t output_biases[1];
+static weight_t hidden1_weights alignas(64)[64 * 512];
+static weight_t hidden2_weights alignas(64)[64 * 32];
+
+inline uint32_t piece_to_index[2][14] = {
+    {0, 0, ps_w_queen, ps_w_rook, ps_w_bishop, ps_w_knight, ps_w_pawn, 0,
+     ps_b_queen, ps_b_rook, ps_b_bishop, ps_b_knight, ps_b_pawn, 0},
+    {0, 0, ps_b_queen, ps_b_rook, ps_b_bishop, ps_b_knight, ps_b_pawn, 0,
+     ps_w_queen, ps_w_rook, ps_w_bishop, ps_w_knight, ps_w_pawn, 0}};
+
+int nnue_evaluate_pos(const board* pos);
+int nnue_init(const char* eval_file);
+int nnue_evaluate(int player, int* pieces, int* squares);
+FD open_file(const char* name);
+void close_file(FD fd);
+size_t file_size(FD fd);
+const void* map_file(FD fd, map_t* map);
+void unmap_file(const void* data, map_t map);
