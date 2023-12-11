@@ -25,6 +25,15 @@
 - bench, perft & divide
 - asychronous cout (acout) class using std::unique_lock<std::mutex>
 - unique NNUE (halfkp_256x2-32-32) evaluation
+- visual studio 2022 project files included
+
+## new
+- lean & mean codebase size optimizations
+- syzygy TBs have been removed
+- (as NNUE evaluation becomes stronger, TB's become less valuable)
+- MCTS search has been removed
+- the source code footprint has been reduced more than 50% from 491 KB to 232 KB
+- and source code has been reformatted via Google style guidelines
 
 ## uci options
 - **Hash** size of the hash table. default is 64 MB.
