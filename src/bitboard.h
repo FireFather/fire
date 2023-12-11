@@ -25,11 +25,7 @@ namespace bitboard {
 void init();
 
 inline uint64_t magic_attack_r[102400];
-#ifdef USE_PEXT
-inline uint64_t magic_attack_b[5248];
-#endif
 
-#ifndef USE_PEXT
 inline const int bishop_magic_index[64] = {
     16530, 9162,  9674,  18532, 19172, 17700, 5730,  19661, 17065, 12921, 15683,
     17764, 19684, 18724, 4108,  12936, 15747, 4066,  14359, 36039, 20457, 43291,
@@ -93,7 +89,6 @@ inline constexpr uint64_t rook_magics[64] = {
     0x007ffb7fbfdfeff6ull, 0x003fffbfdfeff7faull, 0x001fffeff7fbfc22ull,
     0x000ffffbf7fc2ffeull, 0x0007fffdfa03ffffull, 0x0003ffdeff7fbdecull,
     0x0001ffff99ffab2full};
-#endif
 }  // namespace bitboard
 
 inline int8_t square_distance[num_squares][num_squares];
@@ -240,23 +235,15 @@ inline square rear_square(const side color, const uint64_t b) {
 }
 
 inline uint64_t attack_bishop_bb(const square sq, const uint64_t occupied) {
-#ifdef USE_PEXT
-  return bishop_attack_table[sq][pext(occupied, bishop_mask[sq])];
-#else
   return bishop_attack_table[sq][(occupied & bishop_mask[sq]) *
                                      bitboard::bishop_magics[sq] >>
                                  55];
-#endif
 }
 
 inline uint64_t attack_rook_bb(const square sq, const uint64_t occupied) {
-#ifdef USE_PEXT
-  return rook_attack_table[sq][pext(occupied, rook_mask[sq])];
-#else
   return rook_attack_table[sq][(occupied & rook_mask[sq]) *
                                    bitboard::rook_magics[sq] >>
                                52];
-#endif
 }
 
 inline uint64_t attack_bb(const uint8_t piece_t, const square sq,

@@ -81,23 +81,6 @@ void bitboard::init() {
   }
 }
 
-#ifdef USE_PEXT
-void init_magic_bb_pext(uint64_t* attack, uint64_t* square_index[],
-                        uint64_t* mask, const int deltas[4][2]) {
-  for (auto sq = 0; sq < 64; sq++) {
-    square_index[sq] = attack;
-    mask[sq] = sliding_attacks(sq, 0, deltas, 1, 6, 1, 6);
-
-    uint64_t b = 0;
-    do {
-      square_index[sq][pext(b, mask[sq])] =
-          sliding_attacks(sq, b, deltas, 0, 7, 0, 7);
-      b = b - mask[sq] & mask[sq];
-      attack++;
-    } while (b);
-  }
-}
-#else
 void init_magic_bb(uint64_t* attack, const int attack_index[],
                    uint64_t* square_index[], uint64_t* mask, const int shift,
                    const uint64_t mult[], const int deltas[4][2]) {
@@ -114,22 +97,14 @@ void init_magic_bb(uint64_t* attack, const int attack_index[],
     } while (b);
   }
 }
-#endif
 
 void init_magic_sliders() {
-#ifdef USE_PEXT
-  init_magic_bb_pext(bitboard::magic_attack_r, rook_attack_table, rook_mask,
-                     rook_deltas);
-  init_magic_bb_pext(bitboard::magic_attack_b, bishop_attack_table, bishop_mask,
-                     bishop_deltas);
-#else
   init_magic_bb(bitboard::magic_attack_r, bitboard::rook_magic_index,
                 rook_attack_table, rook_mask, 52, bitboard::rook_magics,
                 rook_deltas);
   init_magic_bb(bitboard::magic_attack_r, bitboard::bishop_magic_index,
                 bishop_attack_table, bishop_mask, 55, bitboard::bishop_magics,
                 bishop_deltas);
-#endif
 }
 
 uint64_t sliding_attacks(const int sq, const uint64_t block,

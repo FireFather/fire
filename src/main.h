@@ -11,13 +11,6 @@
 #endif
 #include <intrin.h>
 
-#ifdef USE_PEXT
-#include <immintrin.h>
-inline uint64_t pext(const uint64_t occupied, const uint64_t mask) {
-  return _pext_u64(occupied, mask);
-}
-#endif
-
 #ifdef _MSC_VER
 #pragma warning(disable : 4127)
 #pragma warning(disable : 4146)
@@ -27,19 +20,6 @@ inline uint64_t pext(const uint64_t occupied, const uint64_t mask) {
 #else
 #pragma GCC diagnostic ignored "-Wcast-qual"
 #pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
-#endif
-
-#ifdef USE_PEXT
-constexpr auto bmis = "pext";
-constexpr bool use_pext = true;
-#else
-#ifdef USE_AVX2
-constexpr auto bmis = "avx2";
-constexpr bool use_pext = false;
-#else
-constexpr auto bmis = "sse41";
-constexpr bool use_pext = false;
-#endif
 #endif
 
 #ifdef _MSC_VER
@@ -76,6 +56,7 @@ inline void prefetch(void* address) { __builtin_prefetch(address); }
 
 constexpr auto program = "fire";
 constexpr auto version = "9.3";
+constexpr auto bmis = "avx2";
 constexpr auto author = "Norman Schmidt";
 constexpr auto platform = "x64";
 
