@@ -45,8 +45,7 @@
 - **Clear Hash** clear the hash table. delete allocated memory and re-initialize.
 
 ## binaries
-- **x64 pext** = fast pgo binary (for modern 64-bit systems w/ BMI2 instruction set) if you own a modern Intel cpu (Haswell or newer), use this compile.
-- **x64 avx2** = fast pgo binary (for modern 64-bit systems w/ AVX2 instruction set) if you own a modern AMD cpu, use this compile.
+- **x64 avx2** = fast pgo binary (targeting modern 64-bit systems w/ AVX2 instruction set)
 
 ## compile it
 - **windows** (visual studio) use included project files: Fire.vcxproj or Fire.sln
