@@ -33,7 +33,7 @@
 - MCTS search has been removed
 - the source code footprint has been reduced more than 50% from 491 KB to 232 KB
 - and the source code has been reformatted via Google style guidelines
-- update binaries available in /src directory (no change to the NNUE file)
+- updated binaries available in /src directory (no change to the NNUE file)
 
 ## uci options
 - **Hash** size of the hash table. default is 64 MB.
