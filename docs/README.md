@@ -65,6 +65,7 @@ http://www.chessdom.com/fire-the-chess-engine-releases-a-new-version/
 - [Houdini](https://www.cruxis.com/chess/houdini.htm)
 - [Gull](https://github.com/FireFather/seagull)
 - [nnue-probe](https://github.com/dshawul/nnue-probe/)
+- [LittleBlitzer](http://www.kimiensoftware.com)
 
 ## banners
 ![alt tag](https://raw.githubusercontent.com/FireFather/fire-zero/master/bitmaps/fire_1.bmp)
