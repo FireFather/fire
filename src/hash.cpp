@@ -20,7 +20,7 @@ void hash::init(const size_t mb_size) {
 
   if (!hash_mem_) {
     std::cerr << "Failed to allocate " << mb_size
-              << "MB for transposition table." << std::endl;
+              << "MB for transposition table." << '\n';
     exit(EXIT_FAILURE);
   }
 

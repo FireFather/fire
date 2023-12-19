@@ -368,7 +368,7 @@ view_all_moves:
           time_control.elapsed() > info_currmove_interval)
         acout() << "info currmove " << move_to_string(move, pos)
                 << " currmovenumber " << move_number + my_thread->active_pv
-                << std::endl;
+                << '\n';
     }
 
     if (pv_node) (pi + 1)->pv = nullptr;
@@ -595,7 +595,7 @@ view_all_moves:
         if (!bench_active && my_thread == thread_pool.main())
           acout() << print_pv(pos, alpha, beta, my_thread->active_pv,
                               move_index)
-                  << std::endl;
+                  << '\n';
       } else
         root_move.score = -max_score;
     }
@@ -981,7 +981,7 @@ void send_time_info() {
     const auto nodes = thread_pool.visited_nodes();
     const auto nps = elapsed ? nodes / elapsed * 1000 : 0;
     acout() << "info time " << elapsed << " nodes " << nodes << " nps " << nps
-            << " hashfull " << main_hash.hash_full() << std::endl;
+            << " hashfull " << main_hash.hash_full() << '\n';
   }
 
   if (param.ponder) return;
@@ -1259,7 +1259,7 @@ void mainthread::begin_search() {
   if (!bench_active) {
     acout() << print_pv(*best_thread->root_position, -max_score, max_score,
                         active_pv, 0)
-            << std::endl;
+            << '\n';
     acout() << "bestmove "
             << move_to_string(best_thread->root_moves[0].pv[0], *root_position);
     if (best_thread->root_moves[0].pv.size() > 1 ||
@@ -1267,7 +1267,7 @@ void mainthread::begin_search() {
       acout() << " ponder "
               << move_to_string(best_thread->root_moves[0].pv[1],
                                 *root_position);
-    acout() << std::endl;
+    acout() << '\n';
   }
   thread_pool.total_analyze_time += static_cast<int>(time_control.elapsed());
 
@@ -1394,7 +1394,7 @@ void thread::begin_search() {
     if (constexpr auto info_depth_interval = 1000;
         !bench_active && main_thread &&
         time_control.elapsed() > info_depth_interval)
-      acout() << "info depth " << search_iteration << std::endl;
+      acout() << "info depth " << search_iteration << '\n';
 
     for (auto i = 0; i < root_moves.move_number; i++)
       root_moves[i].previous_score = root_moves[i].score;

@@ -55,25 +55,25 @@ int uci_loop(const int argc, char* argv[]) {
 
     if (token == "uci") {
       acout() << "id name " << program << " " << version << " " << platform
-              << " " << bmis << std::endl;
-      acout() << "id author " << author << std::endl;
+              << " " << bmis << '\n';
+      acout() << "id author " << author << '\n';
       acout() << "option name Hash type spin default 64 min 16 max 1048576"
-              << std::endl;
+              << '\n';
       acout() << "option name Threads type spin default 1 min 1 max 128"
-              << std::endl;
+              << '\n';
       acout() << "option name MultiPV type spin default 1 min 1 max 64"
-              << std::endl;
+              << '\n';
       acout() << "option name Contempt type spin default 0 min -100 max 100"
-              << std::endl;
+              << '\n';
       acout() << "option name MoveOverhead type spin default 50 min 0 max 1000"
-              << std::endl;
-      acout() << "option name Ponder type check default false" << std::endl;
+              << '\n';
+      acout() << "option name Ponder type check default false" << '\n';
       acout() << "option name UCI_Chess960 type check default false"
-              << std::endl;
-      acout() << "uciok" << std::endl;
+              << '\n';
+      acout() << "uciok" << '\n';
       ret = fflush(stdout);
     } else if (token == "isready") {
-      acout() << "readyok" << std::endl;
+      acout() << "readyok" << '\n';
       ret = fflush(stdout);
     } else if (token == "ucinewgame") {
       new_game();
@@ -127,7 +127,7 @@ int set_option(std::istringstream& is) {
         is >> token;
         uci_hash = stoi(token);
         main_hash.init(uci_hash);
-        acout() << "info string Hash " << uci_hash << " MB" << std::endl;
+        acout() << "info string Hash " << uci_hash << " MB" << '\n';
         break;
       }
       if (token == "Threads") {
@@ -137,24 +137,24 @@ int set_option(std::istringstream& is) {
         thread_pool.change_thread_count(uci_threads);
         if (uci_threads == 1)
           acout() << "info string Threads " << uci_threads << " thread"
-                  << std::endl;
+                  << '\n';
         else
           acout() << "info string Threads " << uci_threads << " threads"
-                  << std::endl;
+                  << '\n';
         break;
       }
       if (token == "MultiPV") {
         is >> token;
         is >> token;
         uci_multipv = stoi(token);
-        acout() << "info string MultiPV " << uci_multipv << std::endl;
+        acout() << "info string MultiPV " << uci_multipv << '\n';
         break;
       }
       if (token == "Contempt") {
         is >> token;
         is >> token;
         uci_contempt = stoi(token);
-        acout() << "info string Contempt " << uci_contempt << std::endl;
+        acout() << "info string Contempt " << uci_contempt << '\n';
         break;
       }
       if (token == "MoveOverhead") {
@@ -162,7 +162,7 @@ int set_option(std::istringstream& is) {
         is >> token;
         time_control.move_overhead = stoi(token);
         acout() << "info string MoveOverhead " << time_control.move_overhead
-                << " ms" << std::endl;
+                << " ms" << '\n';
         break;
       }
       if (token == "Ponder") {
@@ -172,7 +172,7 @@ int set_option(std::istringstream& is) {
           uci_ponder = true;
         else
           uci_ponder = false;
-        acout() << "info string Ponder " << uci_ponder << std::endl;
+        acout() << "info string Ponder " << uci_ponder << '\n';
         break;
       }
       if (token == "UCI_Chess960") {
@@ -182,7 +182,7 @@ int set_option(std::istringstream& is) {
           uci_chess960 = true;
         else
           uci_chess960 = false;
-        acout() << "info string UCI_Chess960 " << uci_chess960 << std::endl;
+        acout() << "info string UCI_Chess960 " << uci_chess960 << '\n';
         break;
       }
     }

@@ -47,7 +47,7 @@ int bench(const int depth) {
     ss.str(std::string());
 
     ss.precision(0);
-    ss << std::fixed << nps_pos << " nps]" << std::endl;
+    ss << std::fixed << nps_pos << " nps]" << '\n';
     acout() << ss.str();
     ss.str(std::string());
 	ret = fflush(stdout);
@@ -55,18 +55,18 @@ int bench(const int depth) {
   const auto elapsed_time = static_cast<double>(now() + 1 - start_time) / 1000;
   const auto nps = static_cast<double>(nodes) / elapsed_time;
 
-  acout() << "depth " << depth << std::endl;
-  acout() << "nodes " << nodes << std::endl;
+  acout() << "depth " << depth << '\n';
+  acout() << "nodes " << nodes << '\n';
 
   std::ostringstream ss;
 
   ss.precision(2);
-  ss << "time " << std::fixed << elapsed_time << " secs" << std::endl;
+  ss << "time " << std::fixed << elapsed_time << " secs" << '\n';
   acout() << ss.str();
   ss.str(std::string());
 
   ss.precision(0);
-  ss << "nps " << std::fixed << nps << std::endl;
+  ss << "nps " << std::fixed << nps << '\n';
   acout() << ss.str();
   ss.str(std::string());
   new_game();
