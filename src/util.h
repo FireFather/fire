@@ -1,7 +1,6 @@
 #pragma once
 #include <iostream>
 #include <mutex>
-#include <ostream>
 #include <random>
 #include "position.h"
 
@@ -12,8 +11,8 @@ struct acout {
   acout() : lk(std::unique_lock(mutex_cout)) {}
 
   template <typename T>
-  acout& operator<<(const T& _t) {
-    std::cout << _t;
+  acout& operator<<(const T& t) {
+    std::cout << t;
     return *this;
   }
 
@@ -43,4 +42,6 @@ class random {
     return T(rand64());
   }
 };
+void engine_info();
+void build_info();
 std::ostream& operator<<(std::ostream& os, const position& pos);

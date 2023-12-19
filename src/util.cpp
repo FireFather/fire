@@ -3,8 +3,10 @@
 #else
 #include <unistd.h>
 #endif
-#include "main.h"
+#include <iomanip>
+#include <sstream>
 #include "macro.h"
+#include "main.h"
 #include "movegen.h"
 #include "position.h"
 #include "util.h"
@@ -77,4 +79,22 @@ std::ostream& operator<<(std::ostream& os, const position& pos) {
     os << "\n";
   }
   return os;
+}
+
+void engine_info() {
+  std::stringstream ei;
+  ei << program << " " << version << " " << platform << " " << bmis <<'\n';
+  acout() << ei.str();
+}
+
+void build_info() {
+  const std::string months("Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec");
+  std::string month, day, year;
+  std::stringstream date(__DATE__);
+  date >> month >> day >> year;
+  std::stringstream bi;
+  date >> month >> day >> year;
+  bi << month << ' ' << std::setw(2) << std::setfill('0') << day << ' ' << year
+     << ' ' << std::setw(2) << std::setfill('0') << __TIME__ << '\n';
+  acout() << bi.str();
 }

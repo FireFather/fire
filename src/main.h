@@ -54,7 +54,7 @@ inline square msb(uint64_t bb) {
 inline void prefetch(void* address) { __builtin_prefetch(address); }
 #endif
 
-constexpr auto program = "fire";
+constexpr auto program = "Fire";
 constexpr auto version = "9.3";
 constexpr auto bmis = "avx2";
 constexpr auto author = "Norman Schmidt";

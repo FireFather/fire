@@ -21,7 +21,7 @@ void new_game() {
   search::reset();
 }
 
-int init() {
+int init_engine() {
   thread_pool.start = now();
   bitboard::init();
   position::init();
