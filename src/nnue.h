@@ -143,7 +143,7 @@ inline uint32_t piece_to_index[2][14] = {
      ps_w_queen, ps_w_rook, ps_w_bishop, ps_w_knight, ps_w_pawn, 0}};
 
 int nnue_evaluate_pos(const board* pos);
-int nnue_init(const char* eval_file);
+void nnue_init(const char* eval_file);
 int nnue_evaluate(int player, int* pieces, int* squares);
 FD open_file(const char* name);
 void close_file(FD fd);

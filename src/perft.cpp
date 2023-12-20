@@ -25,7 +25,7 @@ uint64_t start_perft(position& pos, const int depth) {
   return depth > 1 ? perft(pos, depth) : legal_move_list(pos).size();
 }
 
-int perft(int depth, std::string& fen) {
+void perft(int depth, std::string& fen) {
   uint64_t nodes = 0;
   if (depth < 1) depth = 1;
   if (fen.empty()) fen = startpos;
@@ -53,11 +53,10 @@ int perft(int depth, std::string& fen) {
 
   ss.precision(0);
   ss << "nps " << std::fixed << nps << '\n';
-  acout() << ss.str();
-  return fflush(stdout);
+  acout() << ss.str() << std::flush;
 }
 
-int divide(int depth, const std::string& fen) {
+void divide(int depth, const std::string& fen) {
   uint64_t nodes = 0;
   if (depth < 1) depth = 1;
 
@@ -85,6 +84,5 @@ int divide(int depth, const std::string& fen) {
   ss.str(std::string());
   ss.precision(0);
   ss << "nps " << std::fixed << nps << '\n';
-  acout() << ss.str();
-  return fflush(stdout);
+  acout() << ss.str() << std::flush;
 }

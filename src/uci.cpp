@@ -21,7 +21,7 @@ void new_game() {
   search::reset();
 }
 
-int init_engine() {
+void init_engine() {
   thread_pool.start = now();
   bitboard::init();
   position::init();
@@ -30,13 +30,12 @@ int init_engine() {
   search::reset();
   main_hash.init(64);
   const char* filename = uci_nnue_evalfile.c_str();
-  return nnue_init(filename);
+  nnue_init(filename);
 }
 
-int uci_loop(const int argc, char* argv[]) {
+void uci_loop(const int argc, char* argv[]) {
   position pos{};
   std::string token, cmd;
-  int ret = 0;
 
   pos.set(startpos, uci_chess960, thread_pool.main());
   new_game();
@@ -54,27 +53,18 @@ int uci_loop(const int argc, char* argv[]) {
     is >> std::skipws >> token;
 
     if (token == "uci") {
-      acout() << "id name " << program << " " << version << " " << platform
-              << " " << bmis << '\n';
+      acout() << "id name " << program << " " << version << " " << platform << " " << bmis << '\n';
       acout() << "id author " << author << '\n';
-      acout() << "option name Hash type spin default 64 min 16 max 1048576"
-              << '\n';
-      acout() << "option name Threads type spin default 1 min 1 max 128"
-              << '\n';
-      acout() << "option name MultiPV type spin default 1 min 1 max 64"
-              << '\n';
-      acout() << "option name Contempt type spin default 0 min -100 max 100"
-              << '\n';
-      acout() << "option name MoveOverhead type spin default 50 min 0 max 1000"
-              << '\n';
+      acout() << "option name Hash type spin default 64 min 16 max 1048576" << '\n';
+      acout() << "option name Threads type spin default 1 min 1 max 128" << '\n';
+      acout() << "option name MultiPV type spin default 1 min 1 max 64" << '\n';
+      acout() << "option name Contempt type spin default 0 min -100 max 100" << '\n';
+      acout() << "option name MoveOverhead type spin default 50 min 0 max 1000" << '\n';
       acout() << "option name Ponder type check default false" << '\n';
-      acout() << "option name UCI_Chess960 type check default false"
-              << '\n';
+      acout() << "option name UCI_Chess960 type check default false" << '\n';
       acout() << "uciok" << '\n';
-      ret = fflush(stdout);
     } else if (token == "isready") {
       acout() << "readyok" << '\n';
-      ret = fflush(stdout);
     } else if (token == "ucinewgame") {
       new_game();
     } else if (token == "setoption") {
@@ -83,8 +73,8 @@ int uci_loop(const int argc, char* argv[]) {
       set_position(pos, is);
     } else if (token == "go") {
       go(pos, is);
-    } else if (token == "stop" ||
-               (token == "ponderhit" && search::signals.stop_if_ponder_hit)) {
+    } else if (token == "stop"
+        || (token == "ponderhit" && search::signals.stop_if_ponder_hit)) {
       search::signals.stop_analyzing = true;
       thread_pool.main()->wake(false);
     } else if (token == "quit") {
@@ -112,13 +102,11 @@ int uci_loop(const int argc, char* argv[]) {
     }
   } while (token != "quit" && argc == 1);
   thread_pool.exit();
-  return ret;
 }
 
-int set_option(std::istringstream& is) {
+void set_option(std::istringstream& is) {
   std::string token;
   is >> token;
-  int ret = 0;
 
   if (token == "name") {
     while (is >> token) {
@@ -186,9 +174,7 @@ int set_option(std::istringstream& is) {
         break;
       }
     }
-    ret = fflush(stdout);
   }
-  return ret;
 }
 
 void go(position& pos, std::istringstream& is) {

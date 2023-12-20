@@ -368,7 +368,7 @@ view_all_moves:
           time_control.elapsed() > info_currmove_interval)
         acout() << "info currmove " << move_to_string(move, pos)
                 << " currmovenumber " << move_number + my_thread->active_pv
-                << '\n';
+                << std::endl;
     }
 
     if (pv_node) (pi + 1)->pv = nullptr;
@@ -593,9 +593,7 @@ view_all_moves:
           static_cast<mainthread*>(my_thread)->best_move_changed += 1024;
 
         if (!bench_active && my_thread == thread_pool.main())
-          acout() << print_pv(pos, alpha, beta, my_thread->active_pv,
-                              move_index)
-                  << '\n';
+          acout() << print_pv(pos, alpha, beta, my_thread->active_pv, move_index) << std::endl;
       } else
         root_move.score = -max_score;
     }
@@ -981,7 +979,7 @@ void send_time_info() {
     const auto nodes = thread_pool.visited_nodes();
     const auto nps = elapsed ? nodes / elapsed * 1000 : 0;
     acout() << "info time " << elapsed << " nodes " << nodes << " nps " << nps
-            << " hashfull " << main_hash.hash_full() << '\n';
+            << " hashfull " << main_hash.hash_full() << std::endl;
   }
 
   if (param.ponder) return;
@@ -1257,17 +1255,11 @@ void mainthread::begin_search() {
   if (best_thread != this)
     best_thread->root_moves[0].depth = root_moves[0].depth;
   if (!bench_active) {
-    acout() << print_pv(*best_thread->root_position, -max_score, max_score,
-                        active_pv, 0)
-            << '\n';
-    acout() << "bestmove "
-            << move_to_string(best_thread->root_moves[0].pv[0], *root_position);
-    if (best_thread->root_moves[0].pv.size() > 1 ||
-        best_thread->root_moves[0].ponder_move_from_hash(*root_position))
-      acout() << " ponder "
-              << move_to_string(best_thread->root_moves[0].pv[1],
-                                *root_position);
-    acout() << '\n';
+    acout() << print_pv(*best_thread->root_position, -max_score, max_score, active_pv, 0) << std::endl;
+    acout() << "bestmove " << move_to_string(best_thread->root_moves[0].pv[0], *root_position);
+    if (best_thread->root_moves[0].pv.size() > 1 || best_thread->root_moves[0].ponder_move_from_hash(*root_position))
+      acout() << " ponder " << move_to_string(best_thread->root_moves[0].pv[1], *root_position) << '\n';
+    fflush(stdout);
   }
   thread_pool.total_analyze_time += static_cast<int>(time_control.elapsed());
 
@@ -1394,7 +1386,7 @@ void thread::begin_search() {
     if (constexpr auto info_depth_interval = 1000;
         !bench_active && main_thread &&
         time_control.elapsed() > info_depth_interval)
-      acout() << "info depth " << search_iteration << '\n';
+      acout() << "info depth " << search_iteration << std::endl;
 
     for (auto i = 0; i < root_moves.move_number; i++)
       root_moves[i].previous_score = root_moves[i].score;
@@ -1589,7 +1581,7 @@ std::string print_pv(const position& pos, const int alpha, const int beta,
     const auto score =
         i <= active_pv ? root_move.score : root_move.previous_score;
 
-    if (ss.rdbuf()->in_avail()) ss << "\n";
+    if (ss.rdbuf()->in_avail()) ss << '\n';
 
     int sel_depth;
     const auto* pi = thread_pool.main()->root_position->info();
