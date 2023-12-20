@@ -442,8 +442,7 @@ bool load_eval_file(const char* eval_file) {
 int nnue_init(const char* eval_file) {
   if (anonymous::load_eval_file(eval_file)) {
     acout() << "NNUE loaded" << '\n';
-    const int ret = fflush(stdout);
-    return ret;
+    return  fflush(stdout);
   }
   acout() << "NNUE not found" << '\n';
   return fflush(stdout);
