@@ -6,7 +6,8 @@
 #include "uci.h"
 #include "util.h"
 
-void bench(const int depth) {
+int bench(const int depth) {
+  int ret = 0;
   uint64_t nodes = 0;
   auto pos_num = 0;
   position pos{};
@@ -14,8 +15,8 @@ void bench(const int depth) {
   const auto start_time = now();
 
   for (auto& bench_position : bench_positions) {
-    auto num_positions = 32;
-    const auto start_time_pos = now();
+      auto num_positions = 32;
+      const auto start_time_pos = now();
     uint64_t nodes_pos = 0;
 
     pos_num++;
@@ -29,7 +30,7 @@ void bench(const int depth) {
     thread_pool.main()->wait_for_search_to_end();
 
     nodes_pos += thread_pool.visited_nodes();
-    nodes += thread_pool.visited_nodes();
+	nodes += thread_pool.visited_nodes();	
     const auto elapsed_time_pos =
         static_cast<double>(now() + 1 - start_time_pos) / 1000;
     const auto nps_pos = static_cast<double>(nodes_pos) / elapsed_time_pos;
@@ -46,26 +47,29 @@ void bench(const int depth) {
     ss.str(std::string());
 
     ss.precision(0);
-    ss << std::fixed << nps_pos << " nps]\n";
+    ss << std::fixed << nps_pos << " nps]" << std::endl;
     acout() << ss.str();
     ss.str(std::string());
+	ret = fflush(stdout);
   }
   const auto elapsed_time = static_cast<double>(now() + 1 - start_time) / 1000;
   const auto nps = static_cast<double>(nodes) / elapsed_time;
 
-  acout() << "depth " << depth << '\n';
-  acout() << "nodes " << nodes << '\n';
+  acout() << "depth " << depth << std::endl;
+  acout() << "nodes " << nodes << std::endl;
 
   std::ostringstream ss;
 
   ss.precision(2);
-  ss << "time " << std::fixed << elapsed_time << " secs\n";
+  ss << "time " << std::fixed << elapsed_time << " secs" << std::endl;
   acout() << ss.str();
   ss.str(std::string());
 
   ss.precision(0);
-  ss << "nps " << std::fixed << nps << '\n';
-  acout() << ss.str() << std::flush;
+  ss << "nps " << std::fixed << nps << std::endl;
+  acout() << ss.str();
   ss.str(std::string());
   new_game();
+  ret = fflush(stdout);  
+  return ret;
 }

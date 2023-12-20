@@ -593,7 +593,9 @@ view_all_moves:
           static_cast<mainthread*>(my_thread)->best_move_changed += 1024;
 
         if (!bench_active && my_thread == thread_pool.main())
-          acout() << print_pv(pos, alpha, beta, my_thread->active_pv, move_index) << std::endl;
+          acout() << print_pv(pos, alpha, beta, my_thread->active_pv,
+                              move_index)
+                  << std::endl;
       } else
         root_move.score = -max_score;
     }
@@ -1255,11 +1257,17 @@ void mainthread::begin_search() {
   if (best_thread != this)
     best_thread->root_moves[0].depth = root_moves[0].depth;
   if (!bench_active) {
-    acout() << print_pv(*best_thread->root_position, -max_score, max_score, active_pv, 0) << std::endl;
-    acout() << "bestmove " << move_to_string(best_thread->root_moves[0].pv[0], *root_position);
-    if (best_thread->root_moves[0].pv.size() > 1 || best_thread->root_moves[0].ponder_move_from_hash(*root_position))
-      acout() << " ponder " << move_to_string(best_thread->root_moves[0].pv[1], *root_position) << '\n';
-    fflush(stdout);
+    acout() << print_pv(*best_thread->root_position, -max_score, max_score,
+                        active_pv, 0)
+            << std::endl;
+    acout() << "bestmove "
+            << move_to_string(best_thread->root_moves[0].pv[0], *root_position);
+    if (best_thread->root_moves[0].pv.size() > 1 ||
+        best_thread->root_moves[0].ponder_move_from_hash(*root_position))
+      acout() << " ponder "
+              << move_to_string(best_thread->root_moves[0].pv[1],
+                                *root_position);
+    acout() << std::endl;
   }
   thread_pool.total_analyze_time += static_cast<int>(time_control.elapsed());
 
@@ -1581,7 +1589,7 @@ std::string print_pv(const position& pos, const int alpha, const int beta,
     const auto score =
         i <= active_pv ? root_move.score : root_move.previous_score;
 
-    if (ss.rdbuf()->in_avail()) ss << '\n';
+    if (ss.rdbuf()->in_avail()) ss << "\n";
 
     int sel_depth;
     const auto* pi = thread_pool.main()->root_position->info();

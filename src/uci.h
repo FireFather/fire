@@ -11,13 +11,13 @@ inline int uci_contempt = 0;
 inline bool uci_ponder = false;
 inline bool uci_chess960 = false;
 inline bool bench_active = false;
-void init_engine();
+int init_engine();
 void new_game();
-void uci_loop(int argc, char* argv[]);
+int uci_loop(int argc, char* argv[]);
 void set_position(position& pos, std::istringstream& is);
-void set_option(std::istringstream& is);
+int set_option(std::istringstream& is);
 void go(position& pos, std::istringstream& is);
-void bench(int depth);
+int bench(int depth);
 std::string trim(const std::string& str, const std::string& whitespace = " \t");
 std::string sq(square sq);
 std::string print_pv(const position& pos, int alpha, int beta, int active_pv,

@@ -76,14 +76,14 @@ std::ostream& operator<<(std::ostream& os, const position& pos) {
            << ".";
       found = false;
     }
-    os << '\n';
+    os << "\n";
   }
   return os;
 }
 
 void engine_info() {
   std::stringstream ei;
-  ei << program << " " << version << " " << platform << " " << bmis << '\n';
+  ei << program << " " << version << " " << platform << " " << bmis <<'\n';
   acout() << ei.str();
 }
 
