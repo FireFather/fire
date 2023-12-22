@@ -78,7 +78,6 @@ inline unsigned make_index(const int c, const int s, const int pc,
   return orient(c, s) + piece_to_index[c][pc] + ps_end * ksq;
 }
 
-namespace anonymous {
 void half_kp_append_active_indices(const board* pos, const int c,
                                    index_list* active) {
   int ksq = pos->squares[c];
@@ -135,7 +134,6 @@ void append_changed_indices(const board* pos, index_list removed[2],
     }
   }
 }
-}    
 
 inline int32_t affine_propagate(clipped_t* input, const int32_t* biases,
                                 weight_t* weights) {
@@ -206,20 +204,18 @@ inline void affine_txfm(int8_t* input, void* output, unsigned in_dims,
     out_vec[0] = _mm256_max_epi8(out_vec[0], k_zero);
 }
 
-namespace anonymous {
 int16_t ft_biases alignas(64)[k_half_dimensions];
 int16_t ft_weights alignas(64)[k_half_dimensions * ft_in_dims];
-}    
 
 inline void refresh_accumulator(const board* pos) {
   Accumulator* accumulator = &pos->nnue[0]->accumulator;
   index_list active_indices[2];
   active_indices[0].size = active_indices[1].size = 0;
-  anonymous::append_active_indices(pos, active_indices);
+  append_active_indices(pos, active_indices);
   for (unsigned c = 0; c < 2; c++) {
     for (unsigned i = 0; i < k_half_dimensions / TILE_HEIGHT; i++) {
       const vec16_t* ft_biases_tile =
-          reinterpret_cast<vec16_t*>(&anonymous::ft_biases[i * TILE_HEIGHT]);
+          reinterpret_cast<vec16_t*>(&ft_biases[i * TILE_HEIGHT]);
       const auto acc_tile = reinterpret_cast<vec16_t*>(
           &accumulator->accumulation[c][i * TILE_HEIGHT]);
       vec16_t acc[num_regs];
@@ -227,8 +223,7 @@ inline void refresh_accumulator(const board* pos) {
       for (size_t k = 0; k < active_indices[c].size; k++) {
         const unsigned index = active_indices[c].values[k];
         const unsigned offset = k_half_dimensions * index + i * TILE_HEIGHT;
-        const vec16_t* column =
-            reinterpret_cast<vec16_t*>(&anonymous::ft_weights[offset]);
+        const vec16_t* column = reinterpret_cast<vec16_t*>(&ft_weights[offset]);
         for (unsigned j = 0; j < num_regs; j++)
           acc[j] = VEC_ADD_16(acc[j], column[j]);
       }
@@ -251,7 +246,7 @@ inline bool update_accumulator(const board* pos) {
   removed_indices[0].size = removed_indices[1].size = 0;
   added_indices[0].size = added_indices[1].size = 0;
   bool reset[2];
-  anonymous::append_changed_indices(pos, removed_indices, added_indices, reset);
+  append_changed_indices(pos, removed_indices, added_indices, reset);
   for (unsigned i = 0; i < k_half_dimensions / TILE_HEIGHT; i++) {
     for (unsigned c = 0; c < 2; c++) {
       const auto acc_tile = reinterpret_cast<vec16_t*>(
@@ -259,7 +254,7 @@ inline bool update_accumulator(const board* pos) {
       vec16_t acc[num_regs];
       if (reset[c]) {
         const vec16_t* ft_b_tile =
-            reinterpret_cast<vec16_t*>(&anonymous::ft_biases[i * TILE_HEIGHT]);
+            reinterpret_cast<vec16_t*>(&ft_biases[i * TILE_HEIGHT]);
         for (unsigned j = 0; j < num_regs; j++) acc[j] = ft_b_tile[j];
       } else {
         const vec16_t* prev_acc_tile = reinterpret_cast<vec16_t*>(
@@ -269,7 +264,7 @@ inline bool update_accumulator(const board* pos) {
           const unsigned index = removed_indices[c].values[k];
           const unsigned offset = k_half_dimensions * index + i * TILE_HEIGHT;
           const vec16_t* column =
-              reinterpret_cast<vec16_t*>(&anonymous::ft_weights[offset]);
+              reinterpret_cast<vec16_t*>(&ft_weights[offset]);
           for (unsigned j = 0; j < num_regs; j++)
             acc[j] = VEC_SUB_16(acc[j], column[j]);
         }
@@ -277,8 +272,7 @@ inline bool update_accumulator(const board* pos) {
       for (unsigned k = 0; k < added_indices[c].size; k++) {
         const unsigned index = added_indices[c].values[k];
         const unsigned offset = k_half_dimensions * index + i * TILE_HEIGHT;
-        const vec16_t* column =
-            reinterpret_cast<vec16_t*>(&anonymous::ft_weights[offset]);
+        const vec16_t* column = reinterpret_cast<vec16_t*>(&ft_weights[offset]);
         for (unsigned j = 0; j < num_regs; j++)
           acc[j] = VEC_ADD_16(acc[j], column[j]);
       }
@@ -340,7 +334,6 @@ inline unsigned wt_idx(const unsigned r, unsigned c, const unsigned dims) {
   return c * 32 + r;
 }
 
-namespace anonymous {
 const char* read_hidden_weights(weight_t* w, const unsigned dims,
                                 const char* d) {
   for (unsigned r = 0; r < 32; r++)
@@ -361,7 +354,6 @@ void permute_biases(int32_t* biases) {
   tmp[7] = b[7];
   memcpy(b, tmp, 8 * sizeof(__m128i));
 }
-}    
 
 enum {
   transformer_start = 3 * 4 + 177,
@@ -378,7 +370,6 @@ inline uint16_t readu_le_u16(const void* p) {
   return q[0] | q[1] << 8;
 }
 
-namespace anonymous {
 void read_output_weights(weight_t* w, const char* d) {
   for (unsigned i = 0; i < 32; i++) {
     const unsigned c = i;
@@ -437,14 +428,12 @@ bool load_eval_file(const char* eval_file) {
   if (mapping) unmap_file(eval_data, mapping);
   return success;
 }
-}    
 
 int nnue_init(const char* eval_file) {
-  if (anonymous::load_eval_file(eval_file)) {
+  if (load_eval_file(eval_file))
     acout() << "NNUE loaded" << std::endl;
-	return fflush(stdout);
-  }
-  acout() << "NNUE not found" << std::endl;
+  else
+    acout() << "NNUE not found" << std::endl;
   return fflush(stdout);
 }
 
