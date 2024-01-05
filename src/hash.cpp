@@ -1,7 +1,8 @@
 #include "hash.h"
 
+#include <cstring>
 #include <iostream>
-#include <cstring> 
+
 #include "main.h"
 
 hash main_hash;

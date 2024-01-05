@@ -1,12 +1,13 @@
 #include "position.h"
 
+#include <cstring>
 #include <iomanip>
 #include <sstream>
-#include <cstring> 
+
 #include "bitboard.h"
-#include "main.h"
 #include "hash.h"
 #include "macro.h"
+#include "main.h"
 #include "movegen.h"
 #include "thread.h"
 #include "util.h"
@@ -107,19 +108,19 @@ square position::calculate_threat() const {
       if (const auto b = attack_rook_bb(to, pieces()) & pieces(white, pt_queen))
         return msb(b);
       break;
-  case no_piece:
+    case no_piece:
       break;
-  case w_king:
+    case w_king:
       break;
-  case w_queen:
+    case w_queen:
       break;
-  case b_king:
+    case b_king:
       break;
-  case b_queen:
+    case b_queen:
       break;
-  case num_pieces:
+    case num_pieces:
       break;
-  default:
+    default:
       break;
   }
 

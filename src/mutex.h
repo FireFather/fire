@@ -7,13 +7,9 @@
 
 struct Mutex {
   Mutex() { InitializeCriticalSection(&cs); }
-
   ~Mutex() { DeleteCriticalSection(&cs); }
-
   void lock() { EnterCriticalSection(&cs); }
-
   void unlock() { LeaveCriticalSection(&cs); }
-
  private:
   CRITICAL_SECTION cs;
 };

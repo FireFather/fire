@@ -113,7 +113,7 @@
 #define INCBIN_STYLE_IDENT(TYPE)                                   \
   INCBIN_CONCATENATE(INCBIN_STYLE_,                                \
                      INCBIN_CONCATENATE(INCBIN_EVAL(INCBIN_STYLE), \
-                     INCBIN_CONCATENATE(_, TYPE)))
+                                        INCBIN_CONCATENATE(_, TYPE)))
 
 #define INCBIN_STYLE_STRING(TYPE) INCBIN_STRINGIZE(INCBIN_STYLE_IDENT(TYPE))
 

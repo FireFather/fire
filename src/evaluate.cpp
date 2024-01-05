@@ -68,4 +68,4 @@ int eval_after_null_move(const int eval) {
   const auto result = -eval;
   return result;
 }
-}
+}  // namespace evaluate

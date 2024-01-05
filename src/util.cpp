@@ -5,6 +5,7 @@
 #endif
 #include <iomanip>
 #include <sstream>
+
 #include "macro.h"
 #include "main.h"
 #include "movegen.h"
@@ -83,7 +84,7 @@ std::ostream& operator<<(std::ostream& os, const position& pos) {
 
 void engine_info() {
   std::stringstream ei;
-  ei << program << " " << version << " " << platform << " " << bmis <<'\n';
+  ei << program << " " << version << " " << platform << " " << bmis << '\n';
   acout() << ei.str();
 }
 

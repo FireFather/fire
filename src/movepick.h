@@ -1,5 +1,6 @@
 #pragma once
-#include <cstring> 
+#include <cstring>
+
 #include "main.h"
 #include "movegen.h"
 #include "position.h"
@@ -19,7 +20,7 @@ uint32_t pick_move(const position& pos);
 
 template <move_gen>
 void score(const position& pos);
-}
+}  // namespace movepick
 
 template <typename tn>
 struct piece_square_table {

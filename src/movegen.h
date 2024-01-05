@@ -32,7 +32,7 @@ s_move* moves_for_piece(const position& pos, s_move* moves, uint64_t target);
 
 template <uint8_t castle, bool only_check_moves, bool chess960>
 s_move* get_castle(const position& pos, s_move* moves);
-}
+}  // namespace movegen
 
 inline bool operator<(const s_move& f, const s_move& s) {
   return f.value < s.value;

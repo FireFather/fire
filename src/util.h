@@ -2,6 +2,7 @@
 #include <iostream>
 #include <mutex>
 #include <random>
+
 #include "position.h"
 
 static std::mutex mutex_cout;

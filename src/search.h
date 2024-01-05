@@ -123,17 +123,17 @@ inline constexpr int late_move_number_values[2][32] = {
      45, 50, 55, 60, 65, 71, 77, 84, 91, 98, 105, 112, 119, 127, 135, 143}};
 
 inline int late_move_number(const int d, const bool progress) {
-  return late_move_number_values[progress][static_cast<uint32_t>(d) /
-                                                   (plies / 2)];
+  return late_move_number_values[progress]
+                                [static_cast<uint32_t>(d) / (plies / 2)];
 }
 
 inline int lmr_reduction(const bool pv, const bool vg, const int d,
                          const int n) {
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
   return lm_reductions[pv][vg][MIN(d, 64 * static_cast<int>(plies) - 1)]
-                              [MIN(n, 63)];
+                      [MIN(n, 63)];
 }
-}    
+}  // namespace search
 
 template <int max_plus, int max_min>
 struct piece_square_stats;

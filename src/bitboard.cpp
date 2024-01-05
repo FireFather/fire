@@ -1,7 +1,7 @@
 #include "bitboard.h"
 
-#include "main.h"
 #include "macro.h"
+#include "main.h"
 
 void bitboard::init() {
   for (auto sq = a1; sq <= h8; ++sq) square_bb[sq] = 1ULL << sq;

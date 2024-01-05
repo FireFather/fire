@@ -14,7 +14,7 @@ struct piece_square_stats;
 
 using counter_move_values = piece_square_stats<24576, 24576>;
 
-inline constexpr int delayed_number{ 7 };
+inline constexpr int delayed_number{7};
 
 enum ptype : uint8_t {
   no_piece,

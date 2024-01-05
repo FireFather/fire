@@ -1,7 +1,7 @@
 #include "movegen.h"
 
-#include "main.h"
 #include "macro.h"
+#include "main.h"
 #include "position.h"
 
 namespace movegen {
@@ -81,8 +81,7 @@ s_move* get_castle(const position& pos, s_move* moves) {
       return moves;
   } else {
     if (pos.attack_to(to_k) & pos.pieces(you)) return moves;
-    if (pos.attack_to(to_k + direction) & pos.pieces(you))
-      return moves;
+    if (pos.attack_to(to_k + direction) & pos.pieces(you)) return moves;
   }
 
   const auto move = make_move(castle_move, from_k, to_k);
@@ -168,8 +167,7 @@ s_move* moves_for_pawn(const position& pos, s_move* moves,
 
     while (double_move_bb) {
       const auto to = pop_lsb(&double_move_bb);
-      *moves++ = make_move(
-          to - straight_ahead - straight_ahead, to);
+      *moves++ = make_move(to - straight_ahead - straight_ahead, to);
     }
   }
 
@@ -259,7 +257,7 @@ s_move* moves_for_piece(const position& pos, s_move* moves,
 
   return moves;
 }
-}
+}  // namespace movegen
 
 template <move_gen mg>
 s_move* generate_moves(const position& pos, s_move* moves) {
