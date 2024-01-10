@@ -68,17 +68,17 @@ http://www.chessdom.com/fire-the-chess-engine-releases-a-new-version/
 - [LittleBlitzer](http://www.kimiensoftware.com)
 
 ## banners
-![alt tag](https://raw.githubusercontent.com/FireFather/fire-zero/master/bitmaps/fire_1.bmp)
-![alt tag](https://raw.githubusercontent.com/FireFather/fire-zero/master/bitmaps/fire_2.bmp)
-![alt tag](https://raw.githubusercontent.com/FireFather/fire-zero/master/bitmaps/fire_3.bmp)
-![alt tag](https://raw.githubusercontent.com/FireFather/fire-zero/master/bitmaps/fire_4.bmp)
-![alt tag](https://raw.githubusercontent.com/FireFather/fire-zero/master/bitmaps/fire_5.bmp)
-![alt tag](https://raw.githubusercontent.com/FireFather/fire-zero/master/bitmaps/fire_6.bmp)
-![alt tag](https://raw.githubusercontent.com/FireFather/fire-zero/master/bitmaps/fire_7.bmp)
-![alt tag](https://raw.githubusercontent.com/FireFather/fire-zero/master/bitmaps/fire_8.bmp)
-![alt tag](https://raw.githubusercontent.com/FireFather/fire-zero/master/bitmaps/fire_9.bmp)
-![alt tag](https://raw.githubusercontent.com/FireFather/fire-zero/master/bitmaps/fire_10.bmp)
-![alt tag](https://raw.githubusercontent.com/FireFather/fire-zero/master/bitmaps/fire_11.bmp)
+![alt tag](https://raw.githubusercontent.com/FireFather/fire/master/bitmaps/fire_1.bmp)
+![alt tag](https://raw.githubusercontent.com/FireFather/fire/master/bitmaps/fire_2.bmp)
+![alt tag](https://raw.githubusercontent.com/FireFather/fire/master/bitmaps/fire_3.bmp)
+![alt tag](https://raw.githubusercontent.com/FireFather/fire/master/bitmaps/fire_4.bmp)
+![alt tag](https://raw.githubusercontent.com/FireFather/fire/master/bitmaps/fire_5.bmp)
+![alt tag](https://raw.githubusercontent.com/FireFather/fire/master/bitmaps/fire_6.bmp)
+![alt tag](https://raw.githubusercontent.com/FireFather/fire/master/bitmaps/fire_7.bmp)
+![alt tag](https://raw.githubusercontent.com/FireFather/fire/master/bitmaps/fire_8.bmp)
+![alt tag](https://raw.githubusercontent.com/FireFather/fire/master/bitmaps/fire_9.bmp)
+![alt tag](https://raw.githubusercontent.com/FireFather/fire/master/bitmaps/fire_10.bmp)
+![alt tag](https://raw.githubusercontent.com/FireFather/fire/master/bitmaps/fire_11.bmp)
 
 ## more info
 **http://chesslogik.wix.com/fire**
