@@ -5,11 +5,11 @@
   [![Commits][commits-badge]][commits-link]
 
   ![Downloads][downloads-badge]
-  [![License][license-badge]][license-link]
-
-  [![Contributors][contributors-shield]][contributors-url]
   [![Forks][forks-shield]][forks-url]
   [![Stargazers][stars-shield]][stars-url]
+  
+  [![License][license-badge]][license-link]
+  [![Contributors][contributors-shield]][contributors-url]
   
 </div>
 
@@ -91,14 +91,14 @@ http://www.chessdom.com/fire-the-chess-engine-releases-a-new-version/
 [forks-url]:https://github.com/FireFather/fire/network/members
 [stars-url]:https://github.com/FireFather/fire/stargazers
 
-[contributors-shield]:https://img.shields.io/github/contributors/FireFather/fire?style=for-the-badge&color=success
-[forks-shield]:https://img.shields.io/github/forks/FireFather/fire?style=for-the-badge&color=success
-[stars-shield]:https://img.shields.io/github/stars/FireFather/fire?style=for-the-badge&color=success
+[contributors-shield]:https://img.shields.io/github/contributors/FireFather/fire?style=for-the-badge&color=blue
+[forks-shield]:https://img.shields.io/github/forks/FireFather/fire?style=for-the-badge&color=blue
+[stars-shield]:https://img.shields.io/github/stars/FireFather/fire?style=for-the-badge&color=blue
 
-[license-badge]:https://img.shields.io/github/license/FireFather/fire?style=for-the-badge&label=license&color=success
+[license-badge]:https://img.shields.io/github/license/FireFather/fire?style=for-the-badge&label=license&color=blue
 [license-link]:https://github.com/FireFather/fire/blob/main/LICENSE
 [release-badge]:https://img.shields.io/github/v/release/FireFather/fire?style=for-the-badge&label=official%20release
 [release-link]:https://github.com/FireFather/fire/releases/latest
 [commits-badge]:https://img.shields.io/github/commits-since/FireFather/fire/latest?style=for-the-badge
 [commits-link]:https://github.com/FireFather/fire/commits/main
-[downloads-badge]:https://img.shields.io/github/downloads/FireFather/fire/total?color=success&style=for-the-badge
+[downloads-badge]:https://img.shields.io/github/downloads/FireFather/fire/total?style=for-the-badge&color=blue
