@@ -1,15 +1,12 @@
 # fire
 <div align="left">
+
+  [![Release][release-badge]][release-link]
+  [![Commits][commits-badge]][commits-link]
+
+  ![Downloads][downloads-badge]
+  [![License][license-badge]][license-link]
  
-[![Contributors][contributors-shield]][contributors-url]
-[![Forks][forks-shield]][forks-url]
-[![Stargazers][stars-shield]][stars-url]
-[![Downloads][downloads-badge]
-[![Commits][commits-shield]][commits-link]
-[![Release][release-shield]][release-link]
-[![Issues][issues-shield]][issues-url] 
-[![License][license-badge]][license-link]
-   
 </div>
 
 ![alt tag](https://raw.githubusercontent.com/FireFather/fire-zero/master/bitmaps/nnue-gui.png)
@@ -93,7 +90,3 @@ http://www.chessdom.com/fire-the-chess-engine-releases-a-new-version/
 [commits-badge]:https://img.shields.io/github/commits-since/FireFather/fire/latest?style=for-the-badge
 [commits-link]:https://github.com/FireFather/fire/commits/main
 [downloads-badge]:https://img.shields.io/github/downloads/FireFather/fire/total?color=success&style=for-the-badge
-[contributors-url]: https://github.com/FireFather/fire/graphs/contributors
-[forks-url]: https://github.com/FireFather/fire/network/members
-[stars-url]: https://github.com/FireFather/fire/stargazers
-[issues-url]: https://github.com/FireFather/fire/issues 
