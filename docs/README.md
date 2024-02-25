@@ -6,7 +6,11 @@
 
   ![Downloads][downloads-badge]
   [![License][license-badge]][license-link]
- 
+
+  [![Contributors][contributors-shield]][contributors-url]
+  [![Forks][forks-shield]][forks-url]
+  [![Stargazers][stars-shield]][stars-url]
+  
 </div>
 
 ![alt tag](https://raw.githubusercontent.com/FireFather/fire-zero/master/bitmaps/nnue-gui.png)
@@ -82,6 +86,14 @@ http://www.chessdom.com/fire-the-chess-engine-releases-a-new-version/
 
 ## more info
 **http://chesslogik.wix.com/fire**
+
+[contributors-url]:https://github.com/FireFather/fire/graphs/contributors
+[forks-url]:https://github.com/FireFather/fire/network/members
+[stars-url]:https://github.com/FireFather/fire/stargazers
+
+[contributors-shield]:https://img.shields.io/github/contributors/FireFather/fire?style=for-the-badge&color=success
+[forks-shield]:https://img.shields.io/github/forks/FireFather/fire?style=for-the-badge&color=success
+[stars-shield]:https://img.shields.io/github/stars/FireFather/fire?style=for-the-badge&color=success
 
 [license-badge]:https://img.shields.io/github/license/FireFather/fire?style=for-the-badge&label=license&color=success
 [license-link]:https://github.com/FireFather/fire/blob/main/LICENSE
