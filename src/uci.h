@@ -3,7 +3,7 @@
 
 inline std::string startpos =
     "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-inline std::string uci_nnue_evalfile = "fire-9.2.nnue";
+inline std::string uci_nnue_evalfile = "fire-9.3.nnue";
 inline int uci_hash = 64;
 inline int uci_threads = 1;
 inline int uci_multipv = 1;

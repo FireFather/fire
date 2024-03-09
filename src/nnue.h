@@ -1,8 +1,8 @@
 #pragma once
 #ifdef _WIN32
 #include <Windows.h>
-
 #include <string>
+#include <cstdint>
 #else
 #include <sys/mman.h>
 #include <unistd.h>
@@ -47,10 +47,10 @@ typedef size_t map_t;
 
 #if !defined(_MSC_VER)
 #define NNUE_EMBEDDED
-#define NNUE_EVAL_FILE "fire-9.2.nnue"
+#define NNUE_EVAL_FILE "fire-9.3.nnue"
 #endif
 
-static std::string nnue_evalfile = "fire-9.2.nnue";
+static std::string nnue_evalfile = "fire-9.3.nnue";
 inline const char* nnue_file = nnue_evalfile.c_str();
 static constexpr uint32_t nnue_version = 0x7AF32F16u;
 
