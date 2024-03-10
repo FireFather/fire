@@ -15,8 +15,8 @@ int bench(const int depth) {
   const auto start_time = now();
 
   for (auto& bench_position : bench_positions) {
-      auto num_positions = 32;
-      const auto start_time_pos = now();
+    auto num_positions = 32;
+    const auto start_time_pos = now();
     uint64_t nodes_pos = 0;
 
     pos_num++;
@@ -25,14 +25,14 @@ int bench(const int depth) {
     std::istringstream is(s_depth);
     pos.set(bench_position, false, thread_pool.main());
     acout() << "position " << pos_num << '/' << num_positions << " "
-            << bench_position << " ";
+      << bench_position << " ";
     go(pos, is);
     thread_pool.main()->wait_for_search_to_end();
 
     nodes_pos += thread_pool.visited_nodes();
-	nodes += thread_pool.visited_nodes();	
+    nodes += thread_pool.visited_nodes();
     const auto elapsed_time_pos =
-        static_cast<double>(now() + 1 - start_time_pos) / 1000;
+      static_cast<double>(now() + 1 - start_time_pos) / 1000;
     const auto nps_pos = static_cast<double>(nodes_pos) / elapsed_time_pos;
 
     std::ostringstream ss;
@@ -50,7 +50,7 @@ int bench(const int depth) {
     ss << std::fixed << nps_pos << " nps]" << std::endl;
     acout() << ss.str();
     ss.str(std::string());
-	ret = fflush(stdout);
+    ret = fflush(stdout);
   }
   const auto elapsed_time = static_cast<double>(now() + 1 - start_time) / 1000;
   const auto nps = static_cast<double>(nodes) / elapsed_time;
@@ -70,6 +70,6 @@ int bench(const int depth) {
   acout() << ss.str();
   ss.str(std::string());
   new_game();
-  ret = fflush(stdout);  
+  ret = fflush(stdout);
   return ret;
 }

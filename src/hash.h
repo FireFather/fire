@@ -36,13 +36,13 @@ struct main_hash_entry {
   }
 
   void save(const uint64_t k, const int val, const uint8_t flags, const int d,
-            const uint32_t z, const int eval, const uint8_t gen) {
+    const uint32_t z, const int eval, const uint8_t gen) {
     const auto dd = d / plies;
     const uint16_t k16 = k >> 48;
     if (z || k16 != key_) move_ = static_cast<uint16_t>(z);
 
     if (k16 != key_ || dd > depth_ - 4 ||
-        (flags & exact_value) == exact_value) {
+      (flags & exact_value) == exact_value) {
       key_ = k16;
       value_ = static_cast<int16_t>(val);
       eval_ = static_cast<int16_t>(eval);
@@ -51,7 +51,7 @@ struct main_hash_entry {
     }
   }
 
- private:
+private:
   friend class hash;
 
   uint16_t key_;
@@ -73,7 +73,7 @@ class hash {
 
   static_assert(cache_line % sizeof(bucket) == 0, "Cluster size incorrect");
 
- public:
+public:
   ~hash() { free(hash_mem_); }
 
   void new_age() { age_ = age_ + 8 & age_mask; }
@@ -87,12 +87,12 @@ class hash {
 
   [[nodiscard]] main_hash_entry* entry(const uint64_t key) const {
     return reinterpret_cast<main_hash_entry*>(
-        reinterpret_cast<char*>(hash_mem_) + (key & bucket_mask_));
+      reinterpret_cast<char*>(hash_mem_) + (key & bucket_mask_));
   }
 
   void prefetch_entry(const uint64_t key) const { prefetch(entry(key)); }
 
- private:
+private:
   size_t buckets_ = 0;
   size_t bucket_mask_ = 0;
   bucket* hash_mem_ = nullptr;

@@ -9,7 +9,7 @@ hash main_hash;
 
 void hash::init(const size_t mb_size) {
   const auto new_size = static_cast<size_t>(1)
-                        << msb(mb_size * 1024 * 1024 / sizeof(bucket));
+    << msb(mb_size * 1024 * 1024 / sizeof(bucket));
 
   if (new_size == buckets_) return;
 
@@ -21,7 +21,7 @@ void hash::init(const size_t mb_size) {
 
   if (!hash_mem_) {
     std::cerr << "Failed to allocate " << mb_size
-              << "MB for transposition table." << std::endl;
+      << "MB for transposition table." << std::endl;
     exit(EXIT_FAILURE);
   }
 
@@ -41,7 +41,7 @@ main_hash_entry* hash::probe(const uint64_t key) const {
     if (hash_entry[i].key_ == key16) {
       if ((hash_entry[i].flags_ & age_mask) != age_)
         hash_entry[i].flags_ =
-            static_cast<uint8_t>(age_ + (hash_entry[i].flags_ & flags_mask));
+        static_cast<uint8_t>(age_ + (hash_entry[i].flags_ & flags_mask));
 
       return &hash_entry[i];
     }
@@ -60,9 +60,9 @@ main_hash_entry* hash::replace(const uint64_t key) const {
   auto* replacement = hash_entry;
   for (auto i = 1; i < bucket_size; ++i)
     if (replacement->depth_ -
-            (age_ - (replacement->flags_ & age_mask) & age_mask) >
-        hash_entry[i].depth_ -
-            (age_ - (hash_entry[i].flags_ & age_mask) & age_mask))
+      (age_ - (replacement->flags_ & age_mask) & age_mask) >
+      hash_entry[i].depth_ -
+      (age_ - (hash_entry[i].flags_ & age_mask) & age_mask))
       replacement = &hash_entry[i];
 
   return replacement;

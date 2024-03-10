@@ -7,9 +7,9 @@
 cmhinfo* cmh_data;
 
 thread::thread()
-    : exit_(false),
-      search_active_(true),
-      thread_index_(thread_pool.thread_count) {
+  : exit_(false),
+  search_active_(true),
+  thread_index_(thread_pool.thread_count) {
   std::unique_lock lk(mutex_);
 
   native_thread_ = std::thread(&thread::idle_loop, this);

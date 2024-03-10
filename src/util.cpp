@@ -38,12 +38,12 @@ uint32_t move_from_string(const position& pos, std::string& str) {
   if (pos.is_chess960()) {
     if (str == "O-O")
       str = move_to_string(make_move(castle_move, pos.king(pos.on_move()),
-                                     relative_square(pos.on_move(), g1)),
-                           pos);
+        relative_square(pos.on_move(), g1)),
+        pos);
     else if (str == "O-O-O")
       str = move_to_string(make_move(castle_move, pos.king(pos.on_move()),
-                                     relative_square(pos.on_move(), c1)),
-                           pos);
+        relative_square(pos.on_move(), c1)),
+        pos);
   }
 
   if (str.length() == 5) str[4] = static_cast<char>(tolower(str[4]));
@@ -74,7 +74,7 @@ std::ostream& operator<<(std::ostream& os, const position& pos) {
         os << " " << pc;
       else
         os << " "
-           << ".";
+        << ".";
       found = false;
     }
     os << "\n";
@@ -96,6 +96,6 @@ void build_info() {
   std::stringstream bi;
   date >> month >> day >> year;
   bi << month << ' ' << std::setw(2) << std::setfill('0') << day << ' ' << year
-     << ' ' << std::setw(2) << std::setfill('0') << __TIME__ << '\n';
+    << ' ' << std::setw(2) << std::setfill('0') << __TIME__ << '\n';
   acout() << bi.str();
 }

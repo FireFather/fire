@@ -35,7 +35,7 @@ class random {
     return dis(gen);
   }
 
- public:
+public:
   uint64_t s;
   explicit random(const uint64_t seed) : s(seed) { assert(seed); }
   template <typename T>

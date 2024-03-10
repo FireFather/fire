@@ -55,60 +55,72 @@ int uci_loop(const int argc, char* argv[]) {
 
     if (token == "uci") {
       acout() << "id name " << program << " " << version << " " << platform
-              << " " << bmis << std::endl;
+        << " " << bmis << std::endl;
       acout() << "id author " << author << std::endl;
       acout() << "option name Hash type spin default 64 min 16 max 1048576"
-              << std::endl;
+        << std::endl;
       acout() << "option name Threads type spin default 1 min 1 max 128"
-              << std::endl;
+        << std::endl;
       acout() << "option name MultiPV type spin default 1 min 1 max 64"
-              << std::endl;
+        << std::endl;
       acout() << "option name Contempt type spin default 0 min -100 max 100"
-              << std::endl;
+        << std::endl;
       acout() << "option name MoveOverhead type spin default 50 min 0 max 1000"
-              << std::endl;
+        << std::endl;
       acout() << "option name Ponder type check default false" << std::endl;
       acout() << "option name UCI_Chess960 type check default false"
-              << std::endl;
+        << std::endl;
       acout() << "uciok" << std::endl;
       ret = fflush(stdout);
-    } else if (token == "isready") {
+    }
+    else if (token == "isready") {
       acout() << "readyok" << std::endl;
       ret = fflush(stdout);
-    } else if (token == "ucinewgame") {
+    }
+    else if (token == "ucinewgame") {
       new_game();
-    } else if (token == "setoption") {
+    }
+    else if (token == "setoption") {
       set_option(is);
-    } else if (token == "position") {
+    }
+    else if (token == "position") {
       set_position(pos, is);
-    } else if (token == "go") {
+    }
+    else if (token == "go") {
       go(pos, is);
-    } else if (token == "stop" ||
-               (token == "ponderhit" && search::signals.stop_if_ponder_hit)) {
+    }
+    else if (token == "stop" ||
+      (token == "ponderhit" && search::signals.stop_if_ponder_hit)) {
       search::signals.stop_analyzing = true;
       thread_pool.main()->wake(false);
-    } else if (token == "quit") {
+    }
+    else if (token == "quit") {
       break;
-    } else if (token == "pos") {
+    }
+    else if (token == "pos") {
       acout() << pos;
-    } else if (token == "perft") {
+    }
+    else if (token == "perft") {
       auto depth = 7;
       auto& fen = startpos;
       is >> depth;
       is >> fen;
       perft(depth, fen);
-    } else if (token == "divide") {
+    }
+    else if (token == "divide") {
       auto depth = 7;
       auto& fen = startpos;
       is >> depth;
       is >> fen;
       divide(depth, fen);
-    } else if (token == "bench") {
+    }
+    else if (token == "bench") {
       auto bench_depth = is >> token ? token : "14";
       bench_active = true;
       bench(stoi(bench_depth));
       bench_active = false;
-    } else {
+    }
+    else {
     }
   } while (token != "quit" && argc == 1);
   thread_pool.exit();
@@ -137,10 +149,10 @@ int set_option(std::istringstream& is) {
         thread_pool.change_thread_count(uci_threads);
         if (uci_threads == 1)
           acout() << "info string Threads " << uci_threads << " thread"
-                  << std::endl;
+          << std::endl;
         else
           acout() << "info string Threads " << uci_threads << " threads"
-                  << std::endl;
+          << std::endl;
         break;
       }
       if (token == "MultiPV") {
@@ -162,7 +174,7 @@ int set_option(std::istringstream& is) {
         is >> token;
         time_control.move_overhead = stoi(token);
         acout() << "info string MoveOverhead " << time_control.move_overhead
-                << " ms" << std::endl;
+          << " ms" << std::endl;
         break;
       }
       if (token == "Ponder") {
@@ -200,28 +212,36 @@ void go(position& pos, std::istringstream& is) {
     if (token == "wtime") {
       is >> param.time[white];
       param.infinite = 0;
-    } else if (token == "btime") {
+    }
+    else if (token == "btime") {
       is >> param.time[black];
       param.infinite = 0;
-    } else if (token == "winc") {
+    }
+    else if (token == "winc") {
       is >> param.inc[white];
       param.infinite = 0;
-    } else if (token == "binc") {
+    }
+    else if (token == "binc") {
       is >> param.inc[black];
       param.infinite = 0;
-    } else if (token == "movestogo") {
+    }
+    else if (token == "movestogo") {
       is >> param.moves_to_go;
       param.infinite = 0;
-    } else if (token == "depth") {
+    }
+    else if (token == "depth") {
       is >> param.depth;
       param.infinite = 0;
-    } else if (token == "nodes") {
+    }
+    else if (token == "nodes") {
       is >> param.nodes;
       param.infinite = 0;
-    } else if (token == "movetime") {
+    }
+    else if (token == "movetime") {
       is >> param.move_time;
       param.infinite = 0;
-    } else if (token == "infinite")
+    }
+    else if (token == "infinite")
       param.infinite = 1;
   }
   thread_pool.begin_search(pos, param);
@@ -236,7 +256,8 @@ void set_position(position& pos, std::istringstream& is) {
   if (token == "startpos") {
     fen = startpos;
     is >> token;
-  } else if (token == "fen")
+  }
+  else if (token == "fen")
     while (is >> token && token != "moves") fen += token + " ";
   else
     return;
@@ -260,6 +281,6 @@ std::string trim(const std::string& str, const std::string& whitespace) {
 }
 
 std::string sq(const square sq) {
-  return std::string{static_cast<char>('a' + file_of(sq)),
-                     static_cast<char>('1' + rank_of(sq))};
+  return std::string{ static_cast<char>('a' + file_of(sq)),
+                     static_cast<char>('1' + rank_of(sq)) };
 }

@@ -170,14 +170,14 @@ constexpr square num_files = static_cast<square>(8);
 constexpr square num_ranks = static_cast<square>(8);
 
 enum square : int8_t {
-  a1,  b1,  c1,  d1,  e1,  f1,  g1,  h1,
-  a2,  b2,  c2,  d2,  e2,  f2,  g2,  h2,
-  a3,  b3,  c3,  d3,  e3,  f3,  g3,  h3,
-  a4,  b4,  c4,  d4,  e4,  f4,  g4,  h4,
-  a5,  b5,  c5,  d5,  e5,  f5,  g5,  h5,
-  a6,  b6,  c6,  d6,  e6,  f6,  g6,  h6,
-  a7,  b7,  c7,  d7,  e7,  f7,  g7,  h7,
-  a8,  b8,  c8,  d8,  e8,  f8,  g8,  h8
+  a1, b1, c1, d1, e1, f1, g1, h1,
+  a2, b2, c2, d2, e2, f2, g2, h2,
+  a3, b3, c3, d3, e3, f3, g3, h3,
+  a4, b4, c4, d4, e4, f4, g4, h4,
+  a5, b5, c5, d5, e5, f5, g5, h5,
+  a6, b6, c6, d6, e6, f6, g6, h6,
+  a7, b7, c7, d7, e7, f7, g7, h7,
+  a8, b8, c8, d8, e8, f8, g8, h8
 };
 
 enum file { file_a, file_b, file_c, file_d, file_e, file_f, file_g, file_h };
@@ -215,7 +215,7 @@ enum stage {
 
 constexpr score make_score(const int mg, const int eg) {
   return static_cast<score>((static_cast<int>(mg * score_factor) << 16) +
-                            static_cast<int>(eg * score_factor));
+    static_cast<int>(eg * score_factor));
 }
 
 constexpr int remake_score(const int mg, const int eg) {
@@ -226,7 +226,7 @@ inline int mg_value(const int score) {
   const union {
     uint16_t u;
     int16_t s;
-  } mg = {static_cast<uint16_t>(static_cast<unsigned>(score + 0x8000) >> 16)};
+  } mg = { static_cast<uint16_t>(static_cast<unsigned>(score + 0x8000) >> 16) };
   return mg.s;
 }
 
@@ -234,7 +234,7 @@ inline int eg_value(const int score) {
   const union {
     uint16_t u;
     int16_t s;
-  } eg = {static_cast<uint16_t>(static_cast<unsigned>(score))};
+  } eg = { static_cast<uint16_t>(static_cast<unsigned>(score)) };
   return eg.s;
 }
 
@@ -301,7 +301,7 @@ constexpr int move_type(const uint32_t move) {
 
 constexpr uint8_t promotion_piece(const uint32_t move) {
   return static_cast<uint8_t>(pt_knight +
-                              ((move >> 12 & 15) - (promotion_p >> 12)));
+    ((move >> 12 & 15) - (promotion_p >> 12)));
 }
 
 constexpr uint8_t piece_moved(const uint32_t move) {
@@ -314,7 +314,7 @@ constexpr uint32_t make_move(const square from, const square to) {
 }
 
 constexpr uint32_t make_move(const int type, const square from,
-                             const square to) {
+  const square to) {
   return static_cast<uint32_t>(to + (from << 6) + type);
 }
 

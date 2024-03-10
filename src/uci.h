@@ -2,7 +2,7 @@
 #include "position.h"
 
 inline std::string startpos =
-    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 inline std::string uci_nnue_evalfile = "fire-9.3.nnue";
 inline int uci_hash = 64;
 inline int uci_threads = 1;
@@ -21,4 +21,4 @@ int bench(int depth);
 std::string trim(const std::string& str, const std::string& whitespace = " \t");
 std::string sq(square sq);
 std::string print_pv(const position& pos, int alpha, int beta, int active_pv,
-                     int active_move);
+  int active_move);

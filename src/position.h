@@ -14,7 +14,7 @@ struct piece_square_stats;
 
 using counter_move_values = piece_square_stats<24576, 24576>;
 
-inline constexpr int delayed_number{7};
+inline constexpr int delayed_number{ 7 };
 
 enum ptype : uint8_t {
   no_piece,
@@ -48,17 +48,17 @@ constexpr ptype make_piece(const side color, const uint8_t piece) {
 
 constexpr int material_value[num_pieces] = {
     mat_0, mat_0, mat_0, mat_knight, mat_bishop, mat_rook, mat_queen, mat_0,
-    mat_0, mat_0, mat_0, mat_knight, mat_bishop, mat_rook, mat_queen, mat_0};
+    mat_0, mat_0, mat_0, mat_knight, mat_bishop, mat_rook, mat_queen, mat_0 };
 
-constexpr int piece_phase[num_pieces] = {0, 0, 0, 1, 1, 3, 6, 0,
-                                         0, 0, 0, 1, 1, 3, 6, 0};
+constexpr int piece_phase[num_pieces] = { 0, 0, 0, 1, 1, 3, 6, 0,
+                                         0, 0, 0, 1, 1, 3, 6, 0 };
 
 constexpr int see_value_simple[num_pieces] = {
     see_0, see_0, see_pawn, see_knight, see_bishop, see_rook, see_queen, see_0,
-    see_0, see_0, see_pawn, see_knight, see_bishop, see_rook, see_queen, see_0};
+    see_0, see_0, see_pawn, see_knight, see_bishop, see_rook, see_queen, see_0 };
 
 namespace pst {
-extern int psq[num_pieces][num_squares];
+  extern int psq[num_pieces][num_squares];
 }
 
 struct attack_info {
@@ -98,7 +98,7 @@ struct position_info {
   uint8_t eval_factor, lmr_reduction;
   bool no_early_pruning, move_repetition;
 
-  s_move *mp_current_move, *mp_end_list, *mp_end_bad_capture;
+  s_move* mp_current_move, * mp_end_list, * mp_end_bad_capture;
   stage mp_stage;
   uint32_t mp_hash_move, mp_counter_move;
   int mp_depth;
@@ -114,7 +114,7 @@ struct position_info {
 static_assert(offsetof(position_info, key) == 48, "offset wrong");
 
 class position {
- public:
+public:
   static void init();
   static void init_hash_move50(int fifty_move_distance);
 
@@ -130,9 +130,9 @@ class position {
   [[nodiscard]] uint64_t pieces(side color) const;
   [[nodiscard]] uint64_t pieces(side color, uint8_t piece) const;
   [[nodiscard]] uint64_t pieces(side color, uint8_t piece1,
-                                uint8_t piece2) const;
+    uint8_t piece2) const;
   [[nodiscard]] uint64_t pieces(side color, uint8_t piece1, uint8_t piece2,
-                                uint8_t piece3) const;
+    uint8_t piece3) const;
   [[nodiscard]] uint64_t pieces_excluded(side color, uint8_t piece) const;
   [[nodiscard]] ptype piece_on_square(square sq) const;
   [[nodiscard]] square enpassant_square() const;
@@ -209,10 +209,10 @@ class position {
   [[nodiscard]] int non_pawn_material(side color) const;
   [[nodiscard]] position_info* info() const { return pos_info_; }
   void copy_position(const position* pos, thread* th,
-                     const position_info* copy_state);
+    const position_info* copy_state);
   double epd_result;
 
- private:
+private:
   void set_castling_possibilities(side color, square from_r);
   void set_position_info(position_info* si) const;
   void calculate_bishop_color_key() const;
@@ -222,7 +222,7 @@ class position {
   void relocate_piece(side color, ptype piece, square from, square to);
   template <bool yes>
   void do_castle_move(side me, square from, square to, square& from_r,
-                      square& to_r);
+    square& to_r);
   [[nodiscard]] bool is_draw() const;
 
   position_info* pos_info_;
@@ -246,7 +246,7 @@ class position {
 };
 
 inline void position::move_piece(const side color, const ptype piece,
-                                 const square sq) {
+  const square sq) {
   board_[sq] = piece;
   piece_bb_[piece] |= sq;
   color_bb_[color] |= sq;
@@ -255,7 +255,7 @@ inline void position::move_piece(const side color, const ptype piece,
 }
 
 inline void position::delete_piece(const side color, const ptype piece,
-                                   const square sq) {
+  const square sq) {
   piece_bb_[piece] ^= sq;
   color_bb_[color] ^= sq;
   const auto last_square = piece_list_[piece][--piece_number_[piece]];
@@ -265,7 +265,7 @@ inline void position::delete_piece(const side color, const ptype piece,
 }
 
 inline void position::relocate_piece(const side color, const ptype piece,
-                                     const square from, const square to) {
+  const square from, const square to) {
   const auto van_to_bb = square_bb[from] ^ square_bb[to];
   piece_bb_[piece] ^= van_to_bb;
   color_bb_[color] ^= van_to_bb;
@@ -277,26 +277,26 @@ inline void position::relocate_piece(const side color, const ptype piece,
 
 inline bool position::advanced_pawn(const uint32_t move) const {
   return piece_type(moved_piece(move)) == pt_pawn &&
-         relative_rank(on_move_, to_square(move)) >= rank_6;
+    relative_rank(on_move_, to_square(move)) >= rank_6;
 }
 
 template <uint8_t piece_type>
 uint64_t position::attack_from(const square sq) const {
   return piece_type == pt_bishop ? attack_bishop_bb(sq, pieces())
-         : piece_type == pt_rook ? attack_rook_bb(sq, pieces())
-         : piece_type == pt_queen
-             ? attack_from<pt_rook>(sq) | attack_from<pt_bishop>(sq)
-             : empty_attack[piece_type][sq];
+    : piece_type == pt_rook ? attack_rook_bb(sq, pieces())
+    : piece_type == pt_queen
+    ? attack_from<pt_rook>(sq) | attack_from<pt_bishop>(sq)
+    : empty_attack[piece_type][sq];
 }
 
 template <>
 inline uint64_t position::attack_from<pt_pawn>(const square sq,
-                                               const side color) const {
+  const side color) const {
   return pawnattack[color][sq];
 }
 
 inline uint64_t position::attack_from(const uint8_t piece_t,
-                                      const square sq) const {
+  const square sq) const {
   return attack_bb(piece_t, sq, pieces());
 }
 
@@ -311,8 +311,8 @@ inline uint64_t position::bishop_color_key() const {
 inline bool position::capture_or_promotion(const uint32_t move) const {
   assert(is_ok(move));
   return move < static_cast<uint32_t>(castle_move)
-             ? !empty_square(to_square(move))
-             : move >= static_cast<uint32_t>(enpassant);
+    ? !empty_square(to_square(move))
+    : move >= static_cast<uint32_t>(enpassant);
 }
 
 inline square position::castle_rook_square(const square king_square) const {
@@ -329,15 +329,15 @@ inline int position::castling_possible(const uint8_t castle) const {
 
 inline int position::castling_possible(const side color) const {
   return pos_info_->castle_possibilities & (white_short | white_long)
-                                               << 2 * color;
+    << 2 * color;
 }
 
 inline cmhinfo* position::cmh_info() const { return cmh_info_; }
 
 inline bool position::different_color_bishops() const {
   return piece_number_[w_bishop] == 1 && piece_number_[b_bishop] == 1 &&
-         different_color(piece_square(white, pt_bishop),
-                         piece_square(black, pt_bishop));
+    different_color(piece_square(white, pt_bishop),
+      piece_square(black, pt_bishop));
 }
 
 inline uint64_t position::discovered_check_possible() const {
@@ -363,7 +363,7 @@ inline void position::increase_game_ply() { ++game_ply_; }
 inline bool position::is_capture_move(const uint32_t move) const {
   assert(is_ok(move));
   return !empty_square(to_square(move)) && move_type(move) != castle_move ||
-         move_type(move) == enpassant;
+    move_type(move) == enpassant;
 }
 
 inline bool position::is_chess960() const { return chess960_; }
@@ -386,8 +386,8 @@ inline uint64_t position::material_key() const {
 
 inline bool position::material_or_castle_changed() const {
   return pos_info_->material_key != (pos_info_ - 1)->material_key ||
-         pos_info_->castle_possibilities !=
-             (pos_info_ - 1)->castle_possibilities;
+    pos_info_->castle_possibilities !=
+    (pos_info_ - 1)->castle_possibilities;
 }
 
 inline ptype position::moved_piece(const uint32_t move) const {
@@ -411,17 +411,17 @@ inline int position::number(const ptype piece) const {
 inline side position::on_move() const { return on_move_; }
 
 inline bool position::passed_pawn_advance(const uint32_t move,
-                                          const rank r) const {
+  const rank r) const {
   const auto piece = moved_piece(move);
   return piece_type(piece) == pt_pawn &&
-         relative_rank(on_move_, to_square(move)) >= r &&
-         is_passed_pawn(piece_color(piece), to_square(move));
+    relative_rank(on_move_, to_square(move)) >= r &&
+    is_passed_pawn(piece_color(piece), to_square(move));
 }
 
 inline uint64_t position::pawn_key() const { return pos_info_->pawn_key; }
 
 inline const square* position::piece_list(const side color,
-                                          const uint8_t piece) const {
+  const uint8_t piece) const {
   return piece_list_[make_piece(color, piece)];
 }
 
@@ -430,13 +430,13 @@ inline ptype position::piece_on_square(const square sq) const {
 }
 
 inline square position::piece_square(const side color,
-                                     const uint8_t piece) const {
+  const uint8_t piece) const {
   assert(piece_number_[make_piece(color, piece)] == 1);
   return piece_list_[make_piece(color, piece)][0];
 }
 
 inline uint64_t position::pieces_excluded(const side color,
-                                          const uint8_t piece) const {
+  const uint8_t piece) const {
   return color_bb_[color] ^ piece_bb_[make_piece(color, piece)];
 }
 
@@ -444,11 +444,11 @@ inline uint64_t position::pieces() const { return piece_bb_[all_pieces]; }
 
 inline uint64_t position::pieces(const uint8_t piece) const {
   return piece_bb_[make_piece(white, piece)] |
-         piece_bb_[make_piece(black, piece)];
+    piece_bb_[make_piece(black, piece)];
 }
 
 inline uint64_t position::pieces(const uint8_t piece1,
-                                 const uint8_t piece2) const {
+  const uint8_t piece2) const {
   return pieces(piece1) | pieces(piece2);
 }
 
@@ -461,13 +461,13 @@ inline uint64_t position::pieces(const side color, const uint8_t piece) const {
 }
 
 inline uint64_t position::pieces(const side color, const uint8_t piece1,
-                                 const uint8_t piece2) const {
+  const uint8_t piece2) const {
   return pieces(color, piece1) | pieces(color, piece2);
 }
 
 inline uint64_t position::pieces(const side color, const uint8_t piece1,
-                                 const uint8_t piece2,
-                                 const uint8_t piece3) const {
+  const uint8_t piece2,
+  const uint8_t piece3) const {
   return pieces(color, piece1) | pieces(color, piece2) | pieces(color, piece3);
 }
 

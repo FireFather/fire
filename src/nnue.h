@@ -140,7 +140,7 @@ inline uint32_t piece_to_index[2][14] = {
     {0, 0, ps_w_queen, ps_w_rook, ps_w_bishop, ps_w_knight, ps_w_pawn, 0,
      ps_b_queen, ps_b_rook, ps_b_bishop, ps_b_knight, ps_b_pawn, 0},
     {0, 0, ps_b_queen, ps_b_rook, ps_b_bishop, ps_b_knight, ps_b_pawn, 0,
-     ps_w_queen, ps_w_rook, ps_w_bishop, ps_w_knight, ps_w_pawn, 0}};
+     ps_w_queen, ps_w_rook, ps_w_bishop, ps_w_knight, ps_w_pawn, 0} };
 
 int nnue_evaluate_pos(const board* pos);
 int nnue_init(const char* eval_file);

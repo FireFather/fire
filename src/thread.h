@@ -18,7 +18,7 @@ class thread {
   bool exit_, search_active_;
   int thread_index_;
 
- public:
+public:
   thread();
   virtual ~thread();
   virtual void begin_search();

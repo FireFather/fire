@@ -24,14 +24,14 @@ enum move_gen {
 };
 
 namespace movegen {
-template <side me, move_gen mg>
-s_move* moves_for_pawn(const position& pos, s_move* moves, uint64_t target);
+  template <side me, move_gen mg>
+  s_move* moves_for_pawn(const position& pos, s_move* moves, uint64_t target);
 
-template <side me, uint8_t piece, bool only_check_moves>
-s_move* moves_for_piece(const position& pos, s_move* moves, uint64_t target);
+  template <side me, uint8_t piece, bool only_check_moves>
+  s_move* moves_for_piece(const position& pos, s_move* moves, uint64_t target);
 
-template <uint8_t castle, bool only_check_moves, bool chess960>
-s_move* get_castle(const position& pos, s_move* moves);
+  template <uint8_t castle, bool only_check_moves, bool chess960>
+  s_move* get_castle(const position& pos, s_move* moves);
 }  // namespace movegen
 
 inline bool operator<(const s_move& f, const s_move& s) {
@@ -41,7 +41,7 @@ inline bool operator<(const s_move& f, const s_move& s) {
 template <move_gen>
 s_move* generate_moves(const position& pos, s_move* moves);
 s_move* generate_captures_on_square(const position& pos, s_move* moves,
-                                    square sq);
+  square sq);
 s_move* generate_legal_moves(const position& pos, s_move* moves);
 
 struct legal_move_list {
@@ -54,7 +54,7 @@ struct legal_move_list {
   [[nodiscard]] const s_move* end() const { return last_; }
   [[nodiscard]] size_t size() const { return last_ - moves_; }
 
- private:
+private:
   s_move* last_;
   s_move moves_[max_moves]{};
 };
