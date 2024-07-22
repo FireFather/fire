@@ -54,8 +54,8 @@
 
 ## compile it
 - **windows** (visual studio) use included project files: fire.vcxproj or fire.sln
-- **minGW** run one of the included shell scripts: make_bmi2.sh, make_avx2.sh, or make_all.sh 
-- **ubuntu** type 'make profile-build ARCH=x86-64-bmi2', 'make profile-build ARCH=x86-64-avx2', etc.
+- **minGW** run the included shell script: make_avx2.sh
+- **ubuntu** type 'make profile-build ARCH=x86-64-avx2', etc.
 
 ## ultra-fast testing
 http://www.chessdom.com/fire-the-chess-engine-releases-a-new-version/

@@ -20,10 +20,10 @@ namespace movepick {
       if (pi->move_counter_values) {
         pi->mp_counter_move =
           static_cast<uint32_t>(pos.thread_info()->counter_moves.get(
-            pi->moved_piece, to_square(pi->previous_move)));
+          pi->moved_piece, to_square(pi->previous_move)));
         if (!pi->mp_hash_move && (pi - 1)->move_counter_values &&
           (!pi->mp_counter_move || !pos.valid_move(pi->mp_counter_move) ||
-            pos.capture_or_promotion(pi->mp_counter_move))) {
+          pos.capture_or_promotion(pi->mp_counter_move))) {
           pi->mp_counter_move = pos.thread_info()->counter_followup_moves.get(
             (pi - 1)->moved_piece, to_square((pi - 1)->previous_move),
             pi->moved_piece, to_square(pi->previous_move));
@@ -285,7 +285,7 @@ namespace movepick {
         const auto* sort_tot = pi->mp_end_list;
         if (pi->mp_depth < 6 * plies)
           sort_tot = partition(pi->mp_current_move, pi->mp_end_list,
-            6000 - 6000 * (pi->mp_depth / plies));
+          6000 - 6000 * (pi->mp_depth / plies));
         insertion_sort(pi->mp_current_move, sort_tot);
       }
       pi->mp_stage = quietmoves;
@@ -407,7 +407,7 @@ namespace movepick {
       return no_move;
     }
   }
-}  // namespace movepick
+} // namespace movepick
 
 int killer_stats::index_my_pieces(const position& pos, const side color) {
   return movepick::hash_bb(pos.pieces(color));

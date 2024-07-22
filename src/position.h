@@ -33,29 +33,29 @@ enum ptype : uint8_t {
   num_pieces = 16
 };
 
-constexpr uint8_t piece_type(const ptype piece) {
-  return static_cast<uint8_t>(piece & 7);
-}
+constexpr uint8_t piece_type(const ptype piece) { return static_cast<uint8_t>(piece & 7); }
 
 constexpr side piece_color(const ptype piece) {
   assert(piece != no_piece);
   return static_cast<side>(piece >> 3);
 }
 
-constexpr ptype make_piece(const side color, const uint8_t piece) {
-  return static_cast<ptype>((color << 3) + piece);
-}
+constexpr ptype make_piece(const side color, const uint8_t piece) { return static_cast<ptype>((color << 3) + piece); }
 
 constexpr int material_value[num_pieces] = {
     mat_0, mat_0, mat_0, mat_knight, mat_bishop, mat_rook, mat_queen, mat_0,
-    mat_0, mat_0, mat_0, mat_knight, mat_bishop, mat_rook, mat_queen, mat_0 };
+    mat_0, mat_0, mat_0, mat_knight, mat_bishop, mat_rook, mat_queen, mat_0
+};
 
-constexpr int piece_phase[num_pieces] = { 0, 0, 0, 1, 1, 3, 6, 0,
-                                         0, 0, 0, 1, 1, 3, 6, 0 };
+constexpr int piece_phase[num_pieces] = {
+    0, 0, 0, 1, 1, 3, 6, 0,
+    0, 0, 0, 1, 1, 3, 6, 0
+};
 
 constexpr int see_value_simple[num_pieces] = {
     see_0, see_0, see_pawn, see_knight, see_bishop, see_rook, see_queen, see_0,
-    see_0, see_0, see_pawn, see_knight, see_bishop, see_rook, see_queen, see_0 };
+    see_0, see_0, see_pawn, see_knight, see_bishop, see_rook, see_queen, see_0
+};
 
 namespace pst {
   extern int psq[num_pieces][num_squares];
@@ -282,8 +282,10 @@ inline bool position::advanced_pawn(const uint32_t move) const {
 
 template <uint8_t piece_type>
 uint64_t position::attack_from(const square sq) const {
-  return piece_type == pt_bishop ? attack_bishop_bb(sq, pieces())
-    : piece_type == pt_rook ? attack_rook_bb(sq, pieces())
+  return piece_type == pt_bishop
+    ? attack_bishop_bb(sq, pieces())
+    : piece_type == pt_rook
+    ? attack_rook_bb(sq, pieces())
     : piece_type == pt_queen
     ? attack_from<pt_rook>(sq) | attack_from<pt_bishop>(sq)
     : empty_attack[piece_type][sq];
@@ -300,13 +302,9 @@ inline uint64_t position::attack_from(const uint8_t piece_t,
   return attack_bb(piece_t, sq, pieces());
 }
 
-inline uint64_t position::attack_to(const square sq) const {
-  return attack_to(sq, pieces());
-}
+inline uint64_t position::attack_to(const square sq) const { return attack_to(sq, pieces()); }
 
-inline uint64_t position::bishop_color_key() const {
-  return pos_info_->bishop_color_key;
-}
+inline uint64_t position::bishop_color_key() const { return pos_info_->bishop_color_key; }
 
 inline bool position::capture_or_promotion(const uint32_t move) const {
   assert(is_ok(move));
@@ -315,17 +313,11 @@ inline bool position::capture_or_promotion(const uint32_t move) const {
     : move >= static_cast<uint32_t>(enpassant);
 }
 
-inline square position::castle_rook_square(const square king_square) const {
-  return castle_rook_square_[king_square];
-}
+inline square position::castle_rook_square(const square king_square) const { return castle_rook_square_[king_square]; }
 
-inline bool position::castling_impossible(const uint8_t castle) const {
-  return pieces() & castle_path_[castle];
-}
+inline bool position::castling_impossible(const uint8_t castle) const { return pieces() & castle_path_[castle]; }
 
-inline int position::castling_possible(const uint8_t castle) const {
-  return pos_info_->castle_possibilities & castle;
-}
+inline int position::castling_possible(const uint8_t castle) const { return pos_info_->castle_possibilities & castle; }
 
 inline int position::castling_possible(const side color) const {
   return pos_info_->castle_possibilities & (white_short | white_long)
@@ -337,24 +329,16 @@ inline cmhinfo* position::cmh_info() const { return cmh_info_; }
 inline bool position::different_color_bishops() const {
   return piece_number_[w_bishop] == 1 && piece_number_[b_bishop] == 1 &&
     different_color(piece_square(white, pt_bishop),
-      piece_square(black, pt_bishop));
+    piece_square(black, pt_bishop));
 }
 
-inline uint64_t position::discovered_check_possible() const {
-  return pos_info_->x_ray[~on_move_] & pieces(on_move_);
-}
+inline uint64_t position::discovered_check_possible() const { return pos_info_->x_ray[~on_move_] & pieces(on_move_); }
 
-inline bool position::empty_square(const square sq) const {
-  return board_[sq] == no_piece;
-}
+inline bool position::empty_square(const square sq) const { return board_[sq] == no_piece; }
 
-inline square position::enpassant_square() const {
-  return pos_info_->enpassant_square;
-}
+inline square position::enpassant_square() const { return pos_info_->enpassant_square; }
 
-inline int position::fifty_move_counter() const {
-  return pos_info_->draw50_moves;
-}
+inline int position::fifty_move_counter() const { return pos_info_->draw50_moves; }
 
 inline int position::game_ply() const { return game_ply_; }
 
@@ -376,13 +360,9 @@ inline bool position::is_passed_pawn(const side color, const square sq) const {
 
 inline uint64_t position::key() const { return pos_info_->key; }
 
-inline square position::king(const side color) const {
-  return piece_list_[make_piece(color, pt_king)][0];
-}
+inline square position::king(const side color) const { return piece_list_[make_piece(color, pt_king)][0]; }
 
-inline uint64_t position::material_key() const {
-  return pos_info_->material_key;
-}
+inline uint64_t position::material_key() const { return pos_info_->material_key; }
 
 inline bool position::material_or_castle_changed() const {
   return pos_info_->material_key != (pos_info_ - 1)->material_key ||
@@ -390,23 +370,17 @@ inline bool position::material_or_castle_changed() const {
     (pos_info_ - 1)->castle_possibilities;
 }
 
-inline ptype position::moved_piece(const uint32_t move) const {
-  return board_[from_square(move)];
-}
+inline ptype position::moved_piece(const uint32_t move) const { return board_[from_square(move)]; }
 
 inline thread* position::my_thread() const { return this_thread_; }
 
-inline int position::non_pawn_material(const side color) const {
-  return pos_info_->non_pawn_material[color];
-}
+inline int position::non_pawn_material(const side color) const { return pos_info_->non_pawn_material[color]; }
 
 inline int position::number(const side color, const uint8_t piece) const {
   return piece_number_[make_piece(color, piece)];
 }
 
-inline int position::number(const ptype piece) const {
-  return piece_number_[piece];
-}
+inline int position::number(const ptype piece) const { return piece_number_[piece]; }
 
 inline side position::on_move() const { return on_move_; }
 
@@ -425,9 +399,7 @@ inline const square* position::piece_list(const side color,
   return piece_list_[make_piece(color, piece)];
 }
 
-inline ptype position::piece_on_square(const square sq) const {
-  return board_[sq];
-}
+inline ptype position::piece_on_square(const square sq) const { return board_[sq]; }
 
 inline square position::piece_square(const side color,
   const uint8_t piece) const {
@@ -452,9 +424,7 @@ inline uint64_t position::pieces(const uint8_t piece1,
   return pieces(piece1) | pieces(piece2);
 }
 
-inline uint64_t position::pieces(const side color) const {
-  return color_bb_[color];
-}
+inline uint64_t position::pieces(const side color) const { return color_bb_[color]; }
 
 inline uint64_t position::pieces(const side color, const uint8_t piece) const {
   return piece_bb_[make_piece(color, piece)];
@@ -471,9 +441,7 @@ inline uint64_t position::pieces(const side color, const uint8_t piece1,
   return pieces(color, piece1) | pieces(color, piece2) | pieces(color, piece3);
 }
 
-inline uint64_t position::pinned_pieces() const {
-  return pos_info_->x_ray[on_move_] & pieces(on_move_);
-}
+inline uint64_t position::pinned_pieces() const { return pos_info_->x_ray[on_move_] & pieces(on_move_); }
 
 inline int position::psq_score() const { return pos_info_->psq; }
 

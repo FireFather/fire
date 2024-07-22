@@ -1,4 +1,3 @@
-
 #include "main.h"
 #include "nnue.h"
 #include "position.h"
@@ -71,12 +70,14 @@ namespace evaluate {
     const int nnue_score = nnue_evaluate(pos.on_move(), pieces, squares);
     return nnue_score;
   }
+
   int eval(const position& pos) {
     const int nnue_score = eval_nnue(pos);
     return nnue_score;
   }
+
   int eval_after_null_move(const int eval) {
     const auto result = -eval;
     return result;
   }
-}  // namespace evaluate
+} // namespace evaluate

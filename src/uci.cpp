@@ -77,29 +77,17 @@ int uci_loop(const int argc, char* argv[]) {
       acout() << "readyok" << std::endl;
       ret = fflush(stdout);
     }
-    else if (token == "ucinewgame") {
-      new_game();
-    }
-    else if (token == "setoption") {
-      set_option(is);
-    }
-    else if (token == "position") {
-      set_position(pos, is);
-    }
-    else if (token == "go") {
-      go(pos, is);
-    }
+    else if (token == "ucinewgame") { new_game(); }
+    else if (token == "setoption") { set_option(is); }
+    else if (token == "position") { set_position(pos, is); }
+    else if (token == "go") { go(pos, is); }
     else if (token == "stop" ||
       (token == "ponderhit" && search::signals.stop_if_ponder_hit)) {
       search::signals.stop_analyzing = true;
       thread_pool.main()->wake(false);
     }
-    else if (token == "quit") {
-      break;
-    }
-    else if (token == "pos") {
-      acout() << pos;
-    }
+    else if (token == "quit") { break; }
+    else if (token == "pos") { acout() << pos; }
     else if (token == "perft") {
       auto depth = 7;
       auto& fen = startpos;
@@ -120,8 +108,7 @@ int uci_loop(const int argc, char* argv[]) {
       bench(stoi(bench_depth));
       bench_active = false;
     }
-    else {
-    }
+    else {}
   } while (token != "quit" && argc == 1);
   thread_pool.exit();
   return ret;
@@ -281,6 +268,8 @@ std::string trim(const std::string& str, const std::string& whitespace) {
 }
 
 std::string sq(const square sq) {
-  return std::string{ static_cast<char>('a' + file_of(sq)),
-                     static_cast<char>('1' + rank_of(sq)) };
+  return std::string{
+      static_cast<char>('a' + file_of(sq)),
+      static_cast<char>('1' + rank_of(sq))
+  };
 }

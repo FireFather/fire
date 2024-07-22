@@ -23,17 +23,11 @@ struct main_hash_entry {
 
   [[nodiscard]] int eval() const { return eval_; }
 
-  [[nodiscard]] int depth() const {
-    return depth_ * static_cast<int>(plies) + plies - 1;
-  }
+  [[nodiscard]] int depth() const { return depth_ * static_cast<int>(plies) + plies - 1; }
 
-  [[nodiscard]] hashflags bounds() const {
-    return static_cast<hashflags>(flags_ & exact_value);
-  }
+  [[nodiscard]] hashflags bounds() const { return static_cast<hashflags>(flags_ & exact_value); }
 
-  [[nodiscard]] hashflags threat() const {
-    return static_cast<hashflags>(flags_ & threat_mask);
-  }
+  [[nodiscard]] hashflags threat() const { return static_cast<hashflags>(flags_ & threat_mask); }
 
   void save(const uint64_t k, const int val, const uint8_t flags, const int d,
     const uint32_t z, const int eval, const uint8_t gen) {

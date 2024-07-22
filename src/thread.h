@@ -74,9 +74,7 @@ struct threadpool : std::vector<thread*> {
   int total_analyze_time{};
   thread* threads[max_threads]{};
 
-  [[nodiscard]] mainthread* main() const {
-    return static_cast<mainthread*>(threads[0]);
-  }
+  [[nodiscard]] mainthread* main() const { return static_cast<mainthread*>(threads[0]); }
   void begin_search(position&, const search_param&);
   void change_thread_count(int num_threads);
   [[nodiscard]] uint64_t visited_nodes() const;

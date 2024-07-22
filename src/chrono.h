@@ -19,12 +19,10 @@ struct search_param {
     infinite(0),
     ponder(0),
     nodes(time[white] = time[black] = inc[white] = inc[black] =
-      moves_to_go = depth = move_time = mate = infinite = ponder =
-      0) {}
+    moves_to_go = depth = move_time = mate = infinite = ponder =
+    0) {}
 
-  [[nodiscard]] bool use_time_calculating() const {
-    return !(mate | move_time | depth | nodes | infinite);
-  }
+  [[nodiscard]] bool use_time_calculating() const { return !(mate | move_time | depth | nodes | infinite); }
 
   int time[num_sides]{}, inc[num_sides]{}, moves_to_go, depth, move_time, mate,
     infinite, ponder;

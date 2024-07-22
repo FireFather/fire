@@ -190,7 +190,7 @@ bool position::give_check(const uint32_t move) const {
 
     return (attack_rook_bb(square_k, b) & pieces(on_move_, pt_queen, pt_rook)) |
       (attack_bishop_bb(square_k, b) &
-        pieces(on_move_, pt_queen, pt_bishop));
+      pieces(on_move_, pt_queen, pt_bishop));
   }
 }
 
@@ -284,7 +284,7 @@ bool position::legal_move(const uint32_t move) const {
     return !(attack_rook_bb(square_k, occupied) &
       pieces(~me, pt_queen, pt_rook)) &&
       !(attack_bishop_bb(square_k, occupied) &
-        pieces(~me, pt_queen, pt_bishop));
+      pieces(~me, pt_queen, pt_bishop));
   }
 
   if (piece_type(piece_on_square(from)) == pt_king)
@@ -320,7 +320,7 @@ void position::play_move(const uint32_t move) {
   const bool gives_check =
     move < static_cast<uint32_t>(castle_move) && !discovered_check_possible()
     ? pos_info_->check_squares[piece_type(
-      piece_on_square(from_square(move)))] &
+    piece_on_square(from_square(move)))] &
     to_square(move)
     : give_check(move);
 
@@ -359,7 +359,8 @@ void position::play_move(const uint32_t move, const bool gives_check) {
     key ^= zobrist::psq[my_rook][from_r] ^ zobrist::psq[my_rook][to_r];
   }
   else
-    capture_piece = move_type(move) == enpassant ? make_piece(you, pt_pawn)
+    capture_piece = move_type(move) == enpassant
+    ? make_piece(you, pt_pawn)
     : piece_on_square(to);
 
   if (capture_piece) {
@@ -718,17 +719,17 @@ position& position::set(const std::string& fen_str, const bool is_chess960,
 
     if (token == 'K')
       for (rsq = relative_square(color, h1); piece_on_square(rsq) != rook;
-        --rsq) {
+      --rsq) {
     }
 
     else if (token == 'Q')
       for (rsq = relative_square(color, a1); piece_on_square(rsq) != rook;
-        ++rsq) {
+      ++rsq) {
     }
 
     else if (token >= 'A' && token <= 'H')
       rsq = make_square(static_cast<file>(token - 'A'),
-        relative_rank(color, rank_1));
+      relative_rank(color, rank_1));
 
     else
       continue;
@@ -834,16 +835,13 @@ bool position::valid_move(const uint32_t move) const {
   const auto piece = piece_type(moved_piece(move));
 
   if (move >= static_cast<uint32_t>(castle_move)) {
-    if (move >= static_cast<uint32_t>(promotion_p)) {
-      if (piece != pt_pawn) return false;
-    }
+    if (move >= static_cast<uint32_t>(promotion_p)) { if (piece != pt_pawn) return false; }
     else if (move < static_cast<uint32_t>(enpassant))
       return legal_move_list_contains_castle(*this, move);
     else
       return legal_moves_list_contains_move(*this, move);
   }
-  else {
-  }
+  else {}
 
   if (pieces(me) & to) return false;
 
@@ -855,8 +853,8 @@ bool position::valid_move(const uint32_t move) const {
     if (!(attack_from<pt_pawn>(from, me) & pieces(~me) & to) &&
       !(from + pawn_ahead(me) == to && empty_square(to)) &&
       !(from + 2 * pawn_ahead(me) == to &&
-        rank_of(from) == relative_rank(me, rank_2) && empty_square(to) &&
-        empty_square(to - pawn_ahead(me))))
+      rank_of(from) == relative_rank(me, rank_2) && empty_square(to) &&
+      empty_square(to - pawn_ahead(me))))
       return false;
   }
   else if (!(attack_from(piece, from) & to))

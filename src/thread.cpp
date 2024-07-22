@@ -46,11 +46,9 @@ void threadpool::begin_search(position& pos, const search_param& time) {
   main()->wake(true);
 }
 
-void threadpool::delete_counter_move_history() {
-  cmh_data->counter_move_stats.clear();
-}
+void threadpool::delete_counter_move_history() { cmh_data->counter_move_stats.clear(); }
 
-void threadpool::change_thread_count(int const num_threads) {
+void threadpool::change_thread_count(const int num_threads) {
   assert(uci_threads > 0);
 
   while (thread_count < num_threads) threads[thread_count++] = new thread;
@@ -70,7 +68,7 @@ void thread::idle_loop() {
   auto* p = calloc(sizeof(threadinfo), true);
   if (p != nullptr) {
     std::memset(p, 0, sizeof(threadinfo));
-    ti = new (p) threadinfo;
+    ti = new(p) threadinfo;
   }
 
   root_position = &ti->root_position;

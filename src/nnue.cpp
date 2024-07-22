@@ -68,9 +68,7 @@ void unmap_file(const void* data, map_t map) {
 #endif
 }
 
-inline int orient(const int c, const int s) {
-  return s ^ (c == white ? 0x00 : 0x3f);
-}
+inline int orient(const int c, const int s) { return s ^ (c == white ? 0x00 : 0x3f); }
 
 inline unsigned make_index(const int c, const int s, const int pc,
   const int ksq) {
@@ -182,9 +180,7 @@ inline void affine_txfm(int8_t* input, void* output, unsigned in_dims,
       second = ((__m256i*)weights)[idx];
       factor |= input[idx] << 8;
     }
-    else {
-      second = k_zero;
-    }
+    else { second = k_zero; }
     __m256i mul = _mm256_set1_epi16(factor), prod, signs;
     prod = _mm256_maddubs_epi16(mul, _mm256_unpacklo_epi8(first, second));
     signs = _mm256_cmpgt_epi16(k_zero, prod);
@@ -241,7 +237,7 @@ inline bool update_accumulator(const board* pos) {
   if ((!pos->nnue[1] ||
     !(prev_acc = &pos->nnue[1]->accumulator)->computed_accumulation) &&
     (!pos->nnue[2] ||
-      !(prev_acc = &pos->nnue[2]->accumulator)->computed_accumulation))
+    !(prev_acc = &pos->nnue[2]->accumulator)->computed_accumulation))
     return false;
   index_list removed_indices[2], added_indices[2];
   removed_indices[0].size = removed_indices[1].size = 0;

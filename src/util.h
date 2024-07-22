@@ -38,11 +38,11 @@ class random {
 public:
   uint64_t s;
   explicit random(const uint64_t seed) : s(seed) { assert(seed); }
+
   template <typename T>
-  static T rand() {
-    return T(rand64());
-  }
+  static T rand() { return T(rand64()); }
 };
+
 void engine_info();
 void build_info();
 std::ostream& operator<<(std::ostream& os, const position& pos);

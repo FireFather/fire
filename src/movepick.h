@@ -6,11 +6,14 @@
 #include "position.h"
 
 namespace movepick {
-  constexpr int piece_order[num_pieces] = { 0, 6, 1, 2, 3, 4, 5, 0,
-                                           0, 6, 1, 2, 3, 4, 5, 0 };
+  constexpr int piece_order[num_pieces] = {
+      0, 6, 1, 2, 3, 4, 5, 0,
+      0, 6, 1, 2, 3, 4, 5, 0
+  };
 
   constexpr int capture_sort_values[num_pieces] = {
-      0, 0, 198, 817, 836, 1270, 2521, 0, 0, 0, 198, 817, 836, 1270, 2521, 0 };
+      0, 0, 198, 817, 836, 1270, 2521, 0, 0, 0, 198, 817, 836, 1270, 2521, 0
+  };
 
   void init_search(const position&, uint32_t, int, bool);
   void init_q_search(const position&, uint32_t, int, square);
@@ -20,7 +23,7 @@ namespace movepick {
 
   template <move_gen>
   void score(const position& pos);
-}  // namespace movepick
+} // namespace movepick
 
 template <typename tn>
 struct piece_square_table {
@@ -83,9 +86,7 @@ private:
 };
 
 struct counter_move_full_stats {
-  uint32_t get(const side color, const uint32_t move) {
-    return table_[color][move & 0xfff];
-  }
+  uint32_t get(const side color, const uint32_t move) { return table_[color][move & 0xfff]; }
 
   void clear() { std::memset(table_, 0, sizeof table_); }
 
@@ -115,9 +116,7 @@ private:
 };
 
 struct max_gain_stats {
-  [[nodiscard]] int get(const ptype piece, const uint32_t move) const {
-    return table_[piece][move & 0x0fff];
-  }
+  [[nodiscard]] int get(const ptype piece, const uint32_t move) const { return table_[piece][move & 0x0fff]; }
 
   void clear() { std::memset(table_, 0, sizeof table_); }
 
@@ -134,15 +133,11 @@ struct killer_stats {
   static int index_my_pieces(const position& pos, side color);
   static int index_your_pieces(const position& pos, side color, square to);
 
-  [[nodiscard]] uint32_t get(const side color, const int index) const {
-    return table_[color][index];
-  }
+  [[nodiscard]] uint32_t get(const side color, const int index) const { return table_[color][index]; }
 
   void clear() { std::memset(table_, 0, sizeof table_); }
 
-  void update(const side color, const int index, const uint32_t move) {
-    table_[color][index] = move;
-  }
+  void update(const side color, const int index, const uint32_t move) { table_[color][index] = move; }
 
 private:
   uint32_t table_[num_sides][65536] = {};
@@ -153,6 +148,4 @@ using move_value_stats = piece_square_stats<8192, 8192>;
 using counter_move_values = piece_square_stats<3 * 8192, 3 * 8192>;
 using counter_move_history = piece_square_table<counter_move_values>;
 
-inline stage& operator++(stage& d) {
-  return d = static_cast<stage>(static_cast<int>(d) + 1);
-}
+inline stage& operator++(stage& d) { return d = static_cast<stage>(static_cast<int>(d) + 1); }

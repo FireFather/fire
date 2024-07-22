@@ -29,9 +29,7 @@ void hash::init(const size_t mb_size) {
   bucket_mask_ = (buckets_ - 1) * sizeof(bucket);
 }
 
-void hash::clear() const {
-  std::memset(hash_mem_, 0, buckets_ * sizeof(bucket));
-}
+void hash::clear() const { std::memset(hash_mem_, 0, buckets_ * sizeof(bucket)); }
 
 main_hash_entry* hash::probe(const uint64_t key) const {
   auto* const hash_entry = entry(key);
@@ -41,7 +39,7 @@ main_hash_entry* hash::probe(const uint64_t key) const {
     if (hash_entry[i].key_ == key16) {
       if ((hash_entry[i].flags_ & age_mask) != age_)
         hash_entry[i].flags_ =
-        static_cast<uint8_t>(age_ + (hash_entry[i].flags_ & flags_mask));
+          static_cast<uint8_t>(age_ + (hash_entry[i].flags_ & flags_mask));
 
       return &hash_entry[i];
     }

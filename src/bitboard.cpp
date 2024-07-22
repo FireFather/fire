@@ -13,7 +13,7 @@ void bitboard::init() {
   for (auto r = rank_1; r < rank_8; ++r)
     ranks_in_front_bb[white][r] =
     ~(ranks_in_front_bb[black][r + 1] =
-      ranks_in_front_bb[black][r] | rank_bb[r]);
+    ranks_in_front_bb[black][r] | rank_bb[r]);
 
   for (auto color = white; color <= black; ++color)
     for (auto sq = a1; sq <= h8; ++sq) {
@@ -28,7 +28,7 @@ void bitboard::init() {
   for (auto square1 = a1; square1 <= h8; ++square1)
     for (auto square2 = a1; square2 <= h8; ++square2)
       square_distance[square1][square2] = static_cast<int8_t>(std::max(
-        file_distance(square1, square2), rank_distance(square1, square2)));
+      file_distance(square1, square2), rank_distance(square1, square2)));
 
   for (auto sq = a1; sq <= h8; ++sq) {
     pawnattack[white][sq] = pawn_attack<white>(square_bb[sq]);
