@@ -1,5 +1,4 @@
 #include "movegen.h"
-
 #include "macro.h"
 #include "main.h"
 #include "position.h"
@@ -261,7 +260,7 @@ namespace movegen {
 
     return moves;
   }
-} // namespace movegen
+}
 
 template <move_gen mg>
 s_move* generate_moves(const position& pos, s_move* moves) {

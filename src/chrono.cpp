@@ -1,7 +1,5 @@
 #include "chrono.h"
-
 #include <cmath>
-
 #include "main.h"
 #include "uci.h"
 

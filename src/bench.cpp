@@ -1,7 +1,5 @@
 #include "bench.h"
-
 #include <sstream>
-
 #include "thread.h"
 #include "uci.h"
 #include "util.h"

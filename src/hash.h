@@ -18,15 +18,10 @@ inline constexpr uint8_t use_mask = 0xfb;
 
 struct main_hash_entry {
   [[nodiscard]] uint32_t move() const { return move_; }
-
   [[nodiscard]] int value() const { return value_; }
-
   [[nodiscard]] int eval() const { return eval_; }
-
   [[nodiscard]] int depth() const { return depth_ * static_cast<int>(plies) + plies - 1; }
-
   [[nodiscard]] hashflags bounds() const { return static_cast<hashflags>(flags_ & exact_value); }
-
   [[nodiscard]] hashflags threat() const { return static_cast<hashflags>(flags_ & threat_mask); }
 
   void save(const uint64_t k, const int val, const uint8_t flags, const int d,

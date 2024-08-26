@@ -1,9 +1,7 @@
 #include "uci.h"
-
 #include <iostream>
 #include <sstream>
 #include <string>
-
 #include "bitboard.h"
 #include "evaluate.h"
 #include "hash.h"
@@ -37,7 +35,6 @@ int uci_loop(const int argc, char* argv[]) {
   position pos{};
   std::string token, cmd;
   int ret = 0;
-
   pos.set(startpos, uci_chess960, thread_pool.main());
   new_game();
 
@@ -237,7 +234,6 @@ void go(position& pos, std::istringstream& is) {
 void set_position(position& pos, std::istringstream& is) {
   uint32_t move;
   std::string token, fen;
-
   is >> token;
 
   if (token == "startpos") {
@@ -260,10 +256,8 @@ void set_position(position& pos, std::istringstream& is) {
 std::string trim(const std::string& str, const std::string& whitespace) {
   const auto str_begin = str.find_first_not_of(whitespace);
   if (str_begin == std::string::npos) return "";
-
   const auto str_end = str.find_last_not_of(whitespace);
   const auto str_range = str_end - str_begin + 1;
-
   return str.substr(str_begin, str_range);
 }
 

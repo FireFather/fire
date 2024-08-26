@@ -11,16 +11,16 @@ inline time_point now() {
 }
 
 struct search_param {
-  search_param()
-    : moves_to_go(0),
+  search_param() :
+    moves_to_go(0),
     depth(0),
     move_time(0),
     mate(0),
     infinite(0),
     ponder(0),
     nodes(time[white] = time[black] = inc[white] = inc[black] =
-    moves_to_go = depth = move_time = mate = infinite = ponder =
-    0) {}
+    moves_to_go = depth = move_time = mate = infinite = ponder = 0)
+    {}
 
   [[nodiscard]] bool use_time_calculating() const { return !(mate | move_time | depth | nodes | infinite); }
 

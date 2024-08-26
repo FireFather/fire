@@ -3,9 +3,9 @@
 #else
 #include <unistd.h>
 #endif
+
 #include <iomanip>
 #include <sstream>
-
 #include "macro.h"
 #include "main.h"
 #include "movegen.h"
@@ -14,7 +14,6 @@
 
 std::string move_to_string(const uint32_t move, const position& pos) {
   char s_move[6]{};
-
   const auto from = from_square(move);
   auto to = to_square(move);
 

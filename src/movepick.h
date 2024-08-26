@@ -7,8 +7,8 @@
 
 namespace movepick {
   constexpr int piece_order[num_pieces] = {
-      0, 6, 1, 2, 3, 4, 5, 0,
-      0, 6, 1, 2, 3, 4, 5, 0
+    0, 6, 1, 2, 3, 4, 5, 0,
+    0, 6, 1, 2, 3, 4, 5, 0
   };
 
   constexpr int capture_sort_values[num_pieces] = {
@@ -23,18 +23,15 @@ namespace movepick {
 
   template <move_gen>
   void score(const position& pos);
-} // namespace movepick
+}   
 
 template <typename tn>
 struct piece_square_table {
   const tn* operator[](ptype piece) const { return table_[piece]; }
 
   tn* operator[](ptype piece) { return table_[piece]; }
-
   void clear() { std::memset(table_, 0, sizeof(table_)); }
-
   tn get(ptype piece, square to) { return table_[piece][to]; }
-
   void update(ptype piece, square to, tn val) { table_[piece][to] = val; }
 
 protected:
@@ -76,9 +73,7 @@ struct piece_square_stats : piece_square_table<int16_t> {
 template <typename T>
 struct color_square_stats {
   const T* operator[](side color) const { return table_[color]; }
-
   T* operator[](side color) { return table_[color]; }
-
   void clear() { std::memset(table_, 0, sizeof(table_)); }
 
 private:
@@ -87,7 +82,6 @@ private:
 
 struct counter_move_full_stats {
   uint32_t get(const side color, const uint32_t move) { return table_[color][move & 0xfff]; }
-
   void clear() { std::memset(table_, 0, sizeof table_); }
 
   void update(const side color, const uint32_t move1, const uint32_t move) {
@@ -117,7 +111,6 @@ private:
 
 struct max_gain_stats {
   [[nodiscard]] int get(const ptype piece, const uint32_t move) const { return table_[piece][move & 0x0fff]; }
-
   void clear() { std::memset(table_, 0, sizeof table_); }
 
   void update(const ptype piece, const uint32_t move, const int gain) {
@@ -134,9 +127,7 @@ struct killer_stats {
   static int index_your_pieces(const position& pos, side color, square to);
 
   [[nodiscard]] uint32_t get(const side color, const int index) const { return table_[color][index]; }
-
   void clear() { std::memset(table_, 0, sizeof table_); }
-
   void update(const side color, const int index, const uint32_t move) { table_[color][index] = move; }
 
 private:

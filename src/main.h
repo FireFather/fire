@@ -179,9 +179,7 @@ enum square : int8_t {
 };
 
 enum file { file_a, file_b, file_c, file_d, file_e, file_f, file_g, file_h };
-
 enum rank { rank_1, rank_2, rank_3, rank_4, rank_5, rank_6, rank_7, rank_8 };
-
 enum score : int;
 
 enum stage {
@@ -236,9 +234,7 @@ inline int eg_value(const int score) {
 }
 
 inline int operator/(const score score, const int i) { return remake_score(mg_value(score) / i, eg_value(score) / i); }
-
 constexpr side operator~(const side color) { return static_cast<side>(color ^ 1); }
-
 constexpr square operator~(const square sq) { return static_cast<square>(sq ^ 56); }
 
 inline int mul_div(const int score, const int mul, const int div) {
@@ -246,19 +242,12 @@ inline int mul_div(const int score, const int mul, const int div) {
 }
 
 constexpr int gives_mate(const int ply) { return mate_score - ply; }
-
 constexpr int gets_mated(const int ply) { return -mate_score + ply; }
-
 constexpr square make_square(const file f, const rank r) { return static_cast<square>((r << 3) + f); }
-
 constexpr file file_of(const square sq) { return static_cast<file>(sq & 7); }
-
 inline rank rank_of(const square sq) { return static_cast<rank>(sq >> 3); }
-
 constexpr square relative_square(const side color, const square sq) { return static_cast<square>(sq ^ color * 56); }
-
 constexpr rank relative_rank(const side color, const rank r) { return static_cast<rank>(r ^ color * 7); }
-
 inline rank relative_rank(const side color, const square sq) { return relative_rank(color, rank_of(sq)); }
 
 constexpr bool different_color(const square v1, const square v2) {
@@ -267,11 +256,8 @@ constexpr bool different_color(const square v1, const square v2) {
 }
 
 constexpr square pawn_ahead(const side color) { return color == white ? north : south; }
-
 constexpr square from_square(const uint32_t move) { return static_cast<square>(move >> 6 & 0x3F); }
-
 constexpr square to_square(const uint32_t move) { return static_cast<square>(move & 0x3F); }
-
 constexpr int move_type(const uint32_t move) { return static_cast<int>(move & 15 << 12); }
 
 constexpr uint8_t promotion_piece(const uint32_t move) {
@@ -297,7 +283,6 @@ template <int capacity>
 struct movelist {
   int move_number;
   uint32_t moves[capacity] = {};
-
   movelist() : move_number(0) {}
 
   void add(uint32_t move) { if (move_number < capacity) moves[move_number++] = move; }
@@ -307,9 +292,7 @@ struct movelist {
   [[nodiscard]] int size() const { return move_number; }
 
   void resize(const int new_size) { move_number = new_size; }
-
   void clear() { move_number = 0; }
-
   [[nodiscard]] bool empty() const { return move_number == 0; }
 
   int find(uint32_t move) {

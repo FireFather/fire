@@ -30,7 +30,7 @@ namespace movegen {
 
   template <uint8_t castle, bool only_check_moves, bool chess960>
   s_move* get_castle(const position& pos, s_move* moves);
-} // namespace movegen
+}   
 
 inline bool operator<(const s_move& f, const s_move& s) { return f.value < s.value; }
 
@@ -44,7 +44,6 @@ struct legal_move_list {
   explicit legal_move_list(const position& pos) { last_ = generate_legal_moves(pos, moves_); }
 
   [[nodiscard]] const s_move* begin() const { return moves_; }
-
   [[nodiscard]] const s_move* end() const { return last_; }
   [[nodiscard]] size_t size() const { return last_ - moves_; }
 

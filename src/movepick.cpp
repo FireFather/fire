@@ -1,5 +1,4 @@
 #include "movepick.h"
-
 #include "main.h"
 #include "thread.h"
 
@@ -407,7 +406,7 @@ namespace movepick {
       return no_move;
     }
   }
-} // namespace movepick
+}
 
 int killer_stats::index_my_pieces(const position& pos, const side color) {
   return movepick::hash_bb(pos.pieces(color));

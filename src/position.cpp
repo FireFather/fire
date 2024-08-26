@@ -1,9 +1,7 @@
 #include "position.h"
-
 #include <cstring>
 #include <iomanip>
 #include <sstream>
-
 #include "bitboard.h"
 #include "hash.h"
 #include "macro.h"

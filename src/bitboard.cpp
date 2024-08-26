@@ -1,5 +1,4 @@
 #include "bitboard.h"
-
 #include "macro.h"
 #include "main.h"
 

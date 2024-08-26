@@ -1,11 +1,10 @@
 #include "nnue.h"
-
 #include <cassert>
 #include <cstdio>
 #include <cstring>
-
 #include "main.h"
 #include "util.h"
+
 #ifdef NNUE_EMBEDDED
 #include "incbin.h"
 INCBIN(Network, NNUE_EVAL_FILE);

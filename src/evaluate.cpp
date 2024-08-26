@@ -80,4 +80,4 @@ namespace evaluate {
     const auto result = -eval;
     return result;
   }
-} // namespace evaluate
+}

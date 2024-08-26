@@ -1,7 +1,5 @@
 #include "search.h"
-
 #include <sstream>
-
 #include "chrono.h"
 #include "evaluate.h"
 #include "hash.h"
@@ -30,9 +28,7 @@ namespace search {
     constexpr auto no_early_pruning_position_value_margin = 102;
 
     constexpr auto only_quiet_check_moves_max_depth = 8;
-
     constexpr auto late_move_count_max_depth = 16;
-
     constexpr auto quiet_moves_max_gain_base = -44;
     constexpr auto sort_cmp_sort_value = -200;
 
@@ -1159,7 +1155,7 @@ namespace search {
       ? val + ply
       : val;
   }
-} // namespace search
+}
 
 void mainthread::begin_search() {
   search::running = true;
