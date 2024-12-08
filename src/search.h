@@ -1,5 +1,6 @@
 #pragma once
 #include <atomic>
+
 #include "chrono.h"
 #include "position.h"
 
@@ -22,8 +23,14 @@ namespace search {
   enum nodetype { PV, nonPV };
 
   inline int counter_move_bonus[max_ply];
-  inline int counter_move_value(const int d) { return counter_move_bonus[static_cast<uint32_t>(d) / plies]; }
-  inline int history_bonus(const int d) { return counter_move_bonus[static_cast<uint32_t>(d) / plies]; }
+
+  inline int counter_move_value(const int d) {
+    return counter_move_bonus[static_cast<uint32_t>(d) / plies];
+  }
+
+  inline int history_bonus(const int d) {
+    return counter_move_bonus[static_cast<uint32_t>(d) / plies];
+  }
 
   struct easy_move_manager {
     void clear() {
@@ -72,11 +79,12 @@ namespace search {
   int value_to_hash(int val, int ply);
   int value_from_hash(int val, int ply);
   void copy_pv(uint32_t* pv, uint32_t move, const uint32_t* pv_lower);
-
-  void update_stats(const position& pos, bool state_check, uint32_t move, int depth, const uint32_t* quiet_moves, int quiet_number);
-  void update_stats_quiet(const position& pos, bool state_check, int depth, const uint32_t* quiet_moves, int quiet_number);
-  void update_stats_minus(const position& pos, bool state_check, uint32_t move, int depth);
-
+  void update_stats(const position& pos, bool state_check, uint32_t move,
+    int depth, const uint32_t* quiet_moves, int quiet_number);
+  void update_stats_quiet(const position& pos, bool state_check, int depth,
+    const uint32_t* quiet_moves, int quiet_number);
+  void update_stats_minus(const position& pos, bool state_check, uint32_t move,
+    int depth);
   void send_time_info();
 
   inline uint8_t lm_reductions[2][2][64 * static_cast<int>(plies)][64];
@@ -93,13 +101,15 @@ namespace search {
   inline constexpr auto futility_margin_ext_base = 204;
 
   constexpr int futility_values[7] = {
-      static_cast<int>(futility_value_0), static_cast<int>(futility_value_1),
-      static_cast<int>(futility_value_2), static_cast<int>(futility_value_3),
-      static_cast<int>(futility_value_4), static_cast<int>(futility_value_5),
-      static_cast<int>(futility_value_6)
+    static_cast<int>(futility_value_0), static_cast<int>(futility_value_1),
+    static_cast<int>(futility_value_2), static_cast<int>(futility_value_3),
+    static_cast<int>(futility_value_4), static_cast<int>(futility_value_5),
+    static_cast<int>(futility_value_6)
   };
 
-  inline int futility_margin(const int d) { return futility_values[static_cast<uint32_t>(d) / plies]; }
+  inline int futility_margin(const int d) {
+    return futility_values[static_cast<uint32_t>(d) / plies];
+  }
 
   inline int futility_margin_ext(const int d) {
     return futility_margin_ext_base +
@@ -108,17 +118,13 @@ namespace search {
   }
 
   inline constexpr int late_move_number_values[2][32] = {
-  {
-    0, 0, 3, 3, 4, 5, 6, 7,
-    8, 10, 12, 15, 17, 20, 23, 26,
-    30, 33, 37, 40, 44, 49, 53, 58,
-    63, 68, 73, 78, 83, 88, 94, 100
+    {
+      0, 0, 3, 3, 4, 5, 6, 7, 8, 10, 12, 15, 17, 20, 23, 26,
+      30, 33, 37, 40, 44, 49, 53, 58, 63, 68, 73, 78, 83, 88, 94, 100
     },
-  {
-    0, 0, 5, 5, 6, 7, 9, 11,
-    14, 17, 20, 23, 27, 31, 35, 40,
-    45, 50, 55, 60, 65, 71, 77, 84,
-    91, 98, 105, 112, 119, 127, 135, 143
+    {
+      0, 0, 5, 5, 6, 7, 9, 11, 14, 17, 20, 23, 27, 31, 35, 40,
+      45, 50, 55, 60, 65, 71, 77, 84, 91, 98, 105, 112, 119, 127, 135, 143
     }
   };
 
@@ -133,7 +139,7 @@ namespace search {
     return lm_reductions[pv][vg][MIN(d, 64 * static_cast<int>(plies) - 1)]
       [MIN(n, 63)];
   }
-}   
+} // namespace search
 
 template <int max_plus, int max_min>
 struct piece_square_stats;
@@ -148,8 +154,14 @@ struct rootmove {
     pv.moves[0] = move;
   }
 
-  bool operator<(const rootmove& root_move) const { return root_move.score < score; }
-  bool operator==(const uint32_t& move) const { return pv[0] == move; }
+  bool operator<(const rootmove& root_move) const {
+    return root_move.score < score;
+  }
+
+  bool operator==(const uint32_t& move) const {
+    return pv[0] == move;
+  }
+
   bool ponder_move_from_hash(position& pos);
   void pv_from_hash(position& pos);
 
@@ -162,12 +174,25 @@ struct rootmove {
 
 struct rootmoves {
   rootmoves() = default;
+
   int move_number = 0, dummy = 0;
   rootmove moves[max_moves];
-  void add(const rootmove& root_move) { moves[move_number++] = root_move; }
-  rootmove& operator[](const int index) { return moves[index]; }
-  const rootmove& operator[](const int index) const { return moves[index]; }
-  void clear() { move_number = 0; }
+
+  void add(const rootmove& root_move) {
+    moves[move_number++] = root_move;
+  }
+
+  rootmove& operator[](const int index) {
+    return moves[index];
+  }
+
+  const rootmove& operator[](const int index) const {
+    return moves[index];
+  }
+
+  void clear() {
+    move_number = 0;
+  }
 
   int find(const uint32_t move) {
     for (auto i = 0; i < move_number; i++)

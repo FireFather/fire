@@ -4,6 +4,7 @@
 #include <mutex>
 #include <thread>
 #include <vector>
+
 #include "main.h"
 #include "movepick.h"
 #include "mutex.h"
@@ -16,7 +17,6 @@ class thread {
   ConditionVariable sleep_condition_;
   bool exit_, search_active_;
   int thread_index_;
-
 public:
   thread();
   virtual ~thread();
@@ -41,25 +41,23 @@ struct cmhinfo {
 
 struct threadinfo {
   position root_position{};
-  counter_follow_up_move_stats counter_followup_moves;
-  counter_move_stats counter_moves{};
-  max_gain_stats max_gain_table;
-  move_value_stats capture_history{};
-  move_value_stats evasion_history{};
-  move_value_stats history{};
   position_info position_inf[1024]{};
   s_move move_list[8192]{};
+  move_value_stats history{};
+  move_value_stats evasion_history{};
+  max_gain_stats max_gain_table;
+  counter_move_stats counter_moves{};
+  counter_follow_up_move_stats counter_followup_moves;
+  move_value_stats capture_history{};
 };
 
 struct mainthread final : thread {
   void begin_search() override;
-
   bool quick_move_allow = false;
   bool quick_move_played = false;
   bool quick_move_evaluation_busy = false;
   bool quick_move_evaluation_stopped = false;
   bool failed_low = false;
-
   int best_move_changed = 0;
   int previous_root_score = score_0;
   int interrupt_counter = 0;
@@ -67,28 +65,34 @@ struct mainthread final : thread {
 };
 
 struct threadpool : std::vector<thread*> {
-  [[nodiscard]] mainthread* main() const { return static_cast<mainthread*>(threads[0]); }
-  [[nodiscard]] uint64_t visited_nodes() const;
-  bool analysis_mode{};
-  bool dummy_null_move_threat{}, dummy_prob_cut{};
-  int active_thread_count{};
-  int fifty_move_distance{};
-  int multi_pv{}, multi_pv_max{};
-  int piece_contempt{};
-  int root_contempt_value = score_0;
+  void init();
+  void exit();
+
   int thread_count{};
-  int total_analyze_time{};
-  position_info* root_position_info{};
-  position* root_position{};
-  rootmoves root_moves;
-  side contempt_color = num_sides;
-  static void delete_counter_move_history();
-  thread* threads[max_threads]{};
   time_point start{};
+  int total_analyze_time{};
+  thread* threads[max_threads]{};
+
+  [[nodiscard]] mainthread* main() const {
+    return static_cast<mainthread*>(threads[0]);
+  }
+
   void begin_search(position&, const search_param&);
   void change_thread_count(int num_threads);
-  void exit();
-  void init();
+  [[nodiscard]] uint64_t visited_nodes() const;
+  static void delete_counter_move_history();
+
+  int active_thread_count{};
+  side contempt_color = num_sides;
+  int piece_contempt{};
+  int root_contempt_value = score_0;
+  position* root_position{};
+  rootmoves root_moves;
+  position_info* root_position_info{};
+  bool analysis_mode{};
+  int fifty_move_distance{};
+  int multi_pv{}, multi_pv_max{};
+  bool dummy_null_move_threat{}, dummy_prob_cut{};
 };
 
 extern threadpool thread_pool;

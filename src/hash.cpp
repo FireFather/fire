@@ -1,6 +1,8 @@
 #include "hash.h"
+
 #include <cstring>
 #include <iostream>
+
 #include "main.h"
 
 hash main_hash;
@@ -27,7 +29,9 @@ void hash::init(const size_t mb_size) {
   bucket_mask_ = (buckets_ - 1) * sizeof(bucket);
 }
 
-void hash::clear() const { std::memset(hash_mem_, 0, buckets_ * sizeof(bucket)); }
+void hash::clear() const {
+  std::memset(hash_mem_, 0, buckets_ * sizeof(bucket));
+}
 
 main_hash_entry* hash::probe(const uint64_t key) const {
   auto* const hash_entry = entry(key);

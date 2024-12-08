@@ -6,8 +6,14 @@ class position;
 struct s_move {
   uint32_t move;
   int value;
-  operator uint32_t() const { return move; }
-  void operator=(const uint32_t z) { move = z; }
+
+  operator uint32_t() const {
+    return move;
+  }
+
+  void operator=(const uint32_t z) {
+    move = z;
+  }
 };
 
 enum move_gen {
@@ -30,9 +36,11 @@ namespace movegen {
 
   template <uint8_t castle, bool only_check_moves, bool chess960>
   s_move* get_castle(const position& pos, s_move* moves);
-}   
+} // namespace movegen
 
-inline bool operator<(const s_move& f, const s_move& s) { return f.value < s.value; }
+inline bool operator<(const s_move& f, const s_move& s) {
+  return f.value < s.value;
+}
 
 template <move_gen>
 s_move* generate_moves(const position& pos, s_move* moves);
@@ -41,12 +49,21 @@ s_move* generate_captures_on_square(const position& pos, s_move* moves,
 s_move* generate_legal_moves(const position& pos, s_move* moves);
 
 struct legal_move_list {
-  explicit legal_move_list(const position& pos) { last_ = generate_legal_moves(pos, moves_); }
+  explicit legal_move_list(const position& pos) {
+    last_ = generate_legal_moves(pos, moves_);
+  }
 
-  [[nodiscard]] const s_move* begin() const { return moves_; }
-  [[nodiscard]] const s_move* end() const { return last_; }
-  [[nodiscard]] size_t size() const { return last_ - moves_; }
+  [[nodiscard]] const s_move* begin() const {
+    return moves_;
+  }
 
+  [[nodiscard]] const s_move* end() const {
+    return last_;
+  }
+
+  [[nodiscard]] size_t size() const {
+    return last_ - moves_;
+  }
 private:
   s_move* last_;
   s_move moves_[max_moves]{};

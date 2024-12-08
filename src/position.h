@@ -13,7 +13,8 @@ template <int max_plus, int max_min>
 struct piece_square_stats;
 
 using counter_move_values = piece_square_stats<24576, 24576>;
-inline constexpr int delayed_number{ 7 };
+
+inline constexpr int delayed_number{7};
 
 enum ptype : uint8_t {
   no_piece,
@@ -32,14 +33,18 @@ enum ptype : uint8_t {
   num_pieces = 16
 };
 
-constexpr uint8_t piece_type(const ptype piece) { return static_cast<uint8_t>(piece & 7); }
+constexpr uint8_t piece_type(const ptype piece) {
+  return static_cast<uint8_t>(piece & 7);
+}
 
 constexpr side piece_color(const ptype piece) {
   assert(piece != no_piece);
   return static_cast<side>(piece >> 3);
 }
 
-constexpr ptype make_piece(const side color, const uint8_t piece) { return static_cast<ptype>((color << 3) + piece); }
+constexpr ptype make_piece(const side color, const uint8_t piece) {
+  return static_cast<ptype>((color << 3) + piece);
+}
 
 constexpr int material_value[num_pieces] = {
   mat_0, mat_0, mat_0, mat_knight, mat_bishop, mat_rook, mat_queen, mat_0,
@@ -61,82 +66,52 @@ namespace pst {
 }
 
 struct attack_info {
-  bool eval_is_exact;
-  bool mp_only_quiet_check_moves, dummy_y[2];
-  bool no_early_pruning, move_repetition;
-  bool strong_threat[num_sides];
-
-  counter_move_values* move_counter_values;
-
-  int draw50_moves, distance_to_null_move, ply, move_number;
-  int eval_positional;
-  int mp_depth;
-  int mp_threshold;
-  int non_pawn_material[num_sides];
-  int position_value;
-  int psq;
-  int stats_value;
-  int k_attack_score[num_sides];
-
-  ptype captured_piece, moved_piece, dummy_x;
-  s_move* mp_current_move, * mp_end_list, * mp_end_bad_capture;
-
-  square enpassant_square;
-  square mp_capture_square;
-  square pin_by[num_squares];
-  stage mp_stage;
-
   uint64_t attack[num_sides][num_piecetypes];
   uint64_t double_attack[num_sides];
   uint64_t pinned[num_sides];
   uint64_t mobility_mask[num_sides];
-
+  int k_attack_score[num_sides];
+  bool strong_threat[num_sides];
   uint64_t k_zone[num_sides];
 };
 
 struct position_info {
   uint64_t pawn_key;
   uint64_t material_key, bishop_color_key;
-
+  int non_pawn_material[num_sides];
   int psq;
   int position_value;
-  int non_pawn_material[num_sides];
-
   uint8_t castle_possibilities, phase, strong_threat;
+  square enpassant_square;
   uint8_t dummy[4];
 
   uint64_t key;
+  int draw50_moves, distance_to_null_move, ply, move_number;
+  uint32_t previous_move;
+  ptype captured_piece, moved_piece, dummy_x;
+  bool eval_is_exact;
+  counter_move_values* move_counter_values;
   uint64_t in_check;
   uint64_t x_ray[num_sides];
   uint64_t check_squares[num_piecetypes];
-
   uint32_t* pv;
-  uint32_t previous_move;
   uint32_t killers[2];
   uint32_t excluded_move;
-  uint32_t mp_hash_move, mp_counter_move;
-
-  uint16_t mp_delayed[delayed_number];
-  uint8_t mp_delayed_number, mp_delayed_current;
-  uint8_t eval_factor, lmr_reduction;
-
-  bool eval_is_exact;
-  bool mp_only_quiet_check_moves, dummy_y[2];
-  bool no_early_pruning, move_repetition;
-
   int stats_value;
   int eval_positional;
-  int mp_depth;
-  int mp_threshold;
-  int draw50_moves, distance_to_null_move, ply, move_number;
+  uint8_t eval_factor, lmr_reduction;
+  bool no_early_pruning, move_repetition;
 
-  ptype captured_piece, moved_piece, dummy_x;
-  counter_move_values* move_counter_values;
-  s_move* mp_current_move, * mp_end_list, * mp_end_bad_capture;
+  s_move *mp_current_move, *mp_end_list, *mp_end_bad_capture;
   stage mp_stage;
-
-  square enpassant_square;
+  uint32_t mp_hash_move, mp_counter_move;
+  int mp_depth;
   square mp_capture_square;
+  bool mp_only_quiet_check_moves, dummy_y[2];
+  int mp_threshold;
+  uint8_t mp_delayed_number, mp_delayed_current;
+  uint16_t mp_delayed[delayed_number];
+
   square pin_by[num_squares];
 };
 
@@ -150,132 +125,131 @@ public:
   position() = default;
   position(const position&) = default;
   position& operator=(const position&) = delete;
+
   position& set(const std::string& fen_str, bool is_chess960, thread* th);
 
   [[nodiscard]] uint64_t pieces() const;
-  [[nodiscard]] bool advanced_pawn(uint32_t move) const;
-  [[nodiscard]] bool capture_or_promotion(uint32_t move) const;
-  [[nodiscard]] bool castling_impossible(uint8_t castle) const;
-  [[nodiscard]] bool different_color_bishops() const;
-  [[nodiscard]] bool empty_square(square sq) const;
-  [[nodiscard]] bool give_check(uint32_t move) const;
-  [[nodiscard]] bool is_capture_move(uint32_t move) const;
-  [[nodiscard]] bool is_chess960() const;
-  [[nodiscard]] bool is_passed_pawn(side color, square sq) const;
-  [[nodiscard]] bool legal_move(uint32_t move) const;
-  [[nodiscard]] bool material_or_castle_changed() const;
-  [[nodiscard]] bool passed_pawn_advance(uint32_t move, rank r) const;
-  [[nodiscard]] bool see_test(uint32_t move, int limit) const;
-  [[nodiscard]] bool valid_move(uint32_t move) const;
-
-  [[nodiscard]] cmhinfo* cmh_info() const;
-
-  [[nodiscard]] const square* piece_list(side color, uint8_t piece) const;
-  [[nodiscard]] int castling_possible(side color) const;
-  [[nodiscard]] int castling_possible(uint8_t castle) const;
-  [[nodiscard]] int fifty_move_counter() const;
-  [[nodiscard]] int game_phase() const;
-  [[nodiscard]] int game_ply() const;
-  [[nodiscard]] int non_pawn_material(side color) const;
-  [[nodiscard]] int number(ptype piece) const;
-  [[nodiscard]] int number(side color, uint8_t piece) const;
-  [[nodiscard]] int psq_score() const;
-  [[nodiscard]] int total_num_pieces() const;
-
-  [[nodiscard]] position_info* info() const { return pos_info_; }
-  [[nodiscard]] ptype moved_piece(uint32_t move) const;
-  [[nodiscard]] ptype piece_on_square(square sq) const;
-  [[nodiscard]] side on_move() const;
-
-  [[nodiscard]] square calculate_threat() const;
-  [[nodiscard]] square castle_rook_square(square king_square) const;
-  [[nodiscard]] square enpassant_square() const;
-  [[nodiscard]] square king(side color) const;
-  [[nodiscard]] square piece_square(side color, uint8_t piece) const;
-
-  [[nodiscard]] static const int* see_values();
-  [[nodiscard]] static uint64_t exception_key(uint32_t move);
-
-  [[nodiscard]] thread* my_thread() const;
-  [[nodiscard]] threadinfo* thread_info() const;
-
-  [[nodiscard]] uint64_t attack_from(uint8_t piece_t, square sq) const;
-  [[nodiscard]] uint64_t attack_to(square sq, uint64_t occupied) const;
-  [[nodiscard]] uint64_t attack_to(square sq) const;
-  [[nodiscard]] uint64_t bishop_color_key() const;
-  [[nodiscard]] uint64_t discovered_check_possible() const;
-  [[nodiscard]] uint64_t draw50_key() const;
-  [[nodiscard]] uint64_t is_in_check() const;
-  [[nodiscard]] uint64_t key_after_move(uint32_t move) const;
-  [[nodiscard]] uint64_t key() const;
-  [[nodiscard]] uint64_t material_key() const;
-  [[nodiscard]] uint64_t pawn_key() const;
-  [[nodiscard]] uint64_t pieces_excluded(side color, uint8_t piece) const;
-  [[nodiscard]] uint64_t pieces(side color, uint8_t piece) const;
-  [[nodiscard]] uint64_t pieces(side color, uint8_t piece1, uint8_t piece2, uint8_t piece3) const;
-  [[nodiscard]] uint64_t pieces(side color, uint8_t piece1, uint8_t piece2) const;
-  [[nodiscard]] uint64_t pieces(side color) const;
   [[nodiscard]] uint64_t pieces(uint8_t piece) const;
   [[nodiscard]] uint64_t pieces(uint8_t piece1, uint8_t piece2) const;
+  [[nodiscard]] uint64_t pieces(side color) const;
+  [[nodiscard]] uint64_t pieces(side color, uint8_t piece) const;
+  [[nodiscard]] uint64_t pieces(side color, uint8_t piece1,
+    uint8_t piece2) const;
+  [[nodiscard]] uint64_t pieces(side color, uint8_t piece1, uint8_t piece2,
+    uint8_t piece3) const;
+  [[nodiscard]] uint64_t pieces_excluded(side color, uint8_t piece) const;
+  [[nodiscard]] ptype piece_on_square(square sq) const;
+  [[nodiscard]] square enpassant_square() const;
+  [[nodiscard]] bool empty_square(square sq) const;
+  [[nodiscard]] int number(side color, uint8_t piece) const;
+  [[nodiscard]] int number(ptype piece) const;
+  [[nodiscard]] const square* piece_list(side color, uint8_t piece) const;
+  [[nodiscard]] square piece_square(side color, uint8_t piece) const;
+  [[nodiscard]] square king(side color) const;
+  [[nodiscard]] int total_num_pieces() const;
+
+  [[nodiscard]] int castling_possible(side color) const;
+  [[nodiscard]] int castling_possible(uint8_t castle) const;
+  [[nodiscard]] bool castling_impossible(uint8_t castle) const;
+  [[nodiscard]] square castle_rook_square(square king_square) const;
+
+  [[nodiscard]] uint64_t is_in_check() const;
+  [[nodiscard]] uint64_t discovered_check_possible() const;
   [[nodiscard]] uint64_t pinned_pieces() const;
-  [[nodiscard]] uint64_t visited_nodes() const;
-
   void calculate_check_pins() const;
-
   template <side color>
   void calculate_pins() const;
 
+  [[nodiscard]] uint64_t attack_to(square sq) const;
+  [[nodiscard]] uint64_t attack_to(square sq, uint64_t occupied) const;
+  [[nodiscard]] uint64_t attack_from(uint8_t piece_t, square sq) const;
   template <uint8_t>
   [[nodiscard]] uint64_t attack_from(square sq) const;
-
   template <uint8_t>
   [[nodiscard]] uint64_t attack_from(square sq, side color) const;
+
+  [[nodiscard]] bool legal_move(uint32_t move) const;
+  [[nodiscard]] bool valid_move(uint32_t move) const;
+  [[nodiscard]] bool is_capture_move(uint32_t move) const;
+  [[nodiscard]] bool capture_or_promotion(uint32_t move) const;
+  [[nodiscard]] bool give_check(uint32_t move) const;
+  [[nodiscard]] bool advanced_pawn(uint32_t move) const;
+  [[nodiscard]] bool passed_pawn_advance(uint32_t move, rank r) const;
+  [[nodiscard]] ptype moved_piece(uint32_t move) const;
+  [[nodiscard]] bool material_or_castle_changed() const;
+  [[nodiscard]] square calculate_threat() const;
+
+  [[nodiscard]] bool is_passed_pawn(side color, square sq) const;
+  [[nodiscard]] bool different_color_bishops() const;
 
   void play_move(uint32_t move, bool gives_check);
   void play_move(uint32_t move);
   void take_move_back(uint32_t move);
   void play_null_move();
   void take_null_back();
+
+  [[nodiscard]] static const int* see_values();
+  [[nodiscard]] bool see_test(uint32_t move, int limit) const;
+
+  [[nodiscard]] uint64_t key() const;
+  [[nodiscard]] uint64_t key_after_move(uint32_t move) const;
+  [[nodiscard]] static uint64_t exception_key(uint32_t move);
+  [[nodiscard]] uint64_t material_key() const;
+  [[nodiscard]] uint64_t bishop_color_key() const;
+  [[nodiscard]] uint64_t pawn_key() const;
+  [[nodiscard]] uint64_t draw50_key() const;
+
+  [[nodiscard]] side on_move() const;
+  [[nodiscard]] int game_phase() const;
+  [[nodiscard]] int game_ply() const;
   void increase_game_ply();
+  [[nodiscard]] bool is_chess960() const;
+  [[nodiscard]] thread* my_thread() const;
+  [[nodiscard]] threadinfo* thread_info() const;
+  [[nodiscard]] cmhinfo* cmh_info() const;
+  [[nodiscard]] uint64_t visited_nodes() const;
+  [[nodiscard]] int fifty_move_counter() const;
+  [[nodiscard]] int psq_score() const;
+  [[nodiscard]] int non_pawn_material(side color) const;
+
+  [[nodiscard]] position_info* info() const {
+    return pos_info_;
+  }
 
   void copy_position(const position* pos, thread* th,
     const position_info* copy_state);
   double epd_result;
-
 private:
   void set_castling_possibilities(side color, square from_r);
   void set_position_info(position_info* si) const;
   void calculate_bishop_color_key() const;
+
   void move_piece(side color, ptype piece, square sq);
   void delete_piece(side color, ptype piece, square sq);
   void relocate_piece(side color, ptype piece, square from, square to);
-
   template <bool yes>
   void do_castle_move(side me, square from, square to, square& from_r,
     square& to_r);
   [[nodiscard]] bool is_draw() const;
 
   position_info* pos_info_;
-  bool chess960_;
-  char filler_[32];
-  cmhinfo* cmh_info_;
-  int game_ply_;
-  ptype board_[num_squares];
   side on_move_;
-
-  square castle_rook_square_[num_squares];
-  square piece_list_[num_pieces][16];
-
   thread* this_thread_;
   threadinfo* thread_info_;
-
-  uint64_t castle_path_[castle_possible_n];
-  uint64_t color_bb_[num_sides];
-  uint64_t nodes_;
+  cmhinfo* cmh_info_;
+  ptype board_[num_squares];
   uint64_t piece_bb_[num_pieces];
-  uint8_t castle_mask_[num_squares];
-  uint8_t piece_index_[num_squares];
+  uint64_t color_bb_[num_sides];
   uint8_t piece_number_[num_pieces];
+  square piece_list_[num_pieces][16];
+  uint8_t piece_index_[num_squares];
+  uint8_t castle_mask_[num_squares];
+  square castle_rook_square_[num_squares];
+  uint64_t castle_path_[castle_possible_n];
+  uint64_t nodes_;
+  int game_ply_;
+  bool chess960_;
+  char filler_[32];
 };
 
 inline void position::move_piece(const side color, const ptype piece,
@@ -335,9 +309,13 @@ inline uint64_t position::attack_from(const uint8_t piece_t,
   return attack_bb(piece_t, sq, pieces());
 }
 
-inline uint64_t position::attack_to(const square sq) const { return attack_to(sq, pieces()); }
+inline uint64_t position::attack_to(const square sq) const {
+  return attack_to(sq, pieces());
+}
 
-inline uint64_t position::bishop_color_key() const { return pos_info_->bishop_color_key; }
+inline uint64_t position::bishop_color_key() const {
+  return pos_info_->bishop_color_key;
+}
 
 inline bool position::capture_or_promotion(const uint32_t move) const {
   assert(is_ok(move));
@@ -346,29 +324,56 @@ inline bool position::capture_or_promotion(const uint32_t move) const {
     : move >= static_cast<uint32_t>(enpassant);
 }
 
-inline square position::castle_rook_square(const square king_square) const { return castle_rook_square_[king_square]; }
-inline bool position::castling_impossible(const uint8_t castle) const { return pieces() & castle_path_[castle]; }
-inline int position::castling_possible(const uint8_t castle) const { return pos_info_->castle_possibilities & castle; }
+inline square position::castle_rook_square(const square king_square) const {
+  return castle_rook_square_[king_square];
+}
+
+inline bool position::castling_impossible(const uint8_t castle) const {
+  return pieces() & castle_path_[castle];
+}
+
+inline int position::castling_possible(const uint8_t castle) const {
+  return pos_info_->castle_possibilities & castle;
+}
 
 inline int position::castling_possible(const side color) const {
   return pos_info_->castle_possibilities & (white_short | white_long)
     << 2 * color;
 }
 
-inline cmhinfo* position::cmh_info() const { return cmh_info_; }
+inline cmhinfo* position::cmh_info() const {
+  return cmh_info_;
+}
 
 inline bool position::different_color_bishops() const {
   return piece_number_[w_bishop] == 1 && piece_number_[b_bishop] == 1 &&
     different_color(piece_square(white, pt_bishop),
-    piece_square(black, pt_bishop));
+      piece_square(black, pt_bishop));
 }
 
-inline uint64_t position::discovered_check_possible() const { return pos_info_->x_ray[~on_move_] & pieces(on_move_); }
-inline bool position::empty_square(const square sq) const { return board_[sq] == no_piece; }
-inline square position::enpassant_square() const { return pos_info_->enpassant_square; }
-inline int position::fifty_move_counter() const { return pos_info_->draw50_moves; }
-inline int position::game_ply() const { return game_ply_; }
-inline void position::increase_game_ply() { ++game_ply_; }
+inline uint64_t position::discovered_check_possible() const {
+  return pos_info_->x_ray[~on_move_] & pieces(on_move_);
+}
+
+inline bool position::empty_square(const square sq) const {
+  return board_[sq] == no_piece;
+}
+
+inline square position::enpassant_square() const {
+  return pos_info_->enpassant_square;
+}
+
+inline int position::fifty_move_counter() const {
+  return pos_info_->draw50_moves;
+}
+
+inline int position::game_ply() const {
+  return game_ply_;
+}
+
+inline void position::increase_game_ply() {
+  ++game_ply_;
+}
 
 inline bool position::is_capture_move(const uint32_t move) const {
   assert(is_ok(move));
@@ -376,16 +381,29 @@ inline bool position::is_capture_move(const uint32_t move) const {
     move_type(move) == enpassant;
 }
 
-inline bool position::is_chess960() const { return chess960_; }
-inline uint64_t position::is_in_check() const { return pos_info_->in_check; }
+inline bool position::is_chess960() const {
+  return chess960_;
+}
+
+inline uint64_t position::is_in_check() const {
+  return pos_info_->in_check;
+}
 
 inline bool position::is_passed_pawn(const side color, const square sq) const {
   return !(pieces(~color, pt_pawn) & passedpawn_mask(color, sq));
 }
 
-inline uint64_t position::key() const { return pos_info_->key; }
-inline square position::king(const side color) const { return piece_list_[make_piece(color, pt_king)][0]; }
-inline uint64_t position::material_key() const { return pos_info_->material_key; }
+inline uint64_t position::key() const {
+  return pos_info_->key;
+}
+
+inline square position::king(const side color) const {
+  return piece_list_[make_piece(color, pt_king)][0];
+}
+
+inline uint64_t position::material_key() const {
+  return pos_info_->material_key;
+}
 
 inline bool position::material_or_castle_changed() const {
   return pos_info_->material_key != (pos_info_ - 1)->material_key ||
@@ -393,16 +411,29 @@ inline bool position::material_or_castle_changed() const {
     (pos_info_ - 1)->castle_possibilities;
 }
 
-inline ptype position::moved_piece(const uint32_t move) const { return board_[from_square(move)]; }
-inline thread* position::my_thread() const { return this_thread_; }
-inline int position::non_pawn_material(const side color) const { return pos_info_->non_pawn_material[color]; }
+inline ptype position::moved_piece(const uint32_t move) const {
+  return board_[from_square(move)];
+}
+
+inline thread* position::my_thread() const {
+  return this_thread_;
+}
+
+inline int position::non_pawn_material(const side color) const {
+  return pos_info_->non_pawn_material[color];
+}
 
 inline int position::number(const side color, const uint8_t piece) const {
   return piece_number_[make_piece(color, piece)];
 }
 
-inline int position::number(const ptype piece) const { return piece_number_[piece]; }
-inline side position::on_move() const { return on_move_; }
+inline int position::number(const ptype piece) const {
+  return piece_number_[piece];
+}
+
+inline side position::on_move() const {
+  return on_move_;
+}
 
 inline bool position::passed_pawn_advance(const uint32_t move,
   const rank r) const {
@@ -412,14 +443,18 @@ inline bool position::passed_pawn_advance(const uint32_t move,
     is_passed_pawn(piece_color(piece), to_square(move));
 }
 
-inline uint64_t position::pawn_key() const { return pos_info_->pawn_key; }
+inline uint64_t position::pawn_key() const {
+  return pos_info_->pawn_key;
+}
 
 inline const square* position::piece_list(const side color,
   const uint8_t piece) const {
   return piece_list_[make_piece(color, piece)];
 }
 
-inline ptype position::piece_on_square(const square sq) const { return board_[sq]; }
+inline ptype position::piece_on_square(const square sq) const {
+  return board_[sq];
+}
 
 inline square position::piece_square(const side color,
   const uint8_t piece) const {
@@ -432,7 +467,9 @@ inline uint64_t position::pieces_excluded(const side color,
   return color_bb_[color] ^ piece_bb_[make_piece(color, piece)];
 }
 
-inline uint64_t position::pieces() const { return piece_bb_[all_pieces]; }
+inline uint64_t position::pieces() const {
+  return piece_bb_[all_pieces];
+}
 
 inline uint64_t position::pieces(const uint8_t piece) const {
   return piece_bb_[make_piece(white, piece)] |
@@ -444,7 +481,9 @@ inline uint64_t position::pieces(const uint8_t piece1,
   return pieces(piece1) | pieces(piece2);
 }
 
-inline uint64_t position::pieces(const side color) const { return color_bb_[color]; }
+inline uint64_t position::pieces(const side color) const {
+  return color_bb_[color];
+}
 
 inline uint64_t position::pieces(const side color, const uint8_t piece) const {
   return piece_bb_[make_piece(color, piece)];
@@ -461,8 +500,22 @@ inline uint64_t position::pieces(const side color, const uint8_t piece1,
   return pieces(color, piece1) | pieces(color, piece2) | pieces(color, piece3);
 }
 
-inline uint64_t position::pinned_pieces() const { return pos_info_->x_ray[on_move_] & pieces(on_move_); }
-inline int position::psq_score() const { return pos_info_->psq; }
-inline threadinfo* position::thread_info() const { return thread_info_; }
-inline int position::total_num_pieces() const { return popcnt(pieces()); }
-inline uint64_t position::visited_nodes() const { return nodes_; }
+inline uint64_t position::pinned_pieces() const {
+  return pos_info_->x_ray[on_move_] & pieces(on_move_);
+}
+
+inline int position::psq_score() const {
+  return pos_info_->psq;
+}
+
+inline threadinfo* position::thread_info() const {
+  return thread_info_;
+}
+
+inline int position::total_num_pieces() const {
+  return popcnt(pieces());
+}
+
+inline uint64_t position::visited_nodes() const {
+  return nodes_;
+}

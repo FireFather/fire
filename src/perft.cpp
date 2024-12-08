@@ -2,6 +2,7 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+
 #include "main.h"
 #include "position.h"
 #include "thread.h"

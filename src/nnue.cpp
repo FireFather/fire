@@ -1,10 +1,11 @@
 #include "nnue.h"
+
 #include <cassert>
 #include <cstdio>
 #include <cstring>
+
 #include "main.h"
 #include "util.h"
-
 #ifdef NNUE_EMBEDDED
 #include "incbin.h"
 INCBIN(Network, NNUE_EVAL_FILE);
@@ -41,7 +42,7 @@ size_t file_size(FD fd) {
 
 const void* map_file(FD fd, map_t* map) {
 #ifndef _WIN32
-  * map = file_size(fd);
+  *map = file_size(fd);
   void* data = mmap(NULL, *map, PROT_READ, MAP_SHARED, fd, 0);
 #ifdef MADV_RANDOM
   madvise(data, *map, MADV_RANDOM);
@@ -67,7 +68,9 @@ void unmap_file(const void* data, map_t map) {
 #endif
 }
 
-inline int orient(const int c, const int s) { return s ^ (c == white ? 0x00 : 0x3f); }
+inline int orient(const int c, const int s) {
+  return s ^ (c == white ? 0x00 : 0x3f);
+}
 
 inline unsigned make_index(const int c, const int s, const int pc,
   const int ksq) {
@@ -179,7 +182,9 @@ inline void affine_txfm(int8_t* input, void* output, unsigned in_dims,
       second = ((__m256i*)weights)[idx];
       factor |= input[idx] << 8;
     }
-    else { second = k_zero; }
+    else {
+      second = k_zero;
+    }
     __m256i mul = _mm256_set1_epi16(factor), prod, signs;
     prod = _mm256_maddubs_epi16(mul, _mm256_unpacklo_epi8(first, second));
     signs = _mm256_cmpgt_epi16(k_zero, prod);
@@ -234,9 +239,9 @@ inline bool update_accumulator(const board* pos) {
   if (accumulator->computed_accumulation) return true;
   Accumulator* prev_acc;
   if ((!pos->nnue[1] ||
-    !(prev_acc = &pos->nnue[1]->accumulator)->computed_accumulation) &&
+      !(prev_acc = &pos->nnue[1]->accumulator)->computed_accumulation) &&
     (!pos->nnue[2] ||
-    !(prev_acc = &pos->nnue[2]->accumulator)->computed_accumulation))
+      !(prev_acc = &pos->nnue[2]->accumulator)->computed_accumulation))
     return false;
   index_list removed_indices[2], added_indices[2];
   removed_indices[0].size = removed_indices[1].size = 0;
@@ -282,9 +287,9 @@ inline bool update_accumulator(const board* pos) {
 
 inline void transform(const board* pos, clipped_t* output, mask_t* out_mask) {
   if (!update_accumulator(pos)) refresh_accumulator(pos);
-  int16_t(*accumulation)[2][256] = &pos->nnue[0]->accumulator.accumulation;
+  int16_t (*accumulation)[2][256] = &pos->nnue[0]->accumulator.accumulation;
   (void)out_mask;
-  const int perspectives[2] = { pos->player, !pos->player };
+  const int perspectives[2] = {pos->player, !pos->player};
   for (unsigned p = 0; p < 2; p++) {
     const unsigned offset = k_half_dimensions * p;
     constexpr unsigned num_chunks = 16 * k_half_dimensions / simd_width;
@@ -308,7 +313,7 @@ struct net_data {
 
 int nnue_evaluate_pos(const board* pos) {
   alignas(8) mask_t input_mask[ft_out_dims / (8 * sizeof(mask_t))];
-  alignas(8) mask_t hidden1_mask[8 / sizeof(mask_t)] = { 0 };
+  alignas(8) mask_t hidden1_mask[8 / sizeof(mask_t)] = {0};
   net_data buf;
 #define B(x) (buf.x)
   transform(pos, B(input), input_mask);
@@ -411,8 +416,7 @@ bool load_eval_file(const char* eval_file) {
     eval_data = gNetworkData;
     mapping = 0;
     size = gNetworkSize;
-  }
-  else
+  } else
 #endif
   {
     const FD fd = open_file(eval_file);

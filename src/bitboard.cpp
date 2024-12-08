@@ -1,4 +1,5 @@
 #include "bitboard.h"
+
 #include "macro.h"
 #include "main.h"
 
@@ -7,12 +8,12 @@ void bitboard::init() {
 
   for (auto f = file_a; f <= file_h; ++f)
     adjacent_files_bb[f] =
-    (f > file_a ? file_bb[f - 1] : 0) | (f < file_h ? file_bb[f + 1] : 0);
+      (f > file_a ? file_bb[f - 1] : 0) | (f < file_h ? file_bb[f + 1] : 0);
 
   for (auto r = rank_1; r < rank_8; ++r)
     ranks_in_front_bb[white][r] =
-    ~(ranks_in_front_bb[black][r + 1] =
-    ranks_in_front_bb[black][r] | rank_bb[r]);
+      ~(ranks_in_front_bb[black][r + 1] =
+        ranks_in_front_bb[black][r] | rank_bb[r]);
 
   for (auto color = white; color <= black; ++color)
     for (auto sq = a1; sq <= h8; ++sq) {
@@ -27,7 +28,7 @@ void bitboard::init() {
   for (auto square1 = a1; square1 <= h8; ++square1)
     for (auto square2 = a1; square2 <= h8; ++square2)
       square_distance[square1][square2] = static_cast<int8_t>(std::max(
-      file_distance(square1, square2), rank_distance(square1, square2)));
+        file_distance(square1, square2), rank_distance(square1, square2)));
 
   for (auto sq = a1; sq <= h8; ++sq) {
     pawnattack[white][sq] = pawn_attack<white>(square_bb[sq]);
@@ -93,7 +94,8 @@ void init_magic_bb(uint64_t* attack, const int attack_index[],
       const int offset = static_cast<int>(b * mult[sq] >> shift);
       square_index[sq][offset] = sliding_attacks(sq, b, deltas, 0, 7, 0, 7);
       b = b - mask[sq] & mask[sq];
-    } while (b);
+    }
+    while (b);
   }
 }
 
@@ -117,8 +119,8 @@ uint64_t sliding_attacks(const int sq, const uint64_t block,
     const auto dx = deltas[direction][0];
     const auto dy = deltas[direction][1];
     for (auto f = fl + dx, r = rk + dy; (dx == 0 || f >= f_min && f <= f_max) &&
-      (dy == 0 || r >= r_min && r <= r_max);
-      f += dx, r += dy) {
+         (dy == 0 || r >= r_min && r <= r_max);
+         f += dx, r += dy) {
       result |= square_bb[f + r * 8];
       if (block & square_bb[f + r * 8]) break;
     }

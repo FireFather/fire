@@ -17,12 +17,29 @@ inline constexpr uint8_t threat_mask = 0x03;
 inline constexpr uint8_t use_mask = 0xfb;
 
 struct main_hash_entry {
-  [[nodiscard]] uint32_t move() const { return move_; }
-  [[nodiscard]] int value() const { return value_; }
-  [[nodiscard]] int eval() const { return eval_; }
-  [[nodiscard]] int depth() const { return depth_ * static_cast<int>(plies) + plies - 1; }
-  [[nodiscard]] hashflags bounds() const { return static_cast<hashflags>(flags_ & exact_value); }
-  [[nodiscard]] hashflags threat() const { return static_cast<hashflags>(flags_ & threat_mask); }
+  [[nodiscard]] uint32_t move() const {
+    return move_;
+  }
+
+  [[nodiscard]] int value() const {
+    return value_;
+  }
+
+  [[nodiscard]] int eval() const {
+    return eval_;
+  }
+
+  [[nodiscard]] int depth() const {
+    return depth_ * static_cast<int>(plies) + plies - 1;
+  }
+
+  [[nodiscard]] hashflags bounds() const {
+    return static_cast<hashflags>(flags_ & exact_value);
+  }
+
+  [[nodiscard]] hashflags threat() const {
+    return static_cast<hashflags>(flags_ & threat_mask);
+  }
 
   void save(const uint64_t k, const int val, const uint8_t flags, const int d,
     const uint32_t z, const int eval, const uint8_t gen) {
@@ -39,7 +56,6 @@ struct main_hash_entry {
       depth_ = static_cast<int8_t>(dd);
     }
   }
-
 private:
   friend class hash;
 
@@ -61,13 +77,19 @@ class hash {
   };
 
   static_assert(cache_line % sizeof(bucket) == 0, "Cluster size incorrect");
-
 public:
-  ~hash() { free(hash_mem_); }
+  ~hash() {
+    free(hash_mem_);
+  }
 
-  void new_age() { age_ = age_ + 8 & age_mask; }
+  void new_age() {
+    age_ = age_ + 8 & age_mask;
+  }
 
-  [[nodiscard]] uint8_t age() const { return age_; }
+  [[nodiscard]] uint8_t age() const {
+    return age_;
+  }
+
   [[nodiscard]] main_hash_entry* probe(uint64_t key) const;
   [[nodiscard]] main_hash_entry* replace(uint64_t key) const;
   [[nodiscard]] int hash_full() const;
@@ -79,8 +101,9 @@ public:
       reinterpret_cast<char*>(hash_mem_) + (key & bucket_mask_));
   }
 
-  void prefetch_entry(const uint64_t key) const { prefetch(entry(key)); }
-
+  void prefetch_entry(const uint64_t key) const {
+    prefetch(entry(key));
+  }
 private:
   size_t buckets_ = 0;
   size_t bucket_mask_ = 0;

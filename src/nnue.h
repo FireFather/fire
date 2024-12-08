@@ -69,7 +69,6 @@ enum pieces {
   bknight,
   bpawn
 };
-
 enum {
   ps_w_pawn = 1,
   ps_b_pawn = 1 * 64 + 1,
@@ -83,15 +82,12 @@ enum {
   ps_b_queen = 9 * 64 + 1,
   ps_end = 10 * 64 + 1
 };
-
 enum { fv_scale = 16, shift_ = 6 };
-
 enum {
   k_half_dimensions = 256,
   ft_in_dims = 64 * ps_end,
   ft_out_dims = k_half_dimensions * 2
 };
-
 enum { num_regs = 16, simd_width = 256 };
 
 using dirty_piece = struct dirty_piece {
@@ -130,7 +126,8 @@ using index_list = struct {
 #define VEC_ADD_16(a, b) _mm256_add_epi16(a, b)
 #define VEC_SUB_16(a, b) _mm256_sub_epi16(a, b)
 #define VEC_PACKS(a, b) _mm256_packs_epi16(a, b)
-#define VEC_MASK_POS(a) _mm256_movemask_epi8(_mm256_cmpgt_epi8(a, _mm256_setzero_si256()))
+#define VEC_MASK_POS(a) \
+  _mm256_movemask_epi8(_mm256_cmpgt_epi8(a, _mm256_setzero_si256()))
 
 static weight_t output_weights alignas(64)[1 * 32];
 static int32_t hidden1_biases alignas(64)[32];
@@ -139,13 +136,14 @@ static int32_t output_biases[1];
 static weight_t hidden1_weights alignas(64)[64 * 512];
 static weight_t hidden2_weights alignas(64)[64 * 32];
 
-inline uint32_t piece_to_index[2][14] = { {
-  0, 0, ps_w_queen, ps_w_rook, ps_w_bishop, ps_w_knight, ps_w_pawn, 0,
-  ps_b_queen, ps_b_rook, ps_b_bishop, ps_b_knight, ps_b_pawn, 0
+inline uint32_t piece_to_index[2][14] = {
+  {
+    0, 0, ps_w_queen, ps_w_rook, ps_w_bishop, ps_w_knight, ps_w_pawn, 0,
+    ps_b_queen, ps_b_rook, ps_b_bishop, ps_b_knight, ps_b_pawn, 0
   },
   {
-  0, 0, ps_b_queen, ps_b_rook, ps_b_bishop, ps_b_knight, ps_b_pawn, 0,
-  ps_w_queen, ps_w_rook, ps_w_bishop, ps_w_knight, ps_w_pawn, 0
+    0, 0, ps_b_queen, ps_b_rook, ps_b_bishop, ps_b_knight, ps_b_pawn, 0,
+    ps_w_queen, ps_w_rook, ps_w_bishop, ps_w_knight, ps_w_pawn, 0
   }
 };
 

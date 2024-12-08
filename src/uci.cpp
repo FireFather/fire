@@ -1,7 +1,9 @@
 #include "uci.h"
+
 #include <iostream>
 #include <sstream>
 #include <string>
+
 #include "bitboard.h"
 #include "evaluate.h"
 #include "hash.h"
@@ -35,6 +37,7 @@ int uci_loop(const int argc, char* argv[]) {
   position pos{};
   std::string token, cmd;
   int ret = 0;
+
   pos.set(startpos, uci_chess960, thread_pool.main());
   new_game();
 
@@ -74,17 +77,29 @@ int uci_loop(const int argc, char* argv[]) {
       acout() << "readyok" << std::endl;
       ret = fflush(stdout);
     }
-    else if (token == "ucinewgame") { new_game(); }
-    else if (token == "setoption") { set_option(is); }
-    else if (token == "position") { set_position(pos, is); }
-    else if (token == "go") { go(pos, is); }
+    else if (token == "ucinewgame") {
+      new_game();
+    }
+    else if (token == "setoption") {
+      set_option(is);
+    }
+    else if (token == "position") {
+      set_position(pos, is);
+    }
+    else if (token == "go") {
+      go(pos, is);
+    }
     else if (token == "stop" ||
       (token == "ponderhit" && search::signals.stop_if_ponder_hit)) {
       search::signals.stop_analyzing = true;
       thread_pool.main()->wake(false);
     }
-    else if (token == "quit") { break; }
-    else if (token == "pos") { acout() << pos; }
+    else if (token == "quit") {
+      break;
+    }
+    else if (token == "pos") {
+      acout() << pos;
+    }
     else if (token == "perft") {
       auto depth = 7;
       auto& fen = startpos;
@@ -105,8 +120,10 @@ int uci_loop(const int argc, char* argv[]) {
       bench(stoi(bench_depth));
       bench_active = false;
     }
-    else {}
-  } while (token != "quit" && argc == 1);
+    else {
+    }
+  }
+  while (token != "quit" && argc == 1);
   thread_pool.exit();
   return ret;
 }
@@ -133,10 +150,10 @@ int set_option(std::istringstream& is) {
         thread_pool.change_thread_count(uci_threads);
         if (uci_threads == 1)
           acout() << "info string Threads " << uci_threads << " thread"
-          << std::endl;
+            << std::endl;
         else
           acout() << "info string Threads " << uci_threads << " threads"
-          << std::endl;
+            << std::endl;
         break;
       }
       if (token == "MultiPV") {
@@ -234,6 +251,7 @@ void go(position& pos, std::istringstream& is) {
 void set_position(position& pos, std::istringstream& is) {
   uint32_t move;
   std::string token, fen;
+
   is >> token;
 
   if (token == "startpos") {
@@ -256,14 +274,16 @@ void set_position(position& pos, std::istringstream& is) {
 std::string trim(const std::string& str, const std::string& whitespace) {
   const auto str_begin = str.find_first_not_of(whitespace);
   if (str_begin == std::string::npos) return "";
+
   const auto str_end = str.find_last_not_of(whitespace);
   const auto str_range = str_end - str_begin + 1;
+
   return str.substr(str_begin, str_range);
 }
 
 std::string sq(const square sq) {
   return std::string{
-      static_cast<char>('a' + file_of(sq)),
-      static_cast<char>('1' + rank_of(sq))
+    static_cast<char>('a' + file_of(sq)),
+    static_cast<char>('1' + rank_of(sq))
   };
 }

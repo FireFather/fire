@@ -3,9 +3,9 @@
 #else
 #include <unistd.h>
 #endif
-
 #include <iomanip>
 #include <sstream>
+
 #include "macro.h"
 #include "main.h"
 #include "movegen.h"
@@ -14,6 +14,7 @@
 
 std::string move_to_string(const uint32_t move, const position& pos) {
   char s_move[6]{};
+
   const auto from = from_square(move);
   auto to = to_square(move);
 
@@ -37,12 +38,12 @@ uint32_t move_from_string(const position& pos, std::string& str) {
   if (pos.is_chess960()) {
     if (str == "O-O")
       str = move_to_string(make_move(castle_move, pos.king(pos.on_move()),
-      relative_square(pos.on_move(), g1)),
-      pos);
+          relative_square(pos.on_move(), g1)),
+        pos);
     else if (str == "O-O-O")
       str = move_to_string(make_move(castle_move, pos.king(pos.on_move()),
-      relative_square(pos.on_move(), c1)),
-      pos);
+          relative_square(pos.on_move(), c1)),
+        pos);
   }
 
   if (str.length() == 5) str[4] = static_cast<char>(tolower(str[4]));
@@ -55,7 +56,7 @@ uint32_t move_from_string(const position& pos, std::string& str) {
 
 std::ostream& operator<<(std::ostream& os, const position& pos) {
   constexpr char p_chars[] = {
-      'K', 'P', 'N', 'B', 'R', 'Q', 'k', 'p', 'n', 'b', 'r', 'q',
+    'K', 'P', 'N', 'B', 'R', 'Q', 'k', 'p', 'n', 'b', 'r', 'q',
   };
 
   auto found = false;
@@ -73,7 +74,7 @@ std::ostream& operator<<(std::ostream& os, const position& pos) {
         os << " " << pc;
       else
         os << " "
-        << ".";
+          << ".";
       found = false;
     }
     os << "\n";

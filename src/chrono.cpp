@@ -1,5 +1,7 @@
 #include "chrono.h"
+
 #include <cmath>
+
 #include "main.h"
 #include "uci.h"
 
@@ -56,13 +58,15 @@ double timecontrol::calc_move_importance(const int ply) const {
   auto factor = 1.0;
   if (ply > ply_min_ && ply < ply_max_)
     factor = factor_base_ -
-    ply_factor_ *
-    (static_cast<double>(ply) - static_cast<double>(base_moves_)) *
-    (static_cast<double>(ply) - static_cast<double>(base_moves_));
+      ply_factor_ *
+      (static_cast<double>(ply) - static_cast<double>(base_moves_)) *
+      (static_cast<double>(ply) - static_cast<double>(base_moves_));
 
   return factor * pow(1 + exp((ply - x_shift_) / x_scale_), -skew_);
 }
 
-int64_t timecontrol::elapsed() const { return now() - start_time_; }
+int64_t timecontrol::elapsed() const {
+  return now() - start_time_;
+}
 
 timecontrol time_control;
