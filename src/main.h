@@ -1,5 +1,4 @@
 #pragma once
-
 #include <algorithm>
 #include <cassert>
 #include <chrono>
@@ -60,7 +59,7 @@ inline void prefetch(void* address) { __builtin_prefetch(address); }
 #endif
 
 constexpr auto program = "Fire";
-constexpr auto version = "9.3";
+constexpr auto version = "10";
 constexpr auto bmis = "avx2";
 constexpr auto author = "Norman Schmidt";
 constexpr auto platform = "x64";
@@ -190,7 +189,7 @@ enum rank { rank_1, rank_2, rank_3, rank_4, rank_5, rank_6, rank_7, rank_8 };
 
 enum score : int;
 
-enum stage {
+enum stage : uint8_t {
   normal_search,
   gen_good_captures,
   good_captures,
@@ -231,7 +230,7 @@ inline int mg_value(const int score) {
   const union {
     uint16_t u;
     int16_t s;
-  } mg = {static_cast<uint16_t>(static_cast<unsigned>(score + 0x8000) >> 16)};
+  } mg = { static_cast<uint16_t>(static_cast<unsigned>(score + 0x8000) >> 16) };
   return mg.s;
 }
 
@@ -239,7 +238,7 @@ inline int eg_value(const int score) {
   const union {
     uint16_t u;
     int16_t s;
-  } eg = {static_cast<uint16_t>(static_cast<unsigned>(score))};
+  } eg = { static_cast<uint16_t>(static_cast<unsigned>(score)) };
   return eg.s;
 }
 

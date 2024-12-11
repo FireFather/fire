@@ -1,6 +1,5 @@
 #pragma once
 #include <atomic>
-
 #include "chrono.h"
 #include "position.h"
 
@@ -18,9 +17,8 @@ namespace search {
   void init();
   void reset();
   void adjust_time_after_ponder_hit();
-  extern uint8_t lm_reductions[2][2][64 * static_cast<int>(plies)][64];
 
-  enum nodetype { PV, nonPV };
+  enum nodetype : uint8_t { PV, nonPV };
 
   inline int counter_move_bonus[max_ply];
 
@@ -139,7 +137,7 @@ namespace search {
     return lm_reductions[pv][vg][MIN(d, 64 * static_cast<int>(plies) - 1)]
       [MIN(n, 63)];
   }
-} // namespace search
+}
 
 template <int max_plus, int max_min>
 struct piece_square_stats;

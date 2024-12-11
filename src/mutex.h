@@ -10,7 +10,7 @@ struct Mutex {
   ~Mutex() { DeleteCriticalSection(&cs); }
   void lock() { EnterCriticalSection(&cs); }
   void unlock() { LeaveCriticalSection(&cs); }
- private:
+private:
   CRITICAL_SECTION cs;
 };
 

@@ -1,8 +1,8 @@
+#include <algorithm>
 #include <cinttypes>
 #include <iostream>
 #include <sstream>
 #include <string>
-
 #include "main.h"
 #include "position.h"
 #include "thread.h"
@@ -27,7 +27,7 @@ uint64_t start_perft(position& pos, const int depth) {
 
 int perft(int depth, std::string& fen) {
   uint64_t nodes = 0;
-  if (depth < 1) depth = 1;
+  depth = std::max(depth, 1);
   if (fen.empty()) fen = startpos;
 
   search::reset();
@@ -59,7 +59,7 @@ int perft(int depth, std::string& fen) {
 
 int divide(int depth, const std::string& fen) {
   uint64_t nodes = 0;
-  if (depth < 1) depth = 1;
+  depth = std::max(depth, 1);
 
   search::reset();
   position pos{};

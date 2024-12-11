@@ -17,8 +17,8 @@ search.o: search.cpp search.h chrono.h main.h position.h bitboard.h \
  evaluate.h hash.h movegen.h movepick.h thread.h mutex.h uci.h util.h
 thread.o: thread.cpp thread.h main.h movepick.h movegen.h position.h \
  bitboard.h mutex.h search.h chrono.h
-uci.o: uci.cpp uci.h position.h bitboard.h main.h evaluate.h hash.h \
- nnue.h perft.h search.h chrono.h thread.h movepick.h movegen.h mutex.h \
- util.h
-util.o: util.cpp macro.h main.h movegen.h position.h bitboard.h util.h
+uci.o: uci.cpp uci.h position.h bitboard.h main.h bench.h evaluate.h \
+ hash.h nnue.h perft.h search.h chrono.h thread.h movepick.h movegen.h \
+ mutex.h util.h
+util.o: util.cpp macro.h main.h movegen.h util.h position.h bitboard.h
 zobrist.o: zobrist.cpp zobrist.h main.h position.h bitboard.h

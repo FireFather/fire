@@ -1,9 +1,8 @@
 #include "uci.h"
-
 #include <iostream>
 #include <sstream>
 #include <string>
-
+#include "bench.h"
 #include "bitboard.h"
 #include "evaluate.h"
 #include "hash.h"
@@ -122,8 +121,7 @@ int uci_loop(const int argc, char* argv[]) {
     }
     else {
     }
-  }
-  while (token != "quit" && argc == 1);
+  } while (token != "quit" && argc == 1);
   thread_pool.exit();
   return ret;
 }
@@ -150,10 +148,10 @@ int set_option(std::istringstream& is) {
         thread_pool.change_thread_count(uci_threads);
         if (uci_threads == 1)
           acout() << "info string Threads " << uci_threads << " thread"
-            << std::endl;
+          << std::endl;
         else
           acout() << "info string Threads " << uci_threads << " threads"
-            << std::endl;
+          << std::endl;
         break;
       }
       if (token == "MultiPV") {

@@ -1,8 +1,6 @@
 #include "hash.h"
-
 #include <cstring>
 #include <iostream>
-
 #include "main.h"
 
 hash main_hash;
@@ -12,11 +10,8 @@ void hash::init(const size_t mb_size) {
     << msb(mb_size * 1024 * 1024 / sizeof(bucket));
 
   if (new_size == buckets_) return;
-
   buckets_ = new_size;
-
   if (hash_mem_) free(hash_mem_);
-
   hash_mem_ = static_cast<bucket*>(calloc(buckets_ * sizeof(bucket) + 63, 1));
 
   if (!hash_mem_) {
@@ -41,7 +36,7 @@ main_hash_entry* hash::probe(const uint64_t key) const {
     if (hash_entry[i].key_ == key16) {
       if ((hash_entry[i].flags_ & age_mask) != age_)
         hash_entry[i].flags_ =
-          static_cast<uint8_t>(age_ + (hash_entry[i].flags_ & flags_mask));
+        static_cast<uint8_t>(age_ + (hash_entry[i].flags_ & flags_mask));
 
       return &hash_entry[i];
     }

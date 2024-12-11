@@ -1,9 +1,7 @@
 #include "position.h"
-
 #include <cstring>
 #include <iomanip>
 #include <sstream>
-
 #include "bitboard.h"
 #include "hash.h"
 #include "macro.h"
@@ -189,15 +187,12 @@ bool position::give_check(const uint32_t move) const {
     const auto b = pieces() ^ from ^ ep_square | to;
 
     return (attack_rook_bb(square_k, b) & pieces(on_move_, pt_queen, pt_rook)) |
-    (attack_bishop_bb(square_k, b) &
+      (attack_bishop_bb(square_k, b) &
       pieces(on_move_, pt_queen, pt_bishop));
   }
 }
 
 void position::init() {
-  random rng(static_cast<uint32_t>(
-    std::chrono::system_clock::now().time_since_epoch().count()));
-
   for (auto color = white; color <= black; ++color)
     for (auto piece = pt_king; piece <= pt_queen; ++piece)
       for (auto sq = a1; sq <= h8; ++sq)
@@ -244,8 +239,7 @@ bool position::is_draw() const {
 
     stp -= 2;
     n -= 2;
-  }
-  while (n >= 0);
+  } while (n >= 0);
 
   return false;
 }
@@ -283,14 +277,14 @@ bool position::legal_move(const uint32_t move) const {
     assert(piece_on_square(to) == no_piece);
 
     return !(attack_rook_bb(square_k, occupied) &
-        pieces(~me, pt_queen, pt_rook)) &&
+      pieces(~me, pt_queen, pt_rook)) &&
       !(attack_bishop_bb(square_k, occupied) &
-        pieces(~me, pt_queen, pt_bishop));
+      pieces(~me, pt_queen, pt_bishop));
   }
 
   if (piece_type(piece_on_square(from)) == pt_king)
     return move_type(move) == castle_move ||
-      !(attack_to(to_square(move)) & pieces(~me));
+    !(attack_to(to_square(move)) & pieces(~me));
 
   return !(pos_info_->x_ray[on_move_] & from) ||
     aligned(from, to_square(move), king(me));
@@ -321,7 +315,7 @@ void position::play_move(const uint32_t move) {
   const bool gives_check =
     move < static_cast<uint32_t>(castle_move) && !discovered_check_possible()
     ? pos_info_->check_squares[piece_type(
-      piece_on_square(from_square(move)))] &
+    piece_on_square(from_square(move)))] &
     to_square(move)
     : give_check(move);
 
@@ -361,8 +355,8 @@ void position::play_move(const uint32_t move, const bool gives_check) {
   }
   else
     capture_piece = move_type(move) == enpassant
-      ? make_piece(you, pt_pawn)
-      : piece_on_square(to);
+    ? make_piece(you, pt_pawn)
+    : piece_on_square(to);
 
   if (capture_piece) {
     assert(piece_type(capture_piece) != pt_king);
@@ -553,10 +547,10 @@ bool position::see_test(const uint32_t move, const int limit) const {
 
     if (!(capture_piece & 1))
       attackers |= attack_bishop_bb(to, occupied) &
-        (pieces(pt_bishop) | pieces(pt_queen));
+      (pieces(pt_bishop) | pieces(pt_queen));
     if (capture_piece >= pt_rook)
       attackers |=
-        attack_rook_bb(to, occupied) & (pieces(pt_rook) | pieces(pt_queen));
+      attack_rook_bb(to, occupied) & (pieces(pt_rook) | pieces(pt_queen));
 
     attackers &= occupied;
 
@@ -593,13 +587,12 @@ bool position::see_test(const uint32_t move, const int limit) const {
 
     if (!(capture_piece & 1))
       attackers |= attack_bishop_bb(to, occupied) &
-        (pieces(pt_bishop) | pieces(pt_queen));
+      (pieces(pt_bishop) | pieces(pt_queen));
     if (capture_piece >= pt_rook)
       attackers |=
-        attack_rook_bb(to, occupied) & (pieces(pt_rook) | pieces(pt_queen));
+      attack_rook_bb(to, occupied) & (pieces(pt_rook) | pieces(pt_queen));
     attackers &= occupied;
-  }
-  while (true);
+  } while (true);
 }
 
 const int* position::see_values() {
@@ -673,8 +666,8 @@ void position::set_position_info(position_info* si) const {
   for (auto color = white; color <= black; ++color)
     for (auto piece = pt_knight; piece <= pt_queen; ++piece)
       si->non_pawn_material[color] +=
-        material_value[piece] *
-        static_cast<int>(piece_number_[make_piece(color, piece)]);
+      material_value[piece] *
+      static_cast<int>(piece_number_[make_piece(color, piece)]);
 }
 
 position& position::set(const std::string& fen_str, const bool is_chess960,
@@ -723,17 +716,17 @@ position& position::set(const std::string& fen_str, const bool is_chess960,
 
     if (token == 'K')
       for (rsq = relative_square(color, h1); piece_on_square(rsq) != rook;
-           --rsq) {
-      }
+      --rsq) {
+    }
 
     else if (token == 'Q')
       for (rsq = relative_square(color, a1); piece_on_square(rsq) != rook;
-           ++rsq) {
-      }
+      ++rsq) {
+    }
 
     else if (token >= 'A' && token <= 'H')
       rsq = make_square(static_cast<file>(token - 'A'),
-        relative_rank(color, rank_1));
+      relative_rank(color, rank_1));
 
     else
       continue;
@@ -860,8 +853,8 @@ bool position::valid_move(const uint32_t move) const {
     if (!(attack_from<pt_pawn>(from, me) & pieces(~me) & to) &&
       !(from + pawn_ahead(me) == to && empty_square(to)) &&
       !(from + 2 * pawn_ahead(me) == to &&
-        rank_of(from) == relative_rank(me, rank_2) && empty_square(to) &&
-        empty_square(to - pawn_ahead(me))))
+      rank_of(from) == relative_rank(me, rank_2) && empty_square(to) &&
+      empty_square(to - pawn_ahead(me))))
       return false;
   }
   else if (!(attack_from(piece, from) & to))

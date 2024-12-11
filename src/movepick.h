@@ -23,7 +23,7 @@ namespace movepick {
 
   template <move_gen>
   void score(const position& pos);
-} // namespace movepick
+}
 
 template <typename tn>
 struct piece_square_table {

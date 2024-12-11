@@ -4,7 +4,6 @@
 #include <mutex>
 #include <thread>
 #include <vector>
-
 #include "main.h"
 #include "movepick.h"
 #include "mutex.h"

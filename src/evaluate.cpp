@@ -3,7 +3,7 @@
 #include "position.h"
 
 namespace evaluate {
-  int eval_nnue(const position& pos) {
+  static int eval_nnue(const position& pos) {
     int pieces[33]{};
     int squares[33]{};
     int index = 2;
@@ -80,4 +80,4 @@ namespace evaluate {
     const auto result = -eval;
     return result;
   }
-} // namespace evaluate
+}

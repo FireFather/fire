@@ -6,7 +6,7 @@
 
 namespace movegen {
   template <side me, move_gen type>
-  s_move* all_piece_moves(const position& pos, s_move* moves,
+  static s_move* all_piece_moves(const position& pos, s_move* moves,
     const uint64_t target) {
     const auto only_check_moves = type == quiet_checks;
 
@@ -46,7 +46,7 @@ namespace movegen {
   }
 
   template <side me>
-  s_move* generate_pawn_advance(const position& pos, s_move* moves) {
+  static s_move* generate_pawn_advance(const position& pos, s_move* moves) {
     const auto ranks_6_7 =
       me == white ? rank_6_bb | rank_7_bb : rank_3_bb | rank_2_bb;
 
@@ -95,7 +95,7 @@ namespace movegen {
   }
 
   template <side me, move_gen mg, square delta>
-  s_move* get_promotions(const position& pos, s_move* moves, const square to) {
+  static s_move* get_promotions(const position& pos, s_move* moves, const square to) {
     const auto you = me == white ? black : white;
 
     if (mg == captures_promotions || mg == evade_check || mg == all_moves)
@@ -188,15 +188,15 @@ namespace movegen {
 
       while (promotion_right)
         moves = get_promotions<me, mg, capture_right>(pos, moves,
-          pop_lsb(&promotion_right));
+        pop_lsb(&promotion_right));
 
       while (promotion_left)
         moves = get_promotions<me, mg, capture_left>(pos, moves,
-          pop_lsb(&promotion_left));
+        pop_lsb(&promotion_left));
 
       while (promotion_forward)
         moves = get_promotions<me, mg, straight_ahead>(
-          pos, moves, pop_lsb(&promotion_forward));
+        pos, moves, pop_lsb(&promotion_forward));
     }
 
     if constexpr (mg == captures_promotions || mg == evade_check ||
@@ -228,7 +228,7 @@ namespace movegen {
 
         while (captureright)
           *moves++ = make_move(enpassant, pop_lsb(&captureright),
-            pos.enpassant_square());
+          pos.enpassant_square());
       }
     }
 
@@ -246,7 +246,7 @@ namespace movegen {
       if (only_check_moves) {
         if ((piece == pt_bishop || piece == pt_rook || piece == pt_queen) &&
           !(empty_attack[piece][from] & target &
-            pos.info()->check_squares[piece]))
+          pos.info()->check_squares[piece]))
           continue;
 
         if (pos.info()->x_ray[~pos.on_move()] & from) continue;
@@ -261,7 +261,7 @@ namespace movegen {
 
     return moves;
   }
-} // namespace movegen
+}
 
 template <move_gen mg>
 s_move* generate_moves(const position& pos, s_move* moves) {
@@ -293,9 +293,9 @@ s_move* generate_captures_on_square(const position& pos, s_move* moves,
 
   return pos.on_move() == white
     ? movegen::all_piece_moves<white, captures_promotions>(pos, moves,
-      target)
+    target)
     : movegen::all_piece_moves<black, captures_promotions>(pos, moves,
-      target);
+    target);
 }
 
 template <>
@@ -336,9 +336,9 @@ template <>
 s_move* generate_moves<queen_checks>(const position& pos, s_move* moves) {
   return pos.on_move() == white
     ? movegen::moves_for_piece<white, pt_queen, true>(pos, moves,
-      ~pos.pieces())
+    ~pos.pieces())
     : movegen::moves_for_piece<black, pt_queen, true>(pos, moves,
-      ~pos.pieces());
+    ~pos.pieces());
 }
 
 template <>
@@ -361,9 +361,9 @@ s_move* generate_moves<quiet_checks>(const position& pos, s_move* moves) {
 
   return me == white
     ? movegen::all_piece_moves<white, quiet_checks>(
-      pos, moves, ~pos.pieces())
+    pos, moves, ~pos.pieces())
     : movegen::all_piece_moves<black, quiet_checks>(
-      pos, moves, ~pos.pieces());
+    pos, moves, ~pos.pieces());
 }
 
 s_move* generate_legal_moves(const position& pos, s_move* moves) {
@@ -376,7 +376,7 @@ s_move* generate_legal_moves(const position& pos, s_move* moves) {
     : generate_moves<all_moves>(pos, moves);
   while (p_move != moves)
     if ((pinned || from_square(*p_move) == square_k ||
-        move_type(*p_move) == enpassant) &&
+      move_type(*p_move) == enpassant) &&
       !pos.legal_move(*p_move))
       *p_move = (--moves)->move;
     else

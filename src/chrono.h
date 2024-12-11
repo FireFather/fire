@@ -6,7 +6,7 @@ using max_moves_list = movelist<max_moves>;
 
 inline time_point now() {
   return std::chrono::duration_cast<std::chrono::milliseconds>(
-      std::chrono::steady_clock::now().time_since_epoch())
+    std::chrono::steady_clock::now().time_since_epoch())
     .count();
 }
 
@@ -19,15 +19,15 @@ struct search_param {
     infinite(0),
     ponder(0),
     nodes(time[white] = time[black] = inc[white] = inc[black] =
-      moves_to_go = depth = move_time = mate = infinite = ponder =
-      0) {}
+    moves_to_go = depth = move_time = mate = infinite = ponder =
+    0) {}
 
   [[nodiscard]] bool use_time_calculating() const {
     return !(mate | move_time | depth | nodes | infinite);
   }
 
   int time[num_sides]{}, inc[num_sides]{}, moves_to_go, depth, move_time, mate,
-      infinite, ponder;
+    infinite, ponder;
   uint64_t nodes;
   max_moves_list search_moves;
   time_point start_time = 0;

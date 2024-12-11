@@ -2,7 +2,7 @@
 #include "main.h"
 
 enum hashflags : uint8_t {
-  no_limit,
+  no_limit = 0,
   threat_white = 1,
   threat_black = 2,
   in_use = 4,

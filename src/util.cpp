@@ -5,11 +5,9 @@
 #endif
 #include <iomanip>
 #include <sstream>
-
 #include "macro.h"
 #include "main.h"
 #include "movegen.h"
-#include "position.h"
 #include "util.h"
 
 std::string move_to_string(const uint32_t move, const position& pos) {
@@ -23,10 +21,10 @@ std::string move_to_string(const uint32_t move, const position& pos) {
   if (move_type(move) == castle_move && pos.is_chess960())
     to = pos.castle_rook_square(to);
 
-  s_move[0] = 'a' + static_cast<char>(file_of(from));
-  s_move[1] = '1' + static_cast<char>(rank_of(from));
-  s_move[2] = 'a' + static_cast<char>(file_of(to));
-  s_move[3] = '1' + static_cast<char>(rank_of(to));
+  s_move[0] = static_cast<char>('a' + file_of(from));
+  s_move[1] = static_cast<char>('1' + rank_of(from));
+  s_move[2] = static_cast<char>('a' + file_of(to));
+  s_move[3] = static_cast<char>('1' + rank_of(to));
 
   if (move < static_cast<uint32_t>(promotion_p)) return std::string(s_move, 4);
 
@@ -38,12 +36,12 @@ uint32_t move_from_string(const position& pos, std::string& str) {
   if (pos.is_chess960()) {
     if (str == "O-O")
       str = move_to_string(make_move(castle_move, pos.king(pos.on_move()),
-          relative_square(pos.on_move(), g1)),
-        pos);
+      relative_square(pos.on_move(), g1)),
+      pos);
     else if (str == "O-O-O")
       str = move_to_string(make_move(castle_move, pos.king(pos.on_move()),
-          relative_square(pos.on_move(), c1)),
-        pos);
+      relative_square(pos.on_move(), c1)),
+      pos);
   }
 
   if (str.length() == 5) str[4] = static_cast<char>(tolower(str[4]));
@@ -74,7 +72,7 @@ std::ostream& operator<<(std::ostream& os, const position& pos) {
         os << " " << pc;
       else
         os << " "
-          << ".";
+        << ".";
       found = false;
     }
     os << "\n";

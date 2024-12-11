@@ -1,10 +1,8 @@
 #include "thread.h"
-
 #include <iostream>
-
 #include "main.h"
 
-cmhinfo* cmh_data;
+static cmhinfo* cmh_data;
 
 thread::thread()
   : exit_(false),
@@ -15,7 +13,7 @@ thread::thread()
   native_thread_ = std::thread(&thread::idle_loop, this);
   sleep_condition_.wait(lk, [&] {
     return !search_active_;
-  });
+    });
 }
 
 thread::~thread() {
@@ -99,14 +97,14 @@ void thread::wait(const std::atomic_bool& condition) {
   std::unique_lock lk(mutex_);
   sleep_condition_.wait(lk, [&] {
     return static_cast<bool>(condition);
-  });
+    });
 }
 
 void thread::wait_for_search_to_end() {
   std::unique_lock lk(mutex_);
   sleep_condition_.wait(lk, [&] {
     return !search_active_;
-  });
+    });
 }
 
 void thread::wake(const bool activate_search) {

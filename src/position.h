@@ -14,22 +14,22 @@ struct piece_square_stats;
 
 using counter_move_values = piece_square_stats<24576, 24576>;
 
-inline constexpr int delayed_number{7};
+inline constexpr int delayed_number{ 7 };
 
 enum ptype : uint8_t {
-  no_piece,
+  no_piece = 0,
   w_king = 1,
-  w_pawn,
-  w_knight,
-  w_bishop,
-  w_rook,
-  w_queen,
+  w_pawn = 2,
+  w_knight = 3,
+  w_bishop = 4,
+  w_rook = 5,
+  w_queen = 6,
   b_king = 9,
-  b_pawn,
-  b_knight,
-  b_bishop,
-  b_rook,
-  b_queen,
+  b_pawn = 10,
+  b_knight = 11,
+  b_bishop = 12,
+  b_rook = 13,
+  b_queen = 14,
   num_pieces = 16
 };
 
@@ -102,7 +102,7 @@ struct position_info {
   uint8_t eval_factor, lmr_reduction;
   bool no_early_pruning, move_repetition;
 
-  s_move *mp_current_move, *mp_end_list, *mp_end_bad_capture;
+  s_move* mp_current_move, * mp_end_list, * mp_end_bad_capture;
   stage mp_stage;
   uint32_t mp_hash_move, mp_counter_move;
   int mp_depth;
@@ -348,7 +348,7 @@ inline cmhinfo* position::cmh_info() const {
 inline bool position::different_color_bishops() const {
   return piece_number_[w_bishop] == 1 && piece_number_[b_bishop] == 1 &&
     different_color(piece_square(white, pt_bishop),
-      piece_square(black, pt_bishop));
+    piece_square(black, pt_bishop));
 }
 
 inline uint64_t position::discovered_check_possible() const {

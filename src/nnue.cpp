@@ -1,11 +1,10 @@
 #include "nnue.h"
-
 #include <cassert>
 #include <cstdio>
 #include <cstring>
-
 #include "main.h"
 #include "util.h"
+
 #ifdef NNUE_EMBEDDED
 #include "incbin.h"
 INCBIN(Network, NNUE_EVAL_FILE);
@@ -42,7 +41,7 @@ size_t file_size(FD fd) {
 
 const void* map_file(FD fd, map_t* map) {
 #ifndef _WIN32
-  *map = file_size(fd);
+  * map = file_size(fd);
   void* data = mmap(NULL, *map, PROT_READ, MAP_SHARED, fd, 0);
 #ifdef MADV_RANDOM
   madvise(data, *map, MADV_RANDOM);
@@ -68,16 +67,16 @@ void unmap_file(const void* data, map_t map) {
 #endif
 }
 
-inline int orient(const int c, const int s) {
+static int orient(const int c, const int s) {
   return s ^ (c == white ? 0x00 : 0x3f);
 }
 
-inline unsigned make_index(const int c, const int s, const int pc,
+static unsigned make_index(const int c, const int s, const int pc,
   const int ksq) {
   return orient(c, s) + piece_to_index[c][pc] + ps_end * ksq;
 }
 
-void half_kp_append_active_indices(const board* pos, const int c,
+static void half_kp_append_active_indices(const board* pos, const int c,
   index_list* active) {
   int ksq = pos->squares[c];
   ksq = orient(c, ksq);
@@ -88,7 +87,7 @@ void half_kp_append_active_indices(const board* pos, const int c,
   }
 }
 
-void half_kp_append_changed_indices(const board* pos, const int c,
+static void half_kp_append_changed_indices(const board* pos, const int c,
   const dirty_piece* dp, index_list* removed,
   index_list* added) {
   int ksq = pos->squares[c];
@@ -103,12 +102,12 @@ void half_kp_append_changed_indices(const board* pos, const int c,
   }
 }
 
-void append_active_indices(const board* pos, index_list active[2]) {
+static void append_active_indices(const board* pos, index_list active[2]) {
   for (unsigned c = 0; c < 2; c++)
     half_kp_append_active_indices(pos, c, &active[c]);
 }
 
-void append_changed_indices(const board* pos, index_list removed[2],
+static void append_changed_indices(const board* pos, index_list removed[2],
   index_list added[2], bool reset[2]) {
   const dirty_piece* dp = &pos->nnue[0]->dirty_piece;
   if (pos->nnue[1]->accumulator.computed_accumulation) {
@@ -135,7 +134,7 @@ void append_changed_indices(const board* pos, index_list removed[2],
   }
 }
 
-inline int32_t affine_propagate(clipped_t* input, const int32_t* biases,
+static int32_t affine_propagate(clipped_t* input, const int32_t* biases,
   weight_t* weights) {
   const auto iv = reinterpret_cast<__m256i*>(input);
   const auto row = reinterpret_cast<__m256i*>(weights);
@@ -147,7 +146,7 @@ inline int32_t affine_propagate(clipped_t* input, const int32_t* biases,
   return _mm_cvtsi128_si32(sum) + _mm_extract_epi32(sum, 1) + biases[0];
 }
 
-inline bool next_idx(unsigned* idx, unsigned* offset, mask2_t* v, mask_t* mask,
+static bool next_idx(unsigned* idx, unsigned* offset, mask2_t* v, mask_t* mask,
   const unsigned in_dims) {
   while (*v == 0) {
     *offset += 8 * sizeof(mask2_t);
@@ -159,7 +158,7 @@ inline bool next_idx(unsigned* idx, unsigned* offset, mask2_t* v, mask_t* mask,
   return true;
 }
 
-inline void affine_txfm(int8_t* input, void* output, unsigned in_dims,
+static void affine_txfm(int8_t* input, void* output, unsigned in_dims,
   unsigned out_dims, const int32_t* biases,
   const weight_t* weights, mask_t* in_mask,
   mask_t* out_mask, const bool pack8_and_calc_mask) {
@@ -205,10 +204,10 @@ inline void affine_txfm(int8_t* input, void* output, unsigned in_dims,
     out_vec[0] = _mm256_max_epi8(out_vec[0], k_zero);
 }
 
-int16_t ft_biases alignas(64)[k_half_dimensions];
-int16_t ft_weights alignas(64)[k_half_dimensions * ft_in_dims];
+static int16_t ft_biases alignas(64)[k_half_dimensions];
+static int16_t ft_weights alignas(64)[k_half_dimensions * ft_in_dims];
 
-inline void refresh_accumulator(const board* pos) {
+static void refresh_accumulator(const board* pos) {
   Accumulator* accumulator = &pos->nnue[0]->accumulator;
   index_list active_indices[2];
   active_indices[0].size = active_indices[1].size = 0;
@@ -234,14 +233,14 @@ inline void refresh_accumulator(const board* pos) {
   accumulator->computed_accumulation = 1;
 }
 
-inline bool update_accumulator(const board* pos) {
+static bool update_accumulator(const board* pos) {
   Accumulator* accumulator = &pos->nnue[0]->accumulator;
   if (accumulator->computed_accumulation) return true;
   Accumulator* prev_acc;
   if ((!pos->nnue[1] ||
-      !(prev_acc = &pos->nnue[1]->accumulator)->computed_accumulation) &&
+    !(prev_acc = &pos->nnue[1]->accumulator)->computed_accumulation) &&
     (!pos->nnue[2] ||
-      !(prev_acc = &pos->nnue[2]->accumulator)->computed_accumulation))
+    !(prev_acc = &pos->nnue[2]->accumulator)->computed_accumulation))
     return false;
   index_list removed_indices[2], added_indices[2];
   removed_indices[0].size = removed_indices[1].size = 0;
@@ -285,11 +284,11 @@ inline bool update_accumulator(const board* pos) {
   return true;
 }
 
-inline void transform(const board* pos, clipped_t* output, mask_t* out_mask) {
+static void transform(const board* pos, clipped_t* output, mask_t* out_mask) {
   if (!update_accumulator(pos)) refresh_accumulator(pos);
-  int16_t (*accumulation)[2][256] = &pos->nnue[0]->accumulator.accumulation;
+  int16_t(*accumulation)[2][256] = &pos->nnue[0]->accumulator.accumulation;
   (void)out_mask;
-  const int perspectives[2] = {pos->player, !pos->player};
+  const int perspectives[2] = { pos->player, !pos->player };
   for (unsigned p = 0; p < 2; p++) {
     const unsigned offset = k_half_dimensions * p;
     constexpr unsigned num_chunks = 16 * k_half_dimensions / simd_width;
@@ -305,15 +304,9 @@ inline void transform(const board* pos, clipped_t* output, mask_t* out_mask) {
   }
 }
 
-struct net_data {
-  alignas(64) clipped_t input[ft_out_dims];
-  clipped_t hidden1_out[32];
-  int8_t hidden2_out[32];
-};
-
 int nnue_evaluate_pos(const board* pos) {
   alignas(8) mask_t input_mask[ft_out_dims / (8 * sizeof(mask_t))];
-  alignas(8) mask_t hidden1_mask[8 / sizeof(mask_t)] = {0};
+  alignas(8) mask_t hidden1_mask[8 / sizeof(mask_t)] = {};
   net_data buf;
 #define B(x) (buf.x)
   transform(pos, B(input), input_mask);
@@ -326,7 +319,7 @@ int nnue_evaluate_pos(const board* pos) {
   return out_value / fv_scale;
 }
 
-inline unsigned wt_idx(const unsigned r, unsigned c, const unsigned dims) {
+static unsigned wt_idx(const unsigned r, unsigned c, const unsigned dims) {
   (void)dims;
   if (dims > 32) {
     unsigned b = c & 0x18;
@@ -336,14 +329,14 @@ inline unsigned wt_idx(const unsigned r, unsigned c, const unsigned dims) {
   return c * 32 + r;
 }
 
-const char* read_hidden_weights(weight_t* w, const unsigned dims,
+const static char* read_hidden_weights(weight_t* w, const unsigned dims,
   const char* d) {
   for (unsigned r = 0; r < 32; r++)
     for (unsigned c = 0; c < dims; c++) w[wt_idx(r, c, dims)] = *d++;
   return d;
 }
 
-void permute_biases(int32_t* biases) {
+static void permute_biases(int32_t* biases) {
   const auto b = reinterpret_cast<__m128i*>(biases);
   __m128i tmp[8];
   tmp[0] = b[0];
@@ -357,29 +350,24 @@ void permute_biases(int32_t* biases) {
   memcpy(b, tmp, 8 * sizeof(__m128i));
 }
 
-enum {
-  transformer_start = 3 * 4 + 177,
-  network_start = transformer_start + 4 + 2 * 256 + 2 * 256 * 64 * 641
-};
-
-inline uint32_t readu_le_u32(const void* p) {
+static uint32_t readu_le_u32(const void* p) {
   const auto q = static_cast<const uint8_t*>(p);
   return q[0] | q[1] << 8 | q[2] << 16 | q[3] << 24;
 }
 
-inline uint16_t readu_le_u16(const void* p) {
+static uint16_t readu_le_u16(const void* p) {
   const auto q = static_cast<const uint8_t*>(p);
   return q[0] | q[1] << 8;
 }
 
-void read_output_weights(weight_t* w, const char* d) {
+static void read_output_weights(weight_t* w, const char* d) {
   for (unsigned i = 0; i < 32; i++) {
     const unsigned c = i;
     w[c] = *d++;
   }
 }
 
-bool verify_net(const void* eval_data, const size_t size) {
+static bool verify_net(const void* eval_data, const size_t size) {
   if (size != 21022697) return false;
   const auto d = static_cast<const char*>(eval_data);
   if (readu_le_u32(d) != nnue_version) return false;
@@ -390,7 +378,7 @@ bool verify_net(const void* eval_data, const size_t size) {
   return true;
 }
 
-void init_weights(const void* eval_data) {
+static void init_weights(const void* eval_data) {
   const char* d = static_cast<const char*>(eval_data) + transformer_start + 4;
   for (unsigned i = 0; i < k_half_dimensions; i++, d += 2)
     ft_biases[i] = readu_le_u16(d);
@@ -407,7 +395,7 @@ void init_weights(const void* eval_data) {
   permute_biases(hidden2_biases);
 }
 
-bool load_eval_file(const char* eval_file) {
+static bool load_eval_file(const char* eval_file) {
   const void* eval_data;
   map_t mapping;
   size_t size;
@@ -416,7 +404,8 @@ bool load_eval_file(const char* eval_file) {
     eval_data = gNetworkData;
     mapping = 0;
     size = gNetworkSize;
-  } else
+  }
+  else
 #endif
   {
     const FD fd = open_file(eval_file);

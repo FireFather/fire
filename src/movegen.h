@@ -16,7 +16,7 @@ struct s_move {
   }
 };
 
-enum move_gen {
+enum move_gen : uint8_t {
   captures_promotions,
   quiet_moves,
   quiet_checks,
@@ -36,7 +36,7 @@ namespace movegen {
 
   template <uint8_t castle, bool only_check_moves, bool chess960>
   s_move* get_castle(const position& pos, s_move* moves);
-} // namespace movegen
+}
 
 inline bool operator<(const s_move& f, const s_move& s) {
   return f.value < s.value;

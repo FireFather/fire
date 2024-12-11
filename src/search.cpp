@@ -1,7 +1,5 @@
 #include "search.h"
-
 #include <sstream>
-
 #include "chrono.h"
 #include "evaluate.h"
 #include "hash.h"
@@ -75,7 +73,7 @@ namespace search {
     pi->move_number = 0;
 
     if (my_thread == thread_pool.main()) {
-      if (auto* main_thread = static_cast<mainthread*>(my_thread);
+      if (auto* main_thread = dynamic_cast<mainthread*>(my_thread);
         ++main_thread->interrupt_counter >= 4096) {
         if (main_thread->quick_move_evaluation_busy) {
           if (main_thread->quick_move_evaluation_stopped) return alpha;
@@ -94,8 +92,8 @@ namespace search {
       if (signals.stop_analyzing.load(std::memory_order_relaxed) ||
         pi->move_repetition || pi->ply >= max_ply)
         return pi->ply >= max_ply && !state_check
-          ? evaluate::eval(pos)
-          : draw[pos.on_move()];
+        ? evaluate::eval(pos)
+        : draw[pos.on_move()];
 
       alpha = std::max(gets_mated(pi->ply), alpha);
       beta = std::min(gives_mate(pi->ply + 1), beta);
@@ -128,8 +126,8 @@ namespace search {
 
     if (!pv_node && hash_value != no_score && hash_entry->depth() >= depth &&
       (hash_value >= beta
-        ? hash_entry->bounds() & south_border
-        : hash_entry->bounds() & north_border)) {
+      ? hash_entry->bounds() & south_border
+      : hash_entry->bounds() & north_border)) {
       if (hash_move) {
         if (hash_value >= beta)
           update_stats(pos, state_check, hash_move, depth, nullptr, 0);
@@ -189,7 +187,7 @@ namespace search {
 
       auto r_alpha = alpha - razor_margin;
       if (auto val =
-          q_search<nonPV, false>(pos, r_alpha, r_alpha + score_1, depth_0);
+        q_search<nonPV, false>(pos, r_alpha, r_alpha + score_1, depth_0);
         val <= r_alpha)
         return val;
     }
@@ -205,7 +203,7 @@ namespace search {
       eval >= beta + null_move_tempo_mult &&
       (!pi->strong_threat || depth >= null_move_strong_threat_mult * plies) &&
       (pi->position_value >= beta ||
-        depth >= null_move_pos_val_less_than_beta_mult * plies) &&
+      depth >= null_move_pos_val_less_than_beta_mult * plies) &&
       pi->non_pawn_material[pos.on_move()] &&
       (!thread_pool.analysis_mode || depth < null_move_max_depth * plies)) {
       constexpr auto null_move_depth_greater_than_cut_node_mult = 15;
@@ -220,15 +218,15 @@ namespace search {
       R = depth < 4 * plies
         ? depth
         : (null_move_tm_base +
-          null_move_tm_mult * (depth / plies) +
-          std::max(std::min(null_move_depth_greater_than_mult * (eval - beta) /
-            null_move_depth_greater_than_div -
-            null_move_depth_greater_than_sub -
-            null_move_depth_greater_than_cut_node_mult *
-            cut_node -
-            null_move_depth_greater_than_cut_node_mult *
-            static_cast<int>((hash_move != no_move)),
-            3 * 256), 0)) / 256 * plies;
+        null_move_tm_mult * (depth / plies) +
+        std::max(std::min(null_move_depth_greater_than_mult * (eval - beta) /
+        null_move_depth_greater_than_div -
+        null_move_depth_greater_than_sub -
+        null_move_depth_greater_than_cut_node_mult *
+        cut_node -
+        null_move_depth_greater_than_cut_node_mult *
+        static_cast<int>((hash_move != no_move)),
+        3 * 256), 0)) / 256 * plies;
 
       pi->mp_end_list = (pi - 1)->mp_end_list;
       pos.play_null_move();
@@ -237,14 +235,14 @@ namespace search {
         depth - R < plies
         ? -q_search<nonPV, false>(pos, -beta, -beta + score_1, depth_0)
         : -alpha_beta<nonPV>(pos, -beta, -beta + score_1, depth - R,
-          !cut_node);
+        !cut_node);
       (pi + 1)->no_early_pruning = false;
       pos.take_null_back();
 
       if (constexpr auto value_less_than_beta_margin = 100;
         (pi - 1)->lmr_reduction &&
         (value < beta - static_cast<int>(value_less_than_beta_margin) ||
-          value < -longest_mate_score)) {
+        value < -longest_mate_score)) {
         if ((pi - 1)->lmr_reduction <= 2 * plies) return beta - score_1;
         depth += 2 * plies;
       }
@@ -291,7 +289,7 @@ namespace search {
     if (constexpr auto no_early_pruning_min_depth = 5;
       !pv_node && depth >= no_early_pruning_min_depth * plies &&
       (depth >= no_early_pruning_strong_threat_min_depth * plies ||
-        pi->strong_threat & pos.on_move() + 1) &&
+      pi->strong_threat & pos.on_move() + 1) &&
       abs(beta) < longest_mate_score) {
       constexpr auto limit_depth_min = 8;
       constexpr auto pc_beta_depth_margin = 4;
@@ -321,13 +319,13 @@ namespace search {
 
     if (constexpr auto no_early_pruning_pv_node_depth_min = 5;
       depth >= (pv_node
-        ? no_early_pruning_pv_node_depth_min * plies
-        : no_early_pruning_non_pv_node_depth_min * plies) &&
+      ? no_early_pruning_pv_node_depth_min * plies
+      : no_early_pruning_non_pv_node_depth_min * plies) &&
       !hash_move &&
       (pv_node || cut_node ||
-        pi->position_value +
-        static_cast<int>(no_early_pruning_position_value_margin) >=
-        beta)) {
+      pi->position_value +
+      static_cast<int>(no_early_pruning_position_value_margin) >=
+      beta)) {
       auto d =
         depth - 2 * plies -
         (pv_node ? depth_0 : static_cast<uint32_t>(depth) / plies / 4 * plies);
@@ -376,8 +374,8 @@ namespace search {
         if (constexpr auto info_currmove_interval = 4000;
           time_control.elapsed() > info_currmove_interval)
           acout() << "info currmove " << move_to_string(move, pos)
-            << " currmovenumber " << move_number + my_thread->active_pv
-            << std::endl;
+          << " currmovenumber " << move_number + my_thread->active_pv
+          << std::endl;
       }
 
       if (pv_node) (pi + 1)->pv = nullptr;
@@ -416,7 +414,7 @@ namespace search {
         pi->excluded_move = move;
 
         if (auto value = alpha_beta<nonPV>(pos, r_beta - score_1, r_beta, r_depth,
-            !pv_node && cut_node);
+          !pv_node && cut_node);
           value < r_beta)
           extension = plies;
 
@@ -466,10 +464,10 @@ namespace search {
         if (constexpr auto predicted_depth_see_test_base = 300;
           predicted_depth < predicted_depth_max_depth * plies &&
           !pos.see_test(
-            move,
-            std::min(see_0, predicted_depth_see_test_base -
-              predicted_depth_see_test_mult *
-              predicted_depth * predicted_depth / 64)))
+          move,
+          std::min(see_0, predicted_depth_see_test_base -
+          predicted_depth_see_test_mult *
+          predicted_depth * predicted_depth / 64)))
           continue;
       }
 
@@ -480,9 +478,9 @@ namespace search {
         if (constexpr auto non_root_node_see_test_base = 150;
           pi->mp_stage != good_captures && extension != plies &&
           !pos.see_test(move, std::min(see_knight - see_bishop,
-            non_root_node_see_test_base -
-            non_root_node_see_test_mult * depth *
-            depth / 64)))
+          non_root_node_see_test_base -
+          non_root_node_see_test_mult * depth *
+          depth / 64)))
           continue;
       }
 
@@ -513,9 +511,9 @@ namespace search {
           move_value_stats::calculate_offset(moved_piece, to_square(move));
         auto stats_value =
           static_cast<int>(
-            state_check
-            ? pos.thread_info()->evasion_history.value_at_offset(offset)
-            : pos.thread_info()->history.value_at_offset(offset)) +
+          state_check
+          ? pos.thread_info()->evasion_history.value_at_offset(offset)
+          : pos.thread_info()->history.value_at_offset(offset)) +
           (cmh ? static_cast<int>(cmh->value_at_offset(offset)) : sort_zero) +
           (fmh ? static_cast<int>(fmh->value_at_offset(offset)) : sort_zero) +
           (fmh2 ? static_cast<int>(fmh2->value_at_offset(offset)) : sort_zero);
@@ -526,8 +524,8 @@ namespace search {
         pi->stats_value = stats_value;
         if ((pi - 1)->stats_value != sort_max)
           r -= std::min(plies,
-            std::max(-plies, (stats_value - (pi - 1)->stats_value) /
-              4096 * (plies / 8)));
+          std::max(-plies, (stats_value - (pi - 1)->stats_value) /
+          4096 * (plies / 8)));
 
         r = std::max(r, depth_0);
         auto d = std::max(new_depth - r, plies);
@@ -540,7 +538,7 @@ namespace search {
           pi->lmr_reduction = static_cast<uint8_t>(lmr_reduction_min * plies / 2);
           value =
             -alpha_beta<nonPV>(pos, -(alpha + score_1), -alpha,
-              new_depth - lmr_reduction_min * plies / 2, true);
+            new_depth - lmr_reduction_min * plies / 2, true);
         }
 
         full_search_needed = value > alpha && pi->lmr_reduction != 0;
@@ -555,11 +553,11 @@ namespace search {
         value = new_depth < plies
           ? gives_check
           ? -q_search<nonPV, true>(
-            pos, -(alpha + score_1), -alpha, depth_0)
+          pos, -(alpha + score_1), -alpha, depth_0)
           : -q_search<nonPV, false>(
-            pos, -(alpha + score_1), -alpha, depth_0)
+          pos, -(alpha + score_1), -alpha, depth_0)
           : -alpha_beta<nonPV>(pos, -(alpha + score_1), -alpha,
-            new_depth, pv_node || !cut_node);
+          new_depth, pv_node || !cut_node);
       }
 
       if (pv_node &&
@@ -584,7 +582,7 @@ namespace search {
       if (signals.stop_analyzing.load(std::memory_order_relaxed)) return alpha;
 
       if (my_thread == thread_pool.main() &&
-        static_cast<mainthread*>(my_thread)->quick_move_evaluation_stopped)
+        dynamic_cast<mainthread*>(my_thread)->quick_move_evaluation_stopped)
         return alpha;
 
       if (root_node) {
@@ -601,12 +599,12 @@ namespace search {
           for (auto* z = (pi + 1)->pv; *z != no_move; ++z) root_move.pv.add(*z);
 
           if (move_number > 1 && my_thread == thread_pool.main())
-            static_cast<mainthread*>(my_thread)->best_move_changed += 1024;
+            dynamic_cast<mainthread*>(my_thread)->best_move_changed += 1024;
 
           if (!bench_active && my_thread == thread_pool.main())
             acout() << print_pv(pos, alpha, beta, my_thread->active_pv,
-                move_index)
-              << std::endl;
+            move_index)
+            << std::endl;
         }
         else
           root_move.score = -max_score;
@@ -641,10 +639,10 @@ namespace search {
 
     if (best_score == -max_score)
       best_score = pi->excluded_move
-        ? alpha
-        : state_check
-        ? gets_mated(pi->ply)
-        : draw[pos.on_move()];
+      ? alpha
+      : state_check
+      ? gets_mated(pi->ply)
+      : draw[pos.on_move()];
 
     else if (best_move) {
       update_stats(pos, state_check, best_move, depth, quiet_moves,
@@ -659,7 +657,7 @@ namespace search {
         alpha -
         static_cast<int>(fail_low_counter_move_bonus_min_depth_margin))
         update_stats_quiet(pos, state_check, depth, quiet_moves,
-          quiet_move_number);
+        quiet_move_number);
 
       if (constexpr auto fail_low_counter_move_bonus_min_depth = 3;
         depth >= fail_low_counter_move_bonus_min_depth * plies &&
@@ -686,10 +684,10 @@ namespace search {
       hash_entry = main_hash.replace(key64);
       hash_entry->save(key64, value_to_hash(best_score, pi->ply),
         (best_score >= beta
-          ? south_border
-          : pv_node && best_move
-          ? exact_value
-          : north_border) +
+        ? south_border
+        : pv_node && best_move
+        ? exact_value
+        : north_border) +
         pi->strong_threat,
         depth, best_move, pi->position_value, main_hash.age());
     }
@@ -774,8 +772,8 @@ namespace search {
 
     if (pi->move_repetition || pi->ply >= max_ply)
       return pi->ply >= max_ply && !state_check
-        ? evaluate::eval(pos)
-        : draw[pos.on_move()];
+      ? evaluate::eval(pos)
+      : draw[pos.on_move()];
 
     assert(0 <= pi->ply && pi->ply < max_ply);
 
@@ -790,8 +788,8 @@ namespace search {
 
     if (!pv_node && hash_value != no_score && hash_entry->depth() >= hash_depth &&
       (hash_value >= beta
-        ? hash_entry->bounds() & south_border
-        : hash_entry->bounds() & north_border)) {
+      ? hash_entry->bounds() & south_border
+      : hash_entry->bounds() & north_border)) {
       return hash_value;
     }
 
@@ -885,24 +883,24 @@ namespace search {
               moved_piece, to_square(move));
 
             if (const auto stats_value =
-                static_cast<int>(
-                  pos.thread_info()->evasion_history.value_at_offset(
-                    offset)) +
-                (pi->move_counter_values
-                  ? static_cast<int>(
-                    pi->move_counter_values->value_at_offset(offset))
-                  : sort_zero) +
-                ((pi - 1)->move_counter_values
-                  ? static_cast<int>(
-                    (pi - 1)->move_counter_values->value_at_offset(
-                      offset))
-                  : sort_zero) +
-                ((pi - 3)->move_counter_values
-                  ? static_cast<int>(
-                    (pi - 3)->move_counter_values->value_at_offset(
-                      offset))
-                  : sort_zero);
-              stats_value < static_cast<int>(qs_stats_value_sortvalue))
+              static_cast<int>(
+              pos.thread_info()->evasion_history.value_at_offset(
+              offset)) +
+              (pi->move_counter_values
+              ? static_cast<int>(
+              pi->move_counter_values->value_at_offset(offset))
+              : sort_zero) +
+              ((pi - 1)->move_counter_values
+              ? static_cast<int>(
+              (pi - 1)->move_counter_values->value_at_offset(
+              offset))
+              : sort_zero) +
+              ((pi - 3)->move_counter_values
+              ? static_cast<int>(
+              (pi - 3)->move_counter_values->value_at_offset(
+              offset))
+              : sort_zero);
+            stats_value < static_cast<int>(qs_stats_value_sortvalue))
               continue;
           }
 
@@ -933,13 +931,13 @@ namespace search {
         constexpr auto qs_skip_see_test_value_greater_than_alpha_sort_value =
           1000;
         if (const auto offset = move_value_stats::calculate_offset(
-            (pi + 1)->captured_piece, to_square(move));
+          (pi + 1)->captured_piece, to_square(move));
           value > alpha)
           pos.thread_info()->capture_history.update_plus(
-            offset, qs_skip_see_test_value_greater_than_alpha_sort_value);
+          offset, qs_skip_see_test_value_greater_than_alpha_sort_value);
         else
           pos.thread_info()->capture_history.update_minus(
-            offset, qs_skip_see_test_value_less_than_equal_to_alpha_sort_value);
+          offset, qs_skip_see_test_value_less_than_equal_to_alpha_sort_value);
       }
 
       if (value > best_value) {
@@ -1035,12 +1033,12 @@ namespace search {
 
       if (cmh)
         ti->counter_moves.update(pi->moved_piece, to_square(pi->previous_move),
-          static_cast<unsigned short>(move));
+        static_cast<unsigned short>(move));
 
       if (cmh && fmh)
         ti->counter_followup_moves.update(
-          (pi - 1)->moved_piece, to_square((pi - 1)->previous_move),
-          pi->moved_piece, to_square(pi->previous_move), move);
+        (pi - 1)->moved_piece, to_square((pi - 1)->previous_move),
+        pi->moved_piece, to_square(pi->previous_move), move);
 
       if (constexpr auto update_stats_max_depth = 18;
         depth < update_stats_max_depth * plies) {
@@ -1159,7 +1157,7 @@ namespace search {
       ? val + ply
       : val;
   }
-} // namespace search
+}
 
 void mainthread::begin_search() {
   search::running = true;
@@ -1173,7 +1171,7 @@ void mainthread::begin_search() {
 
   thread_pool.fifty_move_distance =
     std::min(50, std::max(thread_pool.fifty_move_distance,
-      root_position->fifty_move_counter() / 2 + 5));
+    root_position->fifty_move_counter() / 2 + 5));
   thread_pool.piece_contempt = uci_contempt;
   if (thread_pool.piece_contempt) {
     if (thread_pool.analysis_mode) thread_pool.contempt_color = white;
@@ -1289,15 +1287,15 @@ void mainthread::begin_search() {
     best_thread->root_moves[0].depth = root_moves[0].depth;
   if (!bench_active) {
     acout() << print_pv(*best_thread->root_position, -max_score, max_score,
-        active_pv, 0)
+      active_pv, 0)
       << std::endl;
     acout() << "bestmove "
       << move_to_string(best_thread->root_moves[0].pv[0], *root_position);
     if (best_thread->root_moves[0].pv.size() > 1 ||
       best_thread->root_moves[0].ponder_move_from_hash(*root_position))
       acout() << " ponder "
-        << move_to_string(best_thread->root_moves[0].pv[1],
-          *root_position);
+      << move_to_string(best_thread->root_moves[0].pv[1],
+      *root_position);
     acout() << std::endl;
   }
   thread_pool.total_analyze_time += static_cast<int>(time_control.elapsed());
@@ -1368,7 +1366,7 @@ void thread::begin_search() {
         constexpr auto v_singular_margin = 102;
         const auto depth_singular =
           std::max(main_thread->previous_root_depth / 2,
-            main_thread->previous_root_depth - 8 * plies);
+          main_thread->previous_root_depth - 8 * plies);
         const auto v_singular =
           hash_value - static_cast<int>(v_singular_margin);
         pi->excluded_move = hash_move;
@@ -1431,8 +1429,8 @@ void thread::begin_search() {
       root_moves[i].previous_score = root_moves[i].score;
 
     for (active_pv = 0;
-         active_pv < thread_pool.multi_pv && !search::signals.stop_analyzing;
-         ++active_pv) {
+      active_pv < thread_pool.multi_pv && !search::signals.stop_analyzing;
+      ++active_pv) {
       const auto prev_best_move = root_moves[active_pv].pv[0];
       auto fail_high_count = 0;
 
@@ -1470,7 +1468,7 @@ void thread::begin_search() {
           time_control.elapsed() >
           time_control.optimum() * time_control_optimum_mult_1 / 1024) {
           if (const auto play_easy_move = root_moves[0].pv[0] == fast_move &&
-              main_thread->best_move_changed < 31;
+            main_thread->best_move_changed < 31;
             play_easy_move)
             fail_high_resolve = false;
 
@@ -1481,13 +1479,13 @@ void thread::begin_search() {
             const auto improvement_factor = std::max(
               420,
               std::min(
-                improvement_factor_min_base,
-                improvement_factor_max_base +
-                improvement_factor_max_mult * main_thread->failed_low -
-                improvement_factor_bv_mult *
-                (best_value - main_thread->previous_root_score)));
+              improvement_factor_min_base,
+              improvement_factor_max_base +
+              improvement_factor_max_mult * main_thread->failed_low -
+              improvement_factor_bv_mult *
+              (best_value - main_thread->previous_root_score)));
             if (const auto unstable_factor =
-                1024 + main_thread->best_move_changed;
+              1024 + main_thread->best_move_changed;
               time_control.elapsed() > time_control.optimum() *
               unstable_factor / 1024 *
               improvement_factor / 1024)
@@ -1508,7 +1506,7 @@ void thread::begin_search() {
         else if (constexpr auto best_value_vp_mult = 8;
           best_value >= beta &&
           (fail_high_resolve ||
-            best_value >= value_pawn * best_value_vp_mult)) {
+          best_value >= value_pawn * best_value_vp_mult)) {
           alpha = (alpha + beta) / 2;
           beta = std::min(best_value + delta_beta, max_score);
           ++fail_high_count;
@@ -1553,16 +1551,16 @@ void thread::begin_search() {
         const auto improvement_factor = std::max(
           420,
           std::min(improvement_factor_min_base,
-            improvement_factor_max_base +
-            improvement_factor_max_mult * main_thread->failed_low -
-            improvement_factor_bv_mult *
-            (best_value - main_thread->previous_root_score)));
+          improvement_factor_max_base +
+          improvement_factor_max_mult * main_thread->failed_low -
+          improvement_factor_bv_mult *
+          (best_value - main_thread->previous_root_score)));
         const auto unstable_factor = 1024 + main_thread->best_move_changed;
 
         if (const auto play_easy_move =
-            root_moves[0].pv[0] == fast_move &&
-            main_thread->best_move_changed < 31 &&
-            time_control.elapsed() > time_control.optimum() * 124 / 1024;
+          root_moves[0].pv[0] == fast_move &&
+          main_thread->best_move_changed < 31 &&
+          time_control.elapsed() > time_control.optimum() * 124 / 1024;
           root_moves.move_number == 1 && search_iteration > 10 ||
           time_control.elapsed() > time_control.optimum() * unstable_factor /
           1024 * improvement_factor / 1024 ||
@@ -1639,10 +1637,10 @@ std::string print_pv(const position& pos, const int alpha, const int beta,
 
     if (i == active_pv)
       ss << (score >= beta
-        ? " lowerbound"
-        : score <= alpha
-        ? " upperbound"
-        : "");
+      ? " lowerbound"
+      : score <= alpha
+      ? " upperbound"
+      : "");
 
     ss << " pv";
 
@@ -1696,7 +1694,7 @@ std::string score_cp(int score) {
   }
   else
     ss << "mate "
-      << (score > 0 ? mate_score - score + 1 : -mate_score - score) / 2;
+    << (score > 0 ? mate_score - score + 1 : -mate_score - score) / 2;
 
   return ss.str();
 }

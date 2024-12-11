@@ -47,14 +47,14 @@ typedef size_t map_t;
 
 #if !defined(_MSC_VER)
 #define NNUE_EMBEDDED
-#define NNUE_EVAL_FILE "fire-9.3.nnue"
+#define NNUE_EVAL_FILE "fire-10.nnue"
 #endif
 
-static std::string nnue_evalfile = "fire-9.3.nnue";
+static std::string nnue_evalfile = "fire-10.nnue";
 inline const char* nnue_file = nnue_evalfile.c_str();
 static constexpr uint32_t nnue_version = 0x7AF32F16u;
 
-enum pieces {
+enum pieces : uint8_t {
   blank = 0,
   wking,
   wqueen,
@@ -69,7 +69,7 @@ enum pieces {
   bknight,
   bpawn
 };
-enum {
+enum : uint16_t {
   ps_w_pawn = 1,
   ps_b_pawn = 1 * 64 + 1,
   ps_w_knight = 2 * 64 + 1,
@@ -82,13 +82,19 @@ enum {
   ps_b_queen = 9 * 64 + 1,
   ps_end = 10 * 64 + 1
 };
-enum { fv_scale = 16, shift_ = 6 };
-enum {
+enum : uint8_t { fv_scale = 16, shift_ = 6 };
+
+enum : uint16_t {
   k_half_dimensions = 256,
   ft_in_dims = 64 * ps_end,
   ft_out_dims = k_half_dimensions * 2
 };
-enum { num_regs = 16, simd_width = 256 };
+enum : uint16_t { num_regs = 16, simd_width = 256 };
+
+enum {
+  transformer_start = 3 * 4 + 177,
+  network_start = transformer_start + 4 + 2 * 256 + 2 * 256 * 64 * 641
+};
 
 using dirty_piece = struct dirty_piece {
   int dirty_num;
@@ -101,10 +107,12 @@ using Accumulator = struct Accumulator {
   alignas(64) int16_t accumulation[2][256];
   int computed_accumulation;
 };
+
 using nnue_data = struct nnue_data {
   Accumulator accumulator;
   dirty_piece dirty_piece;
 };
+
 using board = struct board {
   int player;
   int* pieces;
@@ -118,6 +126,7 @@ using mask_t = uint32_t;
 using mask2_t = uint64_t;
 using clipped_t = int8_t;
 using weight_t = int8_t;
+
 using index_list = struct {
   size_t size;
   unsigned values[30];
@@ -145,6 +154,12 @@ inline uint32_t piece_to_index[2][14] = {
     0, 0, ps_b_queen, ps_b_rook, ps_b_bishop, ps_b_knight, ps_b_pawn, 0,
     ps_w_queen, ps_w_rook, ps_w_bishop, ps_w_knight, ps_w_pawn, 0
   }
+};
+
+struct net_data {
+  alignas(64) clipped_t input[ft_out_dims];
+  clipped_t hidden1_out[32];
+  int8_t hidden2_out[32];
 };
 
 int nnue_evaluate_pos(const board* pos);

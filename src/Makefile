@@ -214,7 +214,7 @@ ifeq ($(comp),mingw)
 endif
 
 CFLAGS := $(CXXFLAGS)
-CXXFLAGS += -fno-rtti -std=c++20
+CXXFLAGS += -std=c++20
 
 help:
 	@echo ""
