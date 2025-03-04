@@ -184,8 +184,8 @@ enum square : int8_t {
   a8, b8, c8, d8, e8, f8, g8, h8
 };
 
-enum file { file_a, file_b, file_c, file_d, file_e, file_f, file_g, file_h };
-enum rank { rank_1, rank_2, rank_3, rank_4, rank_5, rank_6, rank_7, rank_8 };
+enum file : uint8_t { file_a, file_b, file_c, file_d, file_e, file_f, file_g, file_h };
+enum rank : uint8_t { rank_1, rank_2, rank_3, rank_4, rank_5, rank_6, rank_7, rank_8 };
 
 enum score : int;
 
