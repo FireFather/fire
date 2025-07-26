@@ -1,59 +1,52 @@
 #pragma once
 #include "main.h"
 
-enum hashflags : uint8_t {
-  no_limit = 0,
-  threat_white = 1,
-  threat_black = 2,
-  in_use = 4,
-  south_border = 64,
-  north_border = 128,
-  exact_value = north_border | south_border
+enum hashflags : uint8_t{
+  no_limit=0,threat_white=1,threat_black=2,in_use=4,south_border=64,north_border=128,exact_value=north_border|south_border
 };
 
-inline constexpr uint8_t age_mask = 0x38;
-inline constexpr uint8_t flags_mask = 0xc7;
-inline constexpr uint8_t threat_mask = 0x03;
-inline constexpr uint8_t use_mask = 0xfb;
+inline constexpr uint8_t age_mask=0x38;
+inline constexpr uint8_t flags_mask=0xc7;
+inline constexpr uint8_t threat_mask=0x03;
+inline constexpr uint8_t use_mask=0xfb;
 
-struct main_hash_entry {
-  [[nodiscard]] uint32_t move() const {
+struct main_hash_entry{
+  [[nodiscard]] uint32_t move() const{
     return move_;
   }
 
-  [[nodiscard]] int value() const {
+  [[nodiscard]] int value() const{
     return value_;
   }
 
-  [[nodiscard]] int eval() const {
+  [[nodiscard]] int eval() const{
     return eval_;
   }
 
-  [[nodiscard]] int depth() const {
-    return depth_ * static_cast<int>(plies) + plies - 1;
+  [[nodiscard]] int depth() const{
+    return depth_*static_cast<int>(plies)+plies-1;
   }
 
-  [[nodiscard]] hashflags bounds() const {
-    return static_cast<hashflags>(flags_ & exact_value);
+  [[nodiscard]] hashflags bounds() const{
+    return static_cast<hashflags>(flags_&exact_value);
   }
 
-  [[nodiscard]] hashflags threat() const {
-    return static_cast<hashflags>(flags_ & threat_mask);
+  [[nodiscard]] hashflags threat() const{
+    return static_cast<hashflags>(flags_&threat_mask);
   }
 
-  void save(const uint64_t k, const int val, const uint8_t flags, const int d,
-    const uint32_t z, const int eval, const uint8_t gen) {
-    const auto dd = d / plies;
-    const uint16_t k16 = k >> 48;
-    if (z || k16 != key_) move_ = static_cast<uint16_t>(z);
-
-    if (k16 != key_ || dd > depth_ - 4 ||
-      (flags & exact_value) == exact_value) {
-      key_ = k16;
-      value_ = static_cast<int16_t>(val);
-      eval_ = static_cast<int16_t>(eval);
-      flags_ = static_cast<uint8_t>(gen + flags);
-      depth_ = static_cast<int8_t>(dd);
+  void save(const uint64_t k,const int val,const uint8_t flags,const int d,
+    const uint32_t z,const int eval,const uint8_t gen){
+    const auto dd=d/plies;
+    const uint16_t k16=k>>48;
+    if(z||k16!=key_) move_=static_cast<uint16_t>(z);
+    if(k16!=key_||dd>depth_-4||
+      (flags&exact_value)==exact_value){
+      key_=k16;
+      value_=static_cast<int16_t>(val);
+      eval_=static_cast<int16_t>(eval);
+      flags_=static_cast<uint8_t>(gen+flags);
+      depth_=static_cast<int8_t>(dd);
     }
   }
 private:
@@ -67,26 +60,26 @@ private:
   uint16_t move_;
 };
 
-class hash {
-  static constexpr int cache_line = 64;
-  static constexpr int bucket_size = 3;
+class hash{
+  static constexpr int cache_line=64;
+  static constexpr int bucket_size=3;
 
-  struct bucket {
+  struct bucket{
     main_hash_entry entry[bucket_size];
     char padding[2];
   };
 
-  static_assert(cache_line % sizeof(bucket) == 0, "Cluster size incorrect");
+  static_assert(cache_line%sizeof(bucket)==0,"Cluster size incorrect");
 public:
-  ~hash() {
+  ~hash(){
     free(hash_mem_);
   }
 
-  void new_age() {
-    age_ = age_ + 8 & age_mask;
+  void new_age(){
+    age_=age_+8&age_mask;
   }
 
-  [[nodiscard]] uint8_t age() const {
+  [[nodiscard]] uint8_t age() const{
     return age_;
   }
 
@@ -96,19 +89,19 @@ public:
   void init(size_t mb_size);
   void clear() const;
 
-  [[nodiscard]] main_hash_entry* entry(const uint64_t key) const {
+  [[nodiscard]] main_hash_entry* entry(const uint64_t key) const{
     return reinterpret_cast<main_hash_entry*>(
-      reinterpret_cast<char*>(hash_mem_) + (key & bucket_mask_));
+      reinterpret_cast<char*>(hash_mem_)+(key&bucket_mask_));
   }
 
-  void prefetch_entry(const uint64_t key) const {
+  void prefetch_entry(const uint64_t key) const{
     prefetch(entry(key));
   }
 private:
-  size_t buckets_ = 0;
-  size_t bucket_mask_ = 0;
-  bucket* hash_mem_ = nullptr;
-  uint8_t age_ = 0;
+  size_t buckets_=0;
+  size_t bucket_mask_=0;
+  bucket* hash_mem_=nullptr;
+  uint8_t age_=0;
 };
 
 extern hash main_hash;
