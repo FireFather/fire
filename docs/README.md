@@ -91,7 +91,7 @@ http://www.chessdom.com/fire-the-chess-engine-releases-a-new-version/
 [contributors-url]:https://github.com/FireFather/fire/graphs/contributors
 [forks-url]:https://github.com/FireFather/fire/network/members
 [stars-url]:https://github.com/FireFather/fire/stargazers
-[issues-url]:https://github.com/colding10/Kingfish/issues
+[issues-url]:https://github.com/FireFather/fire/issues
 
 [contributors-shield]:https://img.shields.io/github/contributors/FireFather/fire?style=for-the-badge&color=blue
 [forks-shield]:https://img.shields.io/github/forks/FireFather/fire?style=for-the-badge&color=blue
