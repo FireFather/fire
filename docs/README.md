@@ -41,13 +41,13 @@
 - updated binaries available in /src directory (no change to the NNUE file)
 
 ## uci options
-- **Hash** size of the hash table. default is 64 MB.
-- **Threads** number of processor threads to use. default is 1, max = 128.
-- **MultiPV** number of pv's/principal variations (lines of play) to be output. default is 1.
-- **MoveOverhead** Adjust this to compensate for network and GUI latency. This is useful to avoid losses on time.
-- **Ponder** also think during opponent's time. default is false.
-- **UCI_Chess960** play chess960 (often called FRC or Fischer Random Chess). default is false.
-- **Clear Hash** clear the hash table. delete allocated memory and re-initialize.
+- **Hash** -size of the hash table. default is 64 MB.
+- **Threads** -number of processor threads to use. default is 1, max = 128.
+- **MultiPV** -number of pv's/principal variations (lines of play) to be output. default is 1.
+- **MoveOverhead** -adjust this to compensate for network and GUI latency. This is useful to avoid losses on time.
+- **Ponder** -also think during opponent's time. default is false.
+- **UCI_Chess960** -play chess960 (often called FRC or Fischer Random Chess). default is false.
+- **Clear Hash** -clear the hash table. delete allocated memory and re-initialize.
 
 ## binaries
 - **x64 avx2** = fast pgo binary (targeting modern 64-bit systems w/ AVX2 instruction set)
