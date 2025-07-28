@@ -355,7 +355,7 @@ inline void position::increase_game_ply(){
 }
 
 inline bool position::is_capture_move(const uint32_t move) const{
-  return !empty_square(to_square(move))&&move_type(move)!=castle_move||
+  return (!empty_square(to_square(move))&&move_type(move)!=castle_move) ||
     move_type(move)==enpassant;
 }
 

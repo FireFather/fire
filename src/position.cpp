@@ -140,12 +140,12 @@ bool position::give_check(const uint32_t move) const{
     const auto from_r=castle_rook_square(to);
     const auto to_r=relative_square(on_move_,from_r>from?f1:d1);
     return empty_attack[pt_rook][to_r]&square_k&&
-      attack_rook_bb(to_r,pieces()^from^from_r|to_r|to)&
+      attack_rook_bb(to_r,(pieces()^from^from_r)|to_r|to)&
       square_k;
   }
   {
     const auto ep_square=make_square(file_of(to),rank_of(from));
-    const auto b=pieces()^from^ep_square|to;
+    const auto b=(pieces()^from^ep_square)|to;
     return (attack_rook_bb(square_k,b)&pieces(on_move_,pt_queen,pt_rook))|
     (attack_bishop_bb(square_k,b)&
       pieces(on_move_,pt_queen,pt_bishop));
@@ -154,8 +154,7 @@ bool position::give_check(const uint32_t move) const{
 
 void position::init(){
   for(auto color=white;color<=black;++color)
-    for(auto piece=pt_king;piece<=pt_queen;++piece)
-      for(auto sq=a1;sq<=h8;++sq) zobrist::psq[make_piece(color,piece)][sq]=random::rand<uint64_t>();
+    for(auto piece=pt_king;piece<=pt_queen;++piece) for(auto sq=a1;sq<=h8;++sq) zobrist::psq[make_piece(color,piece)][sq]=random::rand<uint64_t>();
   for(auto f=file_a;f<=file_h;++f) zobrist::enpassant[f]=random::rand<uint64_t>();
   for(int castle=no_castle;std::cmp_less_equal(castle,all);++castle){
     zobrist::castle[castle]=0;
@@ -209,7 +208,7 @@ bool position::legal_move(const uint32_t move) const{
     const auto square_k=king(me);
     const auto to=to_square(move);
     const auto capture_square=to-pawn_ahead(me);
-    const auto occupied=pieces()^from^capture_square|to;
+    const auto occupied=(pieces()^from^capture_square)|to;
     return !(attack_rook_bb(square_k,occupied)&
         pieces(~me,pt_queen,pt_rook))&&
       !(attack_bishop_bb(square_k,occupied)&
@@ -398,7 +397,7 @@ bool position::see_test(const uint32_t move,const int limit) const{
     else return attackers&pieces(me);
     value+=see_value[capture_piece];
     if(value<0) return false;
-    occupied^=bb & static_cast<uint64_t>(-static_cast<int64_t>(bb));
+    occupied^=bb&static_cast<uint64_t>(-static_cast<int64_t>(bb));
     if(!(capture_piece&1))
       attackers|=attack_bishop_bb(to,occupied)&
         (pieces(pt_bishop)|pieces(pt_queen));
@@ -425,7 +424,7 @@ bool position::see_test(const uint32_t move,const int limit) const{
     else return !(attackers&pieces(~me));
     value-=see_value[capture_piece];
     if(value>=0) return true;
-    occupied^=bb & static_cast<uint64_t>(-static_cast<int64_t>(bb));
+    occupied^=bb&static_cast<uint64_t>(-static_cast<int64_t>(bb));
     if(!(capture_piece&1))
       attackers|=attack_bishop_bb(to,occupied)&
         (pieces(pt_bishop)|pieces(pt_queen));
@@ -481,8 +480,7 @@ void position::set_position_info(position_info* si) const{
     si->pawn_key^=zobrist::psq[piece_on_square(sq)][sq];
   }
   for(auto color=white;color<=black;++color)
-    for(auto piece=pt_king;piece<=pt_queen;++piece)
-      for(auto cnt=0;std::cmp_less(cnt,piece_number_[make_piece(color,piece)]);++cnt) si->material_key^=zobrist::psq[make_piece(color,piece)][cnt];
+    for(auto piece=pt_king;piece<=pt_queen;++piece) for(auto cnt=0;std::cmp_less(cnt,piece_number_[make_piece(color,piece)]);++cnt) si->material_key^=zobrist::psq[make_piece(color,piece)][cnt];
   calculate_bishop_color_key();
   for(auto color=white;color<=black;++color)
     for(auto piece=pt_knight;piece<=pt_queen;++piece)
