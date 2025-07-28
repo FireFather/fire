@@ -114,12 +114,12 @@ using index_list=struct{
 #define VEC_MASK_POS(a) \
   _mm256_movemask_epi8(_mm256_cmpgt_epi8(a, _mm256_setzero_si256()))
 
-static weight_t output_weights alignas(64)[1*32];
-static int32_t hidden1_biases alignas(64)[32];
-static int32_t hidden2_biases alignas(64)[32];
-static int32_t output_biases[1];
-static weight_t hidden1_weights alignas(64)[64*512];
-static weight_t hidden2_weights alignas(64)[64*32];
+inline weight_t output_weights alignas(64)[1*32];
+inline int32_t hidden1_biases alignas(64)[32];
+inline int32_t hidden2_biases alignas(64)[32];
+inline int32_t output_biases[1];
+inline weight_t hidden1_weights alignas(64)[64*512];
+inline weight_t hidden2_weights alignas(64)[64*32];
 
 inline uint32_t piece_to_index[2][14]={
 {
