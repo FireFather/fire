@@ -2,164 +2,166 @@
 #include "main.h"
 #include "thread.h"
 
-namespace movepick {
-  void init_search(const position& pos, const uint32_t hash_move, const int depth,
-    const bool only_quiet_check_moves) {
+namespace movepick{
+  void init_search(const position& pos,const uint32_t hash_move,const int depth,
+    const bool only_quiet_check_moves){
     auto* pi=pos.info();
     pi->mp_depth=depth;
     pi->mp_only_quiet_check_moves=only_quiet_check_moves;
     pi->mp_hash_move=
-      hash_move && pos.valid_move(hash_move) ? hash_move : no_move;
-    if (pos.is_in_check()) pi->mp_stage=pi->mp_hash_move ? check_evasions : gen_check_evasions;
-    else {
-      pi->mp_stage=pi->mp_hash_move ? normal_search : gen_good_captures;
-      if (pi->move_counter_values) {
+      hash_move&&pos.valid_move(hash_move)?hash_move:no_move;
+    if(pos.is_in_check()) pi->mp_stage=pi->mp_hash_move?check_evasions:gen_check_evasions;
+    else{
+      pi->mp_stage=pi->mp_hash_move?normal_search:gen_good_captures;
+      if(pi->move_counter_values){
         pi->mp_counter_move=
           static_cast<uint32_t>(pos.thread_info()->counter_moves.get(
-          pi->moved_piece, to_square(pi->previous_move)));
-        if (!pi->mp_hash_move && (pi - 1)->move_counter_values &&
-          (!pi->mp_counter_move || !pos.valid_move(pi->mp_counter_move) ||
-          pos.capture_or_promotion(pi->mp_counter_move))) {
+            pi->moved_piece,to_square(pi->previous_move)));
+        if(!pi->mp_hash_move&&(pi-1)->move_counter_values&&
+          (!pi->mp_counter_move||!pos.valid_move(pi->mp_counter_move)||
+            pos.capture_or_promotion(pi->mp_counter_move))){
           pi->mp_counter_move=pos.thread_info()->counter_followup_moves.get(
-            (pi - 1)->moved_piece, to_square((pi - 1)->previous_move),
-            pi->moved_piece, to_square(pi->previous_move));
+            (pi-1)->moved_piece,to_square((pi-1)->previous_move),
+            pi->moved_piece,to_square(pi->previous_move));
         }
       } else pi->mp_counter_move=no_move;
     }
   }
 
-  void init_q_search(const position& pos, const uint32_t hash_move,
-    const int depth, const square sq) {
+  void init_q_search(const position& pos,const uint32_t hash_move,
+    const int depth,const square sq){
     auto* pi=pos.info();
-    if (pos.is_in_check()) pi->mp_stage=check_evasions;
-    else if (depth == depth_0) pi->mp_stage=q_search_with_checks;
-    else if (depth >= -4 * plies) pi->mp_stage=q_search_no_checks;
-    else {
+    if(pos.is_in_check()) pi->mp_stage=check_evasions;
+    else if(depth==depth_0) pi->mp_stage=q_search_with_checks;
+    else if(depth>=-4*plies) pi->mp_stage=q_search_no_checks;
+    else{
       pi->mp_stage=gen_recaptures;
       pi->mp_capture_square=sq;
       return;
     }
     pi->mp_hash_move=
-      hash_move && pos.valid_move(hash_move) ? hash_move : no_move;
-    if (!pi->mp_hash_move) ++pi->mp_stage;
+      hash_move&&pos.valid_move(hash_move)?hash_move:no_move;
+    if(!pi->mp_hash_move) ++pi->mp_stage;
   }
 
-  void init_prob_cut(const position& pos, const uint32_t hash_move,
-    const int limit) {
+  void init_prob_cut(const position& pos,const uint32_t hash_move,
+    const int limit){
     auto* pi=pos.info();
-    pi->mp_threshold=limit + 1;
-    pi->mp_hash_move=hash_move && pos.valid_move(hash_move) &&
-      pos.capture_or_promotion(hash_move) &&
-      pos.see_test(hash_move, pi->mp_threshold)
-      ? hash_move
-      : no_move;
-    pi->mp_stage=pi->mp_hash_move ? probcut : gen_probcut;
+    pi->mp_threshold=limit+1;
+    pi->mp_hash_move=hash_move&&pos.valid_move(hash_move)&&
+      pos.capture_or_promotion(hash_move)&&
+      pos.see_test(hash_move,pi->mp_threshold)
+      ?hash_move
+      :no_move;
+    pi->mp_stage=pi->mp_hash_move?probcut:gen_probcut;
   }
 
-  template<> void score<captures_promotions>(const position& pos) {
+  template<> void score<captures_promotions>(const position& pos){
     const auto* const pi=pos.info();
-    for (auto* z=pi->mp_current_move; z < pi->mp_end_list; z++)
-      z->value=capture_sort_values[pos.piece_on_square(to_square(z->move))] -
-      200 * relative_rank(pos.on_move(), to_square(z->move));
+    for(auto* z=pi->mp_current_move;z<pi->mp_end_list;z++)
+      z->value=capture_sort_values[pos.piece_on_square(to_square(z->move))]-
+        200*relative_rank(pos.on_move(),to_square(z->move));
   }
 
-  template<> void score<quiet_moves>(const position& pos) {
+  template<> void score<quiet_moves>(const position& pos){
     const auto& history=pos.thread_info()->history;
     const auto* pi=pos.info();
     const counter_move_values* cm=
       pi->move_counter_values
-      ? pi->move_counter_values
-      : &pos.cmh_info()->counter_move_stats[no_piece][a1];
+      ?pi->move_counter_values
+      :&pos.cmh_info()->counter_move_stats[no_piece][a1];
     const counter_move_values* fm=
-      (pi - 1)->move_counter_values
-      ? (pi - 1)->move_counter_values
-      : &pos.cmh_info()->counter_move_stats[no_piece][a1];
+      (pi-1)->move_counter_values
+      ?(pi-1)->move_counter_values
+      :&pos.cmh_info()->counter_move_stats[no_piece][a1];
     const counter_move_values* f2=
-      (pi - 3)->move_counter_values
-      ? (pi - 3)->move_counter_values
-      : &pos.cmh_info()->counter_move_stats[no_piece][a1];
+      (pi-3)->move_counter_values
+      ?(pi-3)->move_counter_values
+      :&pos.cmh_info()->counter_move_stats[no_piece][a1];
     const auto threat=
-      pi->mp_depth < 6 * plies ? pos.calculate_threat() : no_square;
-    for (auto* z=pi->mp_current_move; z < pi->mp_end_list; z++) {
+      pi->mp_depth<6*plies?pos.calculate_threat():no_square;
+    for(auto* z=pi->mp_current_move;z<pi->mp_end_list;z++){
       const auto offset=move_value_stats::calculate_offset(
-        pos.moved_piece(z->move), to_square(z->move));
-      z->value=static_cast<int>(history.value_at_offset(offset)) +
-        static_cast<int>(cm->value_at_offset(offset)) +
-        static_cast<int>(fm->value_at_offset(offset)) +
+        pos.moved_piece(z->move),to_square(z->move));
+      z->value=static_cast<int>(history.value_at_offset(offset))+
+        static_cast<int>(cm->value_at_offset(offset))+
+        static_cast<int>(fm->value_at_offset(offset))+
         static_cast<int>(f2->value_at_offset(offset));
-      z->value+=8 * pos.thread_info()->max_gain_table.get(
-        pos.moved_piece(z->move), z->move);
-      if (from_square(z->move) == threat) z->value+=9000 - 1000 * (pi->mp_depth / plies);
+      z->value+=8*pos.thread_info()->max_gain_table.get(
+        pos.moved_piece(z->move),z->move);
+      if(from_square(z->move)==threat) z->value+=9000-1000*(pi->mp_depth/plies);
     }
   }
 
-  template<> void score<evade_check>(const position& pos) {
+  template<> void score<evade_check>(const position& pos){
     const auto* const pi=pos.info();
     const auto& history=pos.thread_info()->evasion_history;
-    for (auto* z=pi->mp_current_move; z < pi->mp_end_list; z++) {
-      if (pos.is_capture_move(z->move))
-        z->value=capture_sort_values[pos.piece_on_square(to_square(z->move))] -
-        piece_order[pos.moved_piece(z->move)] + sort_max;
-      else {
+    for(auto* z=pi->mp_current_move;z<pi->mp_end_list;z++){
+      if(pos.is_capture_move(z->move))
+        z->value=capture_sort_values[pos.piece_on_square(to_square(z->move))]-
+          piece_order[pos.moved_piece(z->move)]+sort_max;
+      else{
         const auto offset=move_value_stats::calculate_offset(
-          pos.moved_piece(z->move), to_square(z->move));
+          pos.moved_piece(z->move),to_square(z->move));
         z->value=static_cast<int>(history.value_at_offset(offset));
       }
     }
   }
+
   namespace{
-    void insertion_sort(s_move* begin, const s_move* end) {
-    s_move* q;
-    for (auto* p=begin + 1; p < end; ++p) {
-      auto tmp=*p;
-      for (q=p; q != begin && *(q - 1) < tmp; --q) *q=*(q - 1);
-      *q=tmp;
-    }
-  }
-
-    s_move* partition(s_move* begin, s_move* end, const int val) {
-    while (true) {
-      while (true) {
-        if (begin == end) return begin;
-        if (begin->value > val) begin++;
-        else break;
+    void insertion_sort(s_move* begin,const s_move* end){
+      s_move* q;
+      for(auto* p=begin+1;p<end;++p){
+        auto tmp=*p;
+        for(q=p;q!=begin&&*(q-1)<tmp;--q) *q=*(q-1);
+        *q=tmp;
       }
-      end--;
-      while (true) {
-        if (begin == end) return begin;
-        if (end->value <= val) end--;
-        else break;
+    }
+
+    s_move* partition(s_move* begin,s_move* end,const int val){
+      while(true){
+        while(true){
+          if(begin==end) return begin;
+          if(begin->value>val) begin++;
+          else break;
+        }
+        end--;
+        while(true){
+          if(begin==end) return begin;
+          if(end->value<=val) end--;
+          else break;
+        }
+        const auto tmp=*begin;
+        *begin=*end;
+        *end=tmp;
+        begin++;
       }
-      const auto tmp=*begin;
-      *begin=*end;
-      *end=tmp;
-      begin++;
+    }
+
+    uint32_t find_best_move(s_move* begin,const s_move* end){
+      auto* best=begin;
+      for(auto* z=begin+1;z<end;z++) if(z->value>best->value) best=z;
+      const auto move=best->move;
+      *best=*begin;
+      return move;
+    }
+
+    uint16_t crc16(const uint8_t* data_p,uint8_t length){
+      uint16_t crc=0xFFFF;
+      while(length--){
+        uint16_t x=crc>>8^*data_p++;
+        x^=x>>4;
+        crc=static_cast<uint16_t>(crc<<8^(x<<12)^(x<<5)^(x));
+      }
+      return crc;
+    }
+
+    int hash_bb(const uint64_t bb){
+      const auto crc=crc16(reinterpret_cast<const uint8_t*>(&bb),8);
+      return crc;
     }
   }
 
-    uint32_t find_best_move(s_move* begin, const s_move* end) {
-    auto* best=begin;
-    for (auto* z=begin + 1; z < end; z++) if (z->value > best->value) best=z;
-    const auto move=best->move;
-    *best=*begin;
-    return move;
-  }
-
-    uint16_t crc16(const uint8_t* data_p, uint8_t length) {
-    uint16_t crc=0xFFFF;
-    while (length--) {
-      uint16_t x=crc >> 8 ^ *data_p++;
-      x^=x >> 4;
-      crc=static_cast<uint16_t>(crc << 8 ^ (x << 12) ^ (x << 5) ^ (x));
-    }
-    return crc;
-  }
-
-    int hash_bb(const uint64_t bb) {
-    const auto crc=crc16(reinterpret_cast<const uint8_t*>(&bb), 8);
-    return crc;
-  }
-}
   uint32_t pick_move(const position& pos){
     switch(auto* pi=pos.info();pi->mp_stage){
     case normal_search:
@@ -311,8 +313,7 @@ namespace movepick {
           return move;
       }
       return no_move;
-    default:
-      return no_move;
+    default: return no_move;
     }
   }
 }
