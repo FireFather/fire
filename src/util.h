@@ -35,8 +35,7 @@ class random{
 public:
   uint64_t s;
 
-  explicit random(const uint64_t seed) : s(seed){
-  }
+  explicit random(const uint64_t seed) : s(seed){}
 
   template<typename t> static t rand(){
     return t(rand64());
