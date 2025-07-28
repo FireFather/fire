@@ -177,7 +177,7 @@ inline uint64_t& operator^=(uint64_t& b,const square sq){
 }
 
 inline bool more_than_one(const uint64_t b){
-  return b&b-1;
+  return b&(b-1);
 }
 
 inline uint64_t get_rank(const square sq){

@@ -91,7 +91,7 @@ void init_magic_bb(uint64_t* attack,const int attack_index[],
     do{
       const int offset=static_cast<int>(b*mult[sq]>>shift);
       square_index[sq][offset]=sliding_attacks(sq,b,deltas,0,7,0,7);
-      b=b-mask[sq]&mask[sq];
+      b=(b-mask[sq])&mask[sq];
     } while(b);
   }
 }
@@ -114,8 +114,7 @@ uint64_t sliding_attacks(const int sq,const uint64_t block,
   for(auto direction=0;direction<4;direction++){
     const auto dx=deltas[direction][0];
     const auto dy=deltas[direction][1];
-    for(auto f=fl+dx,r=rk+dy;(dx==0||f>=f_min&&f<=f_max)&&
-        (dy==0||r>=r_min&&r<=r_max);
+    for(auto f=fl+dx,r=rk+dy;(dx==0||(f>=f_min&&f<=f_max))&&(dy==0||(r>=r_min&&r<=r_max));
         f+=dx,r+=dy){
       result|=square_bb[f+r*8];
       if(block&square_bb[f+r*8]) break;
