@@ -20,8 +20,7 @@ std::string move_to_string(const uint32_t move,const position& pos){
   s_move[1]=static_cast<char>('1'+rank_of(from));
   s_move[2]=static_cast<char>('a'+file_of(to));
   s_move[3]=static_cast<char>('1'+rank_of(to));
-  if(move<static_cast<uint32_t>(promotion_p))
-    return {s_move,4};
+  if(move<static_cast<uint32_t>(promotion_p)) return {s_move,4};
   s_move[4]="   nbrq"[promotion_piece(move)];
   return {s_move,5};
 }

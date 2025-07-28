@@ -1,7 +1,7 @@
 #include "zobrist.h"
 #include "position.h"
 
-namespace zobrist {
+namespace zobrist{
   uint64_t psq[num_pieces][num_squares];
   uint64_t enpassant[num_files];
   uint64_t castle[castle_possible_n];

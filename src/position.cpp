@@ -153,8 +153,7 @@ bool position::give_check(const uint32_t move) const{
 }
 
 void position::init(){
-  for(auto color=white;color<=black;++color)
-    for(auto piece=pt_king;piece<=pt_queen;++piece) for(auto sq=a1;sq<=h8;++sq) zobrist::psq[make_piece(color,piece)][sq]=random::rand<uint64_t>();
+  for(auto color=white;color<=black;++color) for(auto piece=pt_king;piece<=pt_queen;++piece) for(auto sq=a1;sq<=h8;++sq) zobrist::psq[make_piece(color,piece)][sq]=random::rand<uint64_t>();
   for(auto f=file_a;f<=file_h;++f) zobrist::enpassant[f]=random::rand<uint64_t>();
   for(int castle=no_castle;std::cmp_less_equal(castle,all);++castle){
     zobrist::castle[castle]=0;
@@ -479,8 +478,7 @@ void position::set_position_info(position_info* si) const{
     const auto sq=pop_lsb(&b);
     si->pawn_key^=zobrist::psq[piece_on_square(sq)][sq];
   }
-  for(auto color=white;color<=black;++color)
-    for(auto piece=pt_king;piece<=pt_queen;++piece) for(auto cnt=0;std::cmp_less(cnt,piece_number_[make_piece(color,piece)]);++cnt) si->material_key^=zobrist::psq[make_piece(color,piece)][cnt];
+  for(auto color=white;color<=black;++color) for(auto piece=pt_king;piece<=pt_queen;++piece) for(auto cnt=0;std::cmp_less(cnt,piece_number_[make_piece(color,piece)]);++cnt) si->material_key^=zobrist::psq[make_piece(color,piece)][cnt];
   calculate_bishop_color_key();
   for(auto color=white;color<=black;++color)
     for(auto piece=pt_knight;piece<=pt_queen;++piece)
@@ -491,7 +489,7 @@ void position::set_position_info(position_info* si) const{
 
 position& position::set(const std::string& fen_str,const bool is_chess960,
   thread* th){
-  uint8_t r=0,token=0;
+  char r=0,token=0;
   size_t idx;
   auto sq=a8;
   std::istringstream ss(fen_str);
