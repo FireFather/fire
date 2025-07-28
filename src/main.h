@@ -7,15 +7,7 @@
 
 #ifdef _MSC_VER
 #pragma warning(disable : 4127)
-//#pragma warning(disable : 4146)
-#pragma warning(disable : 4189)
 #pragma warning(disable : 4244)
-#pragma warning(disable : 4706)
-#else
-#pragma GCC diagnostic ignored "-Wcast-qual"
-#pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
-#pragma GCC diagnostic ignored "-Wparentheses"
-#pragma GCC diagnostic ignored "-Wunused-variable"
 #endif
 
 #ifdef _MSC_VER

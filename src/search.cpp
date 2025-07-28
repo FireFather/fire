@@ -222,7 +222,7 @@ namespace search{
     }
 no_early_pruning: if(constexpr auto no_early_pruning_min_depth=5;!pv_node&&depth>=no_early_pruning_min_depth*plies&&
       (depth>=no_early_pruning_strong_threat_min_depth*plies||
-        pi->strong_threat&pos.on_move()+1)&&
+        (pi->strong_threat&(pos.on_move()+1)))&&
       abs(beta)<longest_mate_score){
       constexpr auto limit_depth_min=8;
       constexpr auto pc_beta_depth_margin=4;
@@ -337,7 +337,7 @@ view_all_moves: const counter_move_values* cmh=pi->move_counter_values;
             counter_move_values::calculate_offset(moved_piece,to_square(move));
           if(constexpr auto sort_cmp=static_cast<int>(sort_cmp_sort_value);(!cmh||cmh->value_at_offset(offset)<sort_cmp)&&
             (!fmh||fmh->value_at_offset(offset)<sort_cmp)&&
-            (cmh&&fmh||!fmh2||fmh2->value_at_offset(offset)<sort_cmp))
+            ((cmh&&fmh)||!fmh2||fmh2->value_at_offset(offset)<sort_cmp))
             continue;
           if(constexpr auto quiet_moves_max_gain_mult=12;pos.thread_info()->max_gain_table.get(moved_piece,move)<
             static_cast<int>(quiet_moves_max_gain_base)-
@@ -429,7 +429,7 @@ view_all_moves: const counter_move_values* cmh=pi->move_counter_values;
             new_depth,pv_node||!cut_node);
       }
       if(pv_node&&
-        (move_number==1||value>alpha&&(root_node||value<beta))){
+        (move_number==1||(value>alpha&&(root_node||value<beta)))){
         uint32_t pv[max_ply+1];
         (pi+1)->pv=pv;
         (pi+1)->pv[0]=no_move;
@@ -764,9 +764,9 @@ skip_see_test: if(!pos.legal_move(move)) continue;
         <<" hashfull "<<main_hash.hash_full()<<std::endl;
     }
     if(param.ponder) return;
-    if(param.use_time_calculating()&&elapsed>time_control.maximum()-10||
-      param.move_time&&elapsed>=param.move_time||
-      param.nodes&&thread_pool.visited_nodes()>=param.nodes)
+    if((param.use_time_calculating()&&elapsed>time_control.maximum()-10)||
+      (param.move_time&&elapsed>=param.move_time)||
+      (param.nodes&&thread_pool.visited_nodes()>=param.nodes))
       signals.stop_analyzing=true;
   }
 
@@ -1209,7 +1209,7 @@ void thread::begin_search(){
         if(const auto play_easy_move=
             root_moves[0].pv[0]==fast_move&&
             main_thread->best_move_changed<31&&
-            time_control.elapsed()>time_control.optimum()*124/1024;root_moves.move_number==1&&search_iteration>10||
+            time_control.elapsed()>time_control.optimum()*124/1024;(root_moves.move_number==1&&search_iteration>10)||
           time_control.elapsed()>time_control.optimum()*unstable_factor/
           1024*improvement_factor/1024||
           ((main_thread->quick_move_played=play_easy_move))){
