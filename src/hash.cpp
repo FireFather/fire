@@ -1,6 +1,5 @@
 #include "hash.h"
 #include <cstring>
-#include <iostream>
 #include "main.h"
 
 hash main_hash;
@@ -12,11 +11,6 @@ void hash::init(const size_t mb_size){
   buckets_=new_size;
   if(hash_mem_) free(hash_mem_);
   hash_mem_=static_cast<bucket*>(calloc(buckets_*sizeof(bucket)+63,1));
-  if(!hash_mem_){
-    std::cerr<<"Failed to allocate "<<mb_size
-      <<"MB for transposition table."<<std::endl;
-    exit(EXIT_FAILURE);
-  }
   buckets_=new_size;
   bucket_mask_=(buckets_-1)*sizeof(bucket);
 }
