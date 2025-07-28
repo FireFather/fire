@@ -76,7 +76,7 @@ public:
   }
 
   void new_age(){
-    age_=age_+8&age_mask;
+    age_=(age_+8)&age_mask;
   }
 
   [[nodiscard]] uint8_t age() const{

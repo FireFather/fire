@@ -41,14 +41,13 @@ main_hash_entry* hash::probe(const uint64_t key) const{
 main_hash_entry* hash::replace(const uint64_t key) const{
   auto* const hash_entry=entry(key);
   const uint16_t key16=key>>48;
-  for(auto i=0;i<bucket_size;++i)
-    if(hash_entry[i].key_==0||hash_entry[i].key_==key16) return &hash_entry[i];
+  for(auto i=0;i<bucket_size;++i) if(hash_entry[i].key_==0||hash_entry[i].key_==key16) return &hash_entry[i];
   auto* replacement=hash_entry;
   for(auto i=1;i<bucket_size;++i)
     if(replacement->depth_-
-      (age_-(replacement->flags_&age_mask)&age_mask)>
+      ((age_-(replacement->flags_&age_mask))&age_mask)>
       hash_entry[i].depth_-
-      (age_-(hash_entry[i].flags_&age_mask)&age_mask))
+      ((age_-(hash_entry[i].flags_&age_mask))&age_mask))
       replacement=&hash_entry[i];
   return replacement;
 }
@@ -58,8 +57,7 @@ int hash::hash_full() const{
   auto cnt=0;
   for(auto i=0;i<i_max;i++){
     const main_hash_entry* hash_entry=&hash_mem_[i].entry[0];
-    for(auto j=0;j<bucket_size;j++)
-      if(hash_entry[j].key_&&(hash_entry[j].flags_&age_mask)==age_) cnt++;
+    for(auto j=0;j<bucket_size;j++) if(hash_entry[j].key_&&(hash_entry[j].flags_&age_mask)==age_) cnt++;
   }
   return cnt*1000/(i_max*bucket_size);
 }
