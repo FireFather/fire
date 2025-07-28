@@ -4,51 +4,64 @@
 #include "main.h"
 #include "position.h"
 
-namespace movegen{
-  template<side me,move_gen type> static s_move* all_piece_moves(const position& pos,s_move* moves,
-    const uint64_t target){
-    const auto only_check_moves=type==quiet_checks;
-    if constexpr(type!=castle_moves){
-      moves=moves_for_pawn<me,type>(pos,moves,target);
-      moves=
-        moves_for_piece<me,pt_knight,only_check_moves>(pos,moves,target);
-      moves=
-        moves_for_piece<me,pt_bishop,only_check_moves>(pos,moves,target);
-      moves=moves_for_piece<me,pt_rook,only_check_moves>(pos,moves,target);
-      moves=moves_for_piece<me,pt_queen,only_check_moves>(pos,moves,target);
-      if constexpr(type!=quiet_checks&&type!=evade_check){
-        const auto square_k=pos.king(me);
-        auto squares=pos.attack_from<pt_king>(square_k)&target;
-        while(squares) *moves++=make_move(square_k,pop_lsb(&squares));
+namespace movegen{ namespace{
+    template<side me,move_gen type> s_move* all_piece_moves(const position& pos,s_move* moves,
+      const uint64_t target){
+      const auto only_check_moves=type==quiet_checks;
+      if constexpr(type!=castle_moves){
+        moves=moves_for_pawn<me,type>(pos,moves,target);
+        moves=
+          moves_for_piece<me,pt_knight,only_check_moves>(pos,moves,target);
+        moves=
+          moves_for_piece<me,pt_bishop,only_check_moves>(pos,moves,target);
+        moves=moves_for_piece<me,pt_rook,only_check_moves>(pos,moves,target);
+        moves=moves_for_piece<me,pt_queen,only_check_moves>(pos,moves,target);
+        if constexpr(type!=quiet_checks&&type!=evade_check){
+          const auto square_k=pos.king(me);
+          auto squares=pos.attack_from<pt_king>(square_k)&target;
+          while(squares) *moves++=make_move(square_k,pop_lsb(&squares));
+        }
       }
-    }
-    if(type!=captures_promotions&&type!=evade_check&&
-      pos.castling_possible(me)){
-      if(pos.is_chess960()){
-        moves=get_castle<me==white?white_short:black_short,
-          only_check_moves,true>(pos,moves);
-        moves=get_castle<me==white?white_long:black_long,
-          only_check_moves,true>(pos,moves);
-      } else{
-        moves=get_castle<me==white?white_short:black_short,
-          only_check_moves,false>(pos,moves);
-        moves=get_castle<me==white?white_long:black_long,
-          only_check_moves,false>(pos,moves);
+      if(type!=captures_promotions&&type!=evade_check&&
+        pos.castling_possible(me)){
+        if(pos.is_chess960()){
+          moves=get_castle<me==white?white_short:black_short,
+            only_check_moves,true>(pos,moves);
+          moves=get_castle<me==white?white_long:black_long,
+            only_check_moves,true>(pos,moves);
+        } else{
+          moves=get_castle<me==white?white_short:black_short,
+            only_check_moves,false>(pos,moves);
+          moves=get_castle<me==white?white_long:black_long,
+            only_check_moves,false>(pos,moves);
+        }
       }
+      return moves;
     }
-    return moves;
-  }
 
-  template<side me> static s_move* generate_pawn_advance(const position& pos,s_move* moves){
-    const auto ranks_6_7=
-      me==white?rank_6_bb|rank_7_bb:rank_3_bb|rank_2_bb;
-    uint64_t squares=
-      shift_up<me>(pos.pieces(me,pt_pawn))&ranks_6_7&~pos.pieces();
-    while(squares){
-      const auto to=pop_lsb(&squares);
-      *moves++=make_move(to-pawn_ahead(me),to);
+    template<side me> s_move* generate_pawn_advance(const position& pos,s_move* moves){
+      const auto ranks_6_7=
+        me==white?rank_6_bb|rank_7_bb:rank_3_bb|rank_2_bb;
+      uint64_t squares=
+        shift_up<me>(pos.pieces(me,pt_pawn))&ranks_6_7&~pos.pieces();
+      while(squares){
+        const auto to=pop_lsb(&squares);
+        *moves++=make_move(to-pawn_ahead(me),to);
+      }
+      return moves;
     }
-    return moves;
+
+    template<side me,move_gen mg,square delta> s_move* get_promotions(const position& pos,s_move* moves,const square to){
+      const auto you=me==white?black:white;
+      if(mg==captures_promotions||mg==evade_check||mg==all_moves) *moves++=make_move(promotion_q,to-delta,to);
+      if(mg==quiet_moves||mg==evade_check||mg==all_moves){
+        *moves++=make_move(promotion_r,to-delta,to);
+        *moves++=make_move(promotion_b,to-delta,to);
+        *moves++=make_move(promotion_p,to-delta,to);
+      }
+      if(mg==quiet_checks&&empty_attack[pt_knight][to]&pos.king(you)) *moves++=make_move(promotion_p,to-delta,to);
+      return moves;
+    }
   }
 
   template<uint8_t castle,bool only_check_moves,bool chess960> s_move* get_castle(const position& pos,s_move* moves){
@@ -70,18 +83,6 @@ namespace movegen{
     const auto move=make_move(castle_move,from_k,to_k);
     if(only_check_moves&&!pos.give_check(move)) return moves;
     *moves++=move;
-    return moves;
-  }
-
-  template<side me,move_gen mg,square delta> static s_move* get_promotions(const position& pos,s_move* moves,const square to){
-    const auto you=me==white?black:white;
-    if(mg==captures_promotions||mg==evade_check||mg==all_moves) *moves++=make_move(promotion_q,to-delta,to);
-    if(mg==quiet_moves||mg==evade_check||mg==all_moves){
-      *moves++=make_move(promotion_r,to-delta,to);
-      *moves++=make_move(promotion_b,to-delta,to);
-      *moves++=make_move(promotion_p,to-delta,to);
-    }
-    if(mg==quiet_checks&&empty_attack[pt_knight][to]&pos.king(you)) *moves++=make_move(promotion_p,to-delta,to);
     return moves;
   }
 
