@@ -32,6 +32,51 @@ int init_engine(){
   return nnue_init(filename);
 }
 
+namespace{
+  void handle_uci(){
+    acout()<<"id name "<<program<<" "<<version<<" "<<platform<<" "<<bmis<<std::endl;
+    acout()<<"id author "<<author<<std::endl;
+    acout()<<"option name Hash type spin default 64 min 16 max 1048576"<<std::endl;
+    acout()<<"option name Threads type spin default 1 min 1 max 128"<<std::endl;
+    acout()<<"option name MultiPV type spin default 1 min 1 max 64"<<std::endl;
+    acout()<<"option name Contempt type spin default 0 min -100 max 100"<<std::endl;
+    acout()<<"option name MoveOverhead type spin default 50 min 0 max 1000"<<std::endl;
+    acout()<<"option name Ponder type check default false"<<std::endl;
+    acout()<<"option name UCI_Chess960 type check default false"<<std::endl;
+    acout()<<"uciok"<<std::endl;
+    fflush(stdout);
+  }
+
+  void handle_stop(){
+    search::signals.stop_analyzing=true;
+    thread_pool.main()->wake(false);
+  }
+
+  void handle_perft(std::istringstream& is){
+    int depth=7;
+    std::string fen=startpos;
+    is>>depth;
+    is>>fen;
+    perft(depth,fen);
+  }
+
+  void handle_divide(std::istringstream& is){
+    int depth=7;
+    std::string fen=startpos;
+    is>>depth;
+    is>>fen;
+    divide(depth,fen);
+  }
+
+  void handle_bench(std::istringstream& is){
+    std::string token;
+    std::string bench_depth=is>>token?token:"14";
+    bench_active=true;
+    bench(std::stoi(bench_depth));
+    bench_active=false;
+  }
+}
+
 int uci_loop(const int argc,char* argv[]){
   position pos{};
   std::string token,cmd;
@@ -47,24 +92,7 @@ int uci_loop(const int argc,char* argv[]){
     token.clear();
     is>>std::skipws>>token;
     if(token=="uci"){
-      acout()<<"id name "<<program<<" "<<version<<" "<<platform
-        <<" "<<bmis<<std::endl;
-      acout()<<"id author "<<author<<std::endl;
-      acout()<<"option name Hash type spin default 64 min 16 max 1048576"
-        <<std::endl;
-      acout()<<"option name Threads type spin default 1 min 1 max 128"
-        <<std::endl;
-      acout()<<"option name MultiPV type spin default 1 min 1 max 64"
-        <<std::endl;
-      acout()<<"option name Contempt type spin default 0 min -100 max 100"
-        <<std::endl;
-      acout()<<"option name MoveOverhead type spin default 50 min 0 max 1000"
-        <<std::endl;
-      acout()<<"option name Ponder type check default false"<<std::endl;
-      acout()<<"option name UCI_Chess960 type check default false"
-        <<std::endl;
-      acout()<<"uciok"<<std::endl;
-      ret=fflush(stdout);
+      handle_uci();
     } else if(token=="isready"){
       acout()<<"readyok"<<std::endl;
       ret=fflush(stdout);
@@ -76,31 +104,19 @@ int uci_loop(const int argc,char* argv[]){
       set_position(pos,is);
     } else if(token=="go"){
       go(pos,is);
-    } else if(token=="stop"||
-      (token=="ponderhit"&&search::signals.stop_if_ponder_hit)){
-      search::signals.stop_analyzing=true;
-      thread_pool.main()->wake(false);
+    } else if(token=="stop"||(token=="ponderhit"
+      &&search::signals.stop_if_ponder_hit)){
+      handle_stop();
     } else if(token=="quit"){
       break;
     } else if(token=="pos"){
       acout()<<pos;
     } else if(token=="perft"){
-      auto depth=7;
-      auto& fen=startpos;
-      is>>depth;
-      is>>fen;
-      perft(depth,fen);
+      handle_perft(is);
     } else if(token=="divide"){
-      auto depth=7;
-      auto& fen=startpos;
-      is>>depth;
-      is>>fen;
-      divide(depth,fen);
+      handle_divide(is);
     } else if(token=="bench"){
-      auto bench_depth=is>>token?token:"14";
-      bench_active=true;
-      bench(stoi(bench_depth));
-      bench_active=false;
+      handle_bench(is);
     } else{}
   } while(token!="quit"&&argc==1);
   thread_pool.exit();
