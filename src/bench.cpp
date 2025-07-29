@@ -26,7 +26,7 @@ int bench(const int depth){
     nodes_pos+=thread_pool.visited_nodes();
     nodes+=thread_pool.visited_nodes();
     const auto elapsed_time_pos=
-      static_cast<double>(now()+1-start_time_pos)/1000;
+      (std::chrono::duration_cast<std::chrono::milliseconds>(now()-start_time_pos).count()+1)/1000.0;
     const auto nps_pos=static_cast<double>(nodes_pos)/elapsed_time_pos;
     std::ostringstream ss;
     ss.precision(0);
@@ -43,7 +43,8 @@ int bench(const int depth){
     ss.str(std::string());
     ret=fflush(stdout);
   }
-  const auto elapsed_time=static_cast<double>(now()+1-start_time)/1000;
+  const auto elapsed_time=
+    (std::chrono::duration_cast<std::chrono::milliseconds>(now()-start_time).count()+1)/1000.0;
   const auto nps=static_cast<double>(nodes)/elapsed_time;
   acout()<<"depth "<<depth<<std::endl;
   acout()<<"nodes "<<nodes<<std::endl;

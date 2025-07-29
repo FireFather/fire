@@ -38,7 +38,8 @@ int perft(int depth,std::string& fen){
   const auto start_time=now();
   const auto cnt=start_perft(pos,depth);
   nodes+=cnt;
-  const auto elapsed_time=static_cast<double>(now()+1-start_time)/1000;
+  const auto elapsed_time=
+    (std::chrono::duration_cast<std::chrono::milliseconds>(now()-start_time).count()+1)/1000.0;
   const auto nps=static_cast<double>(nodes)/elapsed_time;
   acout()<<"nodes "<<nodes<<std::endl;
   std::ostringstream ss;
@@ -68,7 +69,8 @@ int divide(int depth,const std::string& fen){
     std::cerr<<""<<move_to_string(m,pos)<<" "<<cnt<<std::endl;
     nodes+=cnt;
   }
-  const auto elapsed_time=static_cast<double>(now()+1-start_time)/1000;
+  const auto elapsed_time=
+    (std::chrono::duration_cast<std::chrono::milliseconds>(now()-start_time).count()+1)/1000.0;
   const auto nps=static_cast<double>(nodes)/elapsed_time;
   acout()<<"nodes "<<nodes<<std::endl;
   std::ostringstream ss;
