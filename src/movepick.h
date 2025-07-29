@@ -37,7 +37,7 @@ template<typename tn> struct piece_square_table{
     std::memset(table_,0,sizeof(table_));
   }
 
-  tn get(ptype piece,square to){
+  [[nodiscard]] tn get(ptype piece,square to) const{
     return table_[piece][to];
   }
 
@@ -46,6 +46,14 @@ template<typename tn> struct piece_square_table{
   }
 protected:
   tn table_[num_pieces][num_squares];
+
+  tn& operator[](const int offset){
+    return table_[offset/num_squares][offset%num_squares];
+  }
+
+  const tn& operator[](const int offset) const{
+    return table_[offset/num_squares][offset%num_squares];
+  }
 };
 
 template<int max_plus,int max_min> struct piece_square_stats:piece_square_table<int16_t>{
@@ -53,28 +61,24 @@ template<int max_plus,int max_min> struct piece_square_stats:piece_square_table<
     return 64*static_cast<int>(piece)+static_cast<int>(to);
   }
 
-  [[nodiscard]] int16_t value_at_offset(const int offset) const{
-    return *(reinterpret_cast<const int16_t*>(table_)+offset);
+  [[nodiscard]] int16_t value_at_offset(int offset) const{
+    return (*this)[offset];
   }
 
   void fill(const int val){
-    const auto vv=
-      static_cast<uint16_t>(val)<<16|static_cast<uint16_t>(val);
-    std::fill(
-      reinterpret_cast<int*>(table_),
-      reinterpret_cast<int*>(reinterpret_cast<char*>(table_)+sizeof table_),
-      vv);
+    const int16_t v=static_cast<int16_t>(val);
+    for(auto& p:this->table_) for(int s=0;s<num_squares;++s) p[s]=v;
   }
 
-  void update_plus(const int offset,const int val){
-    auto& elem=*(reinterpret_cast<int16_t*>(table_)+offset);
-    elem-=elem*static_cast<int>(val)/max_plus;
+  void update_plus(int offset,const int val){
+    int16_t& elem=(*this)[offset];
+    elem-=elem*val/max_plus;
     elem+=val;
   }
 
-  void update_minus(const int offset,const int val){
-    auto& elem=*(reinterpret_cast<int16_t*>(table_)+offset);
-    elem-=elem*static_cast<int>(val)/max_min;
+  void update_minus(int offset,const int val){
+    int16_t& elem=(*this)[offset];
+    elem-=elem*val/max_min;
     elem-=val;
   }
 };
@@ -96,7 +100,7 @@ private:
 };
 
 struct counter_move_full_stats{
-  uint32_t get(const side color,const uint32_t move){
+  [[nodiscard]] uint32_t get(const side color,const uint32_t move) const{
     return table_[color][move&0xfff];
   }
 
@@ -112,8 +116,8 @@ private:
 };
 
 struct counter_follow_up_move_stats{
-  uint32_t get(const ptype piece1,const square to1,const ptype piece2,
-    const square to2){
+  [[nodiscard]] uint32_t get(const ptype piece1,const square to1,const ptype piece2,
+    const square to2) const{
     return table_[piece1][to1][piece_type(piece2)][to2];
   }
 
