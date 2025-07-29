@@ -160,6 +160,58 @@ namespace movepick{
       const auto crc=crc16(reinterpret_cast<const uint8_t*>(&bb),8);
       return crc;
     }
+
+    uint32_t pick_move_stage_fallback(const position& pos){
+      switch(auto* pi=pos.info();pi->mp_stage){
+      case gen_check_evasions: pi->mp_current_move=(pi-1)->mp_end_list;
+        pi->mp_end_list=generate_moves<evade_check>(pos,pi->mp_current_move);
+        score<evade_check>(pos);
+        pi->mp_stage=check_evasion_loop;
+        [[fallthrough]];
+      case check_evasion_loop: while(pi->mp_current_move<pi->mp_end_list){
+          if(const uint32_t move=find_best_move(pi->mp_current_move++,pi->mp_end_list);move!=pi->mp_hash_move) return move;
+        }
+        return no_move;
+      case q_search_1:
+      case q_search_2: pi->mp_current_move=(pi-1)->mp_end_list;
+        pi->mp_end_list=generate_moves<captures_promotions>(pos,pi->mp_current_move);
+        score<captures_promotions>(pos);
+        ++pi->mp_stage;
+        [[fallthrough]];
+      case q_search_captures_1:
+      case q_search_captures_2: while(pi->mp_current_move<pi->mp_end_list){
+          if(const uint32_t move=find_best_move(pi->mp_current_move++,pi->mp_end_list);move!=pi->mp_hash_move) return move;
+        }
+        if(pi->mp_stage==q_search_captures_2) return no_move;
+        pi->mp_current_move=(pi-1)->mp_end_list;
+        pi->mp_end_list=generate_moves<quiet_checks>(pos,pi->mp_current_move);
+        ++pi->mp_stage;
+        [[fallthrough]];
+      case q_search_check_moves: while(pi->mp_current_move<pi->mp_end_list){
+          if(const uint32_t move=*pi->mp_current_move++;move!=pi->mp_hash_move) return move;
+        }
+        return no_move;
+      case gen_probcut: pi->mp_current_move=(pi-1)->mp_end_list;
+        pi->mp_end_list=generate_moves<captures_promotions>(pos,pi->mp_current_move);
+        score<captures_promotions>(pos);
+        pi->mp_stage=probcut_captures;
+        [[fallthrough]];
+      case probcut_captures: while(pi->mp_current_move<pi->mp_end_list){
+          if(const uint32_t move=find_best_move(pi->mp_current_move++,pi->mp_end_list);move!=pi->mp_hash_move&&pos.see_test(move,pi->mp_threshold)) return move;
+        }
+        return no_move;
+      case gen_recaptures: pi->mp_current_move=(pi-1)->mp_end_list;
+        pi->mp_end_list=generate_captures_on_square(pos,pi->mp_current_move,pi->mp_capture_square);
+        score<captures_promotions>(pos);
+        pi->mp_stage=recapture_moves;
+        [[fallthrough]];
+      case recapture_moves: while(pi->mp_current_move<pi->mp_end_list){
+          if(const uint32_t move=find_best_move(pi->mp_current_move++,pi->mp_end_list);to_square(move)==pi->mp_capture_square) return move;
+        }
+        return no_move;
+      default: return no_move;
+      }
+    }
   }
 
   uint32_t pick_move(const position& pos){
@@ -174,45 +226,34 @@ namespace movepick{
     case gen_good_captures: pi->mp_current_move=(pi-1)->mp_end_list;
       pi->mp_end_bad_capture=pi->mp_current_move;
       pi->mp_delayed_number=0;
-      pi->mp_end_list=
-        generate_moves<captures_promotions>(pos,pi->mp_current_move);
+      pi->mp_end_list=generate_moves<captures_promotions>(pos,pi->mp_current_move);
       score<captures_promotions>(pos);
       pi->mp_stage=good_captures;
       [[fallthrough]];
     case good_captures: while(pi->mp_current_move<pi->mp_end_list){
-        if(const auto move=
-          find_best_move(pi->mp_current_move++,pi->mp_end_list);move!=pi->mp_hash_move){
+        const uint32_t move=find_best_move(pi->mp_current_move++,pi->mp_end_list);
+        if(move!=pi->mp_hash_move){
           if(pos.see_test(move,see_0)) return move;
           *pi->mp_end_bad_capture++=move;
         }
       }
       pi->mp_stage=killers_1;
-      {
-        if(const auto move=pi->killers[0];move&&move!=pi->mp_hash_move&&pos.valid_move(move)&&
-          !pos.capture_or_promotion(move))
-          return move;
-      }
       [[fallthrough]];
     case killers_1: pi->mp_stage=killers_2;
-      {
-        if(const auto move=pi->killers[1];move&&move!=pi->mp_hash_move&&pos.valid_move(move)&&
-          !pos.capture_or_promotion(move))
-          return move;
-      }
+      if(const auto move=pi->killers[0];move&&move!=pi->mp_hash_move&&pos.valid_move(move)&&!pos.capture_or_promotion(move)) return move;
       [[fallthrough]];
     case killers_2: pi->mp_stage=gen_bxp_captures;
-      {
-        if(const auto move=pi->mp_counter_move;move&&move!=pi->mp_hash_move&&move!=pi->killers[0]&&
-          move!=pi->killers[1]&&pos.valid_move(move)&&
-          !pos.capture_or_promotion(move))
-          return move;
-      }
+      if(const auto move=pi->killers[1];move&&move!=pi->mp_hash_move&&pos.valid_move(move)&&!pos.capture_or_promotion(move)) return move;
       [[fallthrough]];
-    case gen_bxp_captures: pi->mp_current_move=(pi-1)->mp_end_list;
-      pi->mp_stage=bxp_captures;
+    case gen_bxp_captures: pi->mp_stage=bxp_captures;
+      if(const auto move=pi->mp_counter_move;move&&move!=pi->mp_hash_move&&
+        move!=pi->killers[0]&&move!=pi->killers[1]&&
+        pos.valid_move(move)&&!pos.capture_or_promotion(move))
+        return move;
       [[fallthrough]];
     case bxp_captures: while(pi->mp_current_move<pi->mp_end_bad_capture){
-        if(const uint32_t move=*pi->mp_current_move++;piece_type(pos.piece_on_square(to_square(move)))==pt_knight&&
+        const uint32_t move=*pi->mp_current_move++;
+        if(piece_type(pos.piece_on_square(to_square(move)))==pt_knight&&
           piece_type(pos.piece_on_square(from_square(move)))==pt_bishop){
           *(pi->mp_current_move-1)=no_move;
           return move;
@@ -229,26 +270,27 @@ namespace movepick{
       } else{
         pi->mp_end_list=generate_moves<quiet_moves>(pos,pi->mp_current_move);
         score<quiet_moves>(pos);
-        const auto* sort_tot=pi->mp_end_list;
-        if(pi->mp_depth<6*plies)
-          sort_tot=partition(pi->mp_current_move,pi->mp_end_list,
+        const auto* sort_end=pi->mp_end_list;
+        if(pi->mp_depth<6*plies){
+          sort_end=partition(pi->mp_current_move,pi->mp_end_list,
             6000-6000*(pi->mp_depth/plies));
-        insertion_sort(pi->mp_current_move,sort_tot);
+        }
+        insertion_sort(pi->mp_current_move,sort_end);
       }
       pi->mp_stage=quietmoves;
       [[fallthrough]];
     case quietmoves: while(pi->mp_current_move<pi->mp_end_list){
-        if(const uint32_t move=*pi->mp_current_move++;move!=pi->mp_hash_move&&move!=pi->killers[0]&&
-          move!=pi->killers[1]&&move!=pi->mp_counter_move){
+        if(const uint32_t move=*pi->mp_current_move++;move!=pi->mp_hash_move&&
+          move!=pi->killers[0]&&move!=pi->killers[1]&&
+          move!=pi->mp_counter_move)
           return move;
-        }
       }
       pi->mp_current_move=(pi-1)->mp_end_list;
       pi->mp_end_list=pi->mp_end_bad_capture;
       pi->mp_stage=bad_captures;
       [[fallthrough]];
     case bad_captures: while(pi->mp_current_move<pi->mp_end_list){
-        if(const uint32_t move=*pi->mp_current_move++;move) return move;
+        if(const uint32_t move=*pi->mp_current_move++) return move;
       }
       if(!pi->mp_delayed_number) return no_move;
       pi->mp_stage=delayed_moves;
@@ -256,64 +298,7 @@ namespace movepick{
       [[fallthrough]];
     case delayed_moves: if(pi->mp_delayed_current!=pi->mp_delayed_number) return pi->mp_delayed[pi->mp_delayed_current++];
       return no_move;
-    case gen_check_evasions: pi->mp_current_move=(pi-1)->mp_end_list;
-      pi->mp_end_list=generate_moves<evade_check>(pos,pi->mp_current_move);
-      score<evade_check>(pos);
-      pi->mp_stage=check_evasion_loop;
-      [[fallthrough]];
-    case check_evasion_loop: while(pi->mp_current_move<pi->mp_end_list){
-        if(const auto move=
-          find_best_move(pi->mp_current_move++,pi->mp_end_list);move!=pi->mp_hash_move)
-          return move;
-      }
-      return no_move;
-    case q_search_1:
-    case q_search_2: pi->mp_current_move=(pi-1)->mp_end_list;
-      pi->mp_end_list=
-        generate_moves<captures_promotions>(pos,pi->mp_current_move);
-      score<captures_promotions>(pos);
-      ++pi->mp_stage;
-      [[fallthrough]];
-    case q_search_captures_1:
-    case q_search_captures_2: while(pi->mp_current_move<pi->mp_end_list){
-        if(const auto move=
-          find_best_move(pi->mp_current_move++,pi->mp_end_list);move!=pi->mp_hash_move)
-          return move;
-      }
-      if(pi->mp_stage==q_search_captures_2) return no_move;
-      pi->mp_current_move=(pi-1)->mp_end_list;
-      pi->mp_end_list=generate_moves<quiet_checks>(pos,pi->mp_current_move);
-      ++pi->mp_stage;
-      [[fallthrough]];
-    case q_search_check_moves: while(pi->mp_current_move<pi->mp_end_list){
-        if(const uint32_t move=*pi->mp_current_move++;move!=pi->mp_hash_move) return move;
-      }
-      return no_move;
-    case gen_probcut: pi->mp_current_move=(pi-1)->mp_end_list;
-      pi->mp_end_list=
-        generate_moves<captures_promotions>(pos,pi->mp_current_move);
-      score<captures_promotions>(pos);
-      pi->mp_stage=probcut_captures;
-      [[fallthrough]];
-    case probcut_captures: while(pi->mp_current_move<pi->mp_end_list){
-        if(const auto move=
-          find_best_move(pi->mp_current_move++,pi->mp_end_list);move!=pi->mp_hash_move&&pos.see_test(move,pi->mp_threshold))
-          return move;
-      }
-      return no_move;
-    case gen_recaptures: pi->mp_current_move=(pi-1)->mp_end_list;
-      pi->mp_end_list=generate_captures_on_square(pos,pi->mp_current_move,
-        pi->mp_capture_square);
-      score<captures_promotions>(pos);
-      pi->mp_stage=recapture_moves;
-      [[fallthrough]];
-    case recapture_moves: while(pi->mp_current_move<pi->mp_end_list){
-        if(const auto move=
-          find_best_move(pi->mp_current_move++,pi->mp_end_list);to_square(move)==pi->mp_capture_square)
-          return move;
-      }
-      return no_move;
-    default: return no_move;
+    default: return pick_move_stage_fallback(pos);
     }
   }
 }
