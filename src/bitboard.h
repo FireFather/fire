@@ -9,7 +9,8 @@ inline constexpr uint64_t file_e_bb=file_a_bb<<4;
 inline constexpr uint64_t file_f_bb=file_a_bb<<5;
 inline constexpr uint64_t file_g_bb=file_a_bb<<6;
 inline constexpr uint64_t file_h_bb=file_a_bb<<7;
-inline constexpr uint64_t rank_1_bb=0xFF;
+
+inline constexpr uint64_t rank_1_bb=0xFFULL;
 inline constexpr uint64_t rank_2_bb=rank_1_bb<<8;
 inline constexpr uint64_t rank_3_bb=rank_1_bb<<16;
 inline constexpr uint64_t rank_4_bb=rank_1_bb<<24;
@@ -17,6 +18,7 @@ inline constexpr uint64_t rank_5_bb=rank_1_bb<<32;
 inline constexpr uint64_t rank_6_bb=rank_1_bb<<40;
 inline constexpr uint64_t rank_7_bb=rank_1_bb<<48;
 inline constexpr uint64_t rank_8_bb=rank_1_bb<<56;
+
 inline constexpr uint64_t light_squares=0x55AA55AA55AA55AAULL;
 inline constexpr uint64_t dark_squares=0xAA55AA55AA55AA55ULL;
 
@@ -25,7 +27,7 @@ namespace bitboard{
 
   inline uint64_t magic_attack_r[102400];
 
-  inline const int bishop_magic_index[64]={
+  inline constexpr int bishop_magic_index[64]={
   16530,9162,9674,18532,19172,17700,5730,19661,
   17065,12921,15683,17764,19684,18724,4108,12936,
   15747,4066,14359,36039,20457,43291,5606,9497,
@@ -36,7 +38,7 @@ namespace bitboard{
   17047,17780,2494,17716,17067,9465,16196,6166
   };
 
-  inline const int rook_magic_index[64]={
+  inline constexpr int rook_magic_index[64]={
   85487,43101,0,49085,93168,78956,60703,64799,
   30640,9256,28647,10404,63775,14500,52819,2048,
   52037,16435,29104,83439,86842,27623,26599,89583,
@@ -104,15 +106,13 @@ extern uint64_t* bishop_attack_table[64];
 extern uint64_t* rook_attack_table[64];
 
 inline constexpr uint64_t file_bb[num_files]={
-file_a_bb,file_b_bb,file_c_bb,
-file_d_bb,file_e_bb,file_f_bb,
-file_g_bb,file_h_bb
+file_a_bb,file_b_bb,file_c_bb,file_d_bb,
+file_e_bb,file_f_bb,file_g_bb,file_h_bb
 };
 
 inline constexpr uint64_t rank_bb[num_ranks]={
-rank_1_bb,rank_2_bb,rank_3_bb,
-rank_4_bb,rank_5_bb,rank_6_bb,
-rank_7_bb,rank_8_bb
+rank_1_bb,rank_2_bb,rank_3_bb,rank_4_bb,
+rank_5_bb,rank_6_bb,rank_7_bb,rank_8_bb
 };
 
 template<square delta> uint64_t shift_bb(const uint64_t b){
@@ -132,11 +132,13 @@ template<square delta> uint64_t shift_bb(const uint64_t b){
 }
 
 inline constexpr int kp_delta[][8]={
-{},{9,7,-7,-9,8,1,-1,-8},{},{17,15,10,6,-6,-10,-15,-17}
+{},
+{9,7,-7,-9,8,1,-1,-8},
+{},
+{17,15,10,6,-6,-10,-15,-17}
 };
 
 inline constexpr int rook_deltas[4][2]={{0,1},{0,-1},{1,0},{-1,0}};
-
 inline constexpr int bishop_deltas[4][2]={{1,1},{-1,1},{1,-1},{-1,-1}};
 
 inline uint64_t bb(const square s){
@@ -144,16 +146,15 @@ inline uint64_t bb(const square s){
 }
 
 inline uint64_t bb2(const square s1,const square s2){
-  return 1ULL<<s1|1ULL<<s2;
+  return bb(s1)|bb(s2);
 }
 
 inline uint64_t bb3(const square s1,const square s2,const square s3){
-  return 1ULL<<s1|1ULL<<s2|1ULL<<s3;
+  return bb(s1)|bb(s2)|bb(s3);
 }
 
-inline uint64_t bb4(const square s1,const square s2,const square s3,
-  const square s4){
-  return 1ULL<<s1|1ULL<<s2|1ULL<<s3|1ULL<<s4;
+inline uint64_t bb4(const square s1,const square s2,const square s3,const square s4){
+  return bb(s1)|bb(s2)|bb(s3)|bb(s4);
 }
 
 inline uint64_t operator&(const uint64_t b,const square sq){
@@ -196,8 +197,8 @@ inline uint64_t get_adjacent_files(const file f){
   return adjacent_files_bb[f];
 }
 
-inline uint64_t get_between(const square square1,const square square2){
-  return between_bb[square1][square2];
+inline uint64_t get_between(const square s1,const square s2){
+  return between_bb[s1][s2];
 }
 
 inline uint64_t ranks_forward_bb(const side color,const rank r){
@@ -220,9 +221,8 @@ inline uint64_t passedpawn_mask(const side color,const square sq){
   return passed_pawn_mask[color][sq];
 }
 
-inline bool aligned(const square square1,const square square2,
-  const square square3){
-  return connection_bb[square1][square2]&square3;
+inline bool aligned(const square s1,const square s2,const square s3){
+  return connection_bb[s1][s2]&bb(s3);
 }
 
 inline int distance(const square x,const square y){
@@ -247,18 +247,15 @@ inline square rear_square(const side color,const uint64_t b){
 
 inline uint64_t attack_bishop_bb(const square sq,const uint64_t occupied){
   return bishop_attack_table[sq][(occupied&bishop_mask[sq])*
-    bitboard::bishop_magics[sq]>>
-    55];
+    bitboard::bishop_magics[sq]>>55];
 }
 
 inline uint64_t attack_rook_bb(const square sq,const uint64_t occupied){
   return rook_attack_table[sq][(occupied&rook_mask[sq])*
-    bitboard::rook_magics[sq]>>
-    52];
+    bitboard::rook_magics[sq]>>52];
 }
 
-inline uint64_t attack_bb(const uint8_t piece_t,const square sq,
-  const uint64_t occupied){
+inline uint64_t attack_bb(const uint8_t piece_t,const square sq,const uint64_t occupied){
   switch(piece_t){
   case pt_bishop: return attack_bishop_bb(sq,occupied);
   case pt_rook: return attack_rook_bb(sq,occupied);
@@ -267,29 +264,25 @@ inline uint64_t attack_bb(const uint8_t piece_t,const square sq,
   }
 }
 
-template<side color> uint64_t pawn_attack(const uint64_t bb){
-  if constexpr(color==white) return shift_bb<north_west>(bb)|shift_bb<north_east>(bb);
-  else return shift_bb<south_west>(bb)|shift_bb<south_east>(bb);
+template<side color> uint64_t pawn_attack(const uint64_t b){
+  if constexpr(color==white) return shift_bb<north_west>(b)|shift_bb<north_east>(b);
+  else return shift_bb<south_west>(b)|shift_bb<south_east>(b);
 }
 
-template<side color> uint64_t shift_up(const uint64_t bb){
-  if constexpr(color==white) return shift_bb<north>(bb);
-  else return shift_bb<south>(bb);
+template<side color> uint64_t shift_up(const uint64_t b){
+  return color==white?shift_bb<north>(b):shift_bb<south>(b);
 }
 
-template<side color> uint64_t shift_down(const uint64_t bb){
-  if constexpr(color==white) return shift_bb<south>(bb);
-  else return shift_bb<north>(bb);
+template<side color> uint64_t shift_down(const uint64_t b){
+  return color==white?shift_bb<south>(b):shift_bb<north>(b);
 }
 
-template<side color> uint64_t shift_up_left(const uint64_t bb){
-  if constexpr(color==white) return shift_bb<north_west>(bb);
-  else return shift_bb<south_west>(bb);
+template<side color> uint64_t shift_up_left(const uint64_t b){
+  return color==white?shift_bb<north_west>(b):shift_bb<south_west>(b);
 }
 
-template<side color> uint64_t shift_up_right(const uint64_t bb){
-  if constexpr(color==white) return shift_bb<north_east>(bb);
-  else return shift_bb<south_east>(bb);
+template<side color> uint64_t shift_up_right(const uint64_t b){
+  return color==white?shift_bb<north_east>(b):shift_bb<south_east>(b);
 }
 
 inline square pop_lsb(uint64_t* b){
@@ -300,6 +293,7 @@ inline square pop_lsb(uint64_t* b){
 
 inline uint64_t sliding_attacks(int sq,uint64_t block,const int deltas[4][2],
   int f_min,int f_max,int r_min,int r_max);
-void init_magic_bb(uint64_t* attack,const int attack_index[],uint64_t* square_index[],
-  uint64_t* mask,int shift,const uint64_t mult[],const int deltas[4][2]);
+void init_magic_bb(uint64_t* attack,const int attack_index[],
+  uint64_t* square_index[],uint64_t* mask,int shift,
+  const uint64_t mult[],const int deltas[4][2]);
 void init_magic_sliders();
