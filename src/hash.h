@@ -1,4 +1,6 @@
 #pragma once
+#include <memory>
+#include <cstring>
 #include "main.h"
 
 enum hashflags : uint8_t{
@@ -37,11 +39,10 @@ struct main_hash_entry{
 
   void save(const uint64_t k,const int val,const uint8_t flags,const int d,
     const uint32_t z,const int eval,const uint8_t gen){
-    const auto dd=d/plies;
+    const int dd=d/plies;
     const uint16_t k16=k>>48;
     if(z||k16!=key_) move_=static_cast<uint16_t>(z);
-    if(k16!=key_||dd>depth_-4||
-      (flags&exact_value)==exact_value){
+    if(k16!=key_||dd>depth_-4||(flags&exact_value)==exact_value){
       key_=k16;
       value_=static_cast<int16_t>(val);
       eval_=static_cast<int16_t>(eval);
@@ -52,12 +53,12 @@ struct main_hash_entry{
 private:
   friend class hash;
 
-  uint16_t key_;
-  int8_t depth_;
-  uint8_t flags_;
-  int16_t value_;
-  int16_t eval_;
-  uint16_t move_;
+  uint16_t key_{};
+  int8_t depth_{};
+  uint8_t flags_{};
+  int16_t value_{};
+  int16_t eval_{};
+  uint16_t move_{};
 };
 
 class hash{
@@ -66,14 +67,12 @@ class hash{
 
   struct bucket{
     main_hash_entry entry[bucket_size];
-    char padding[2];
+    char padding[2]{};
   };
 
   static_assert(cache_line%sizeof(bucket)==0,"Cluster size incorrect");
 public:
-  ~hash(){
-    free(hash_mem_);
-  }
+  ~hash() = default;
 
   void new_age(){
     age_=(age_+8)&age_mask;
@@ -89,18 +88,13 @@ public:
   void init(size_t mb_size);
   void clear() const;
 
-  [[nodiscard]] main_hash_entry* entry(const uint64_t key) const{
-    return reinterpret_cast<main_hash_entry*>(
-      reinterpret_cast<char*>(hash_mem_)+(key&bucket_mask_));
-  }
-
   void prefetch_entry(const uint64_t key) const{
-    prefetch(entry(key));
+    prefetch(&hash_mem_[key&bucket_index_mask_].entry[0]);
   }
 private:
   size_t buckets_=0;
-  size_t bucket_mask_=0;
-  bucket* hash_mem_=nullptr;
+  size_t bucket_index_mask_=0;
+  std::unique_ptr<bucket[],void(*)(void*)> hash_mem_{nullptr,free};
   uint8_t age_=0;
 };
 
