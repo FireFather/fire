@@ -151,46 +151,56 @@ namespace{
     return true;
   }
 
-  void affine_txfm(int8_t* input,void* output,unsigned in_dims,
-    unsigned out_dims,int32_t* biases,
-    weight_t* weights,mask_t* in_mask,
-    mask_t* out_mask,const bool pack8_and_calc_mask){
+  void affine_txfm(
+    int8_t* input,
+    void* output,
+    unsigned in_dims,
+    unsigned out_dims,
+    int32_t* biases,
+    weight_t* weights,
+    mask_t* in_mask,
+    mask_t* out_mask,
+    bool pack8_and_calc_mask){
     (void)out_dims;
     const __m256i k_zero=_mm256_setzero_si256();
-    __m256i out_0=reinterpret_cast<__m256i*>(biases)[0];
-    __m256i out_1=reinterpret_cast<__m256i*>(biases)[1];
-    __m256i out_2=reinterpret_cast<__m256i*>(biases)[2];
-    __m256i out_3=reinterpret_cast<__m256i*>(biases)[3];
-    __m256i first,second;
+    auto* out_vec=static_cast<__m256i*>(output);
+    __m256i acc[4]={
+    reinterpret_cast<__m256i*>(biases)[0],
+    reinterpret_cast<__m256i*>(biases)[1],
+    reinterpret_cast<__m256i*>(biases)[2],
+    reinterpret_cast<__m256i*>(biases)[3]
+    };
     mask2_t v;
-    unsigned idx;
+    unsigned idx=0,offset=0;
     memcpy(&v,in_mask,sizeof(mask2_t));
-    for(unsigned offset=0;offset<in_dims;){
-      if(!next_idx(&idx,&offset,&v,in_mask,in_dims)) break;
-      first=reinterpret_cast<__m256i*>(weights)[idx];
+    while(next_idx(&idx,&offset,&v,in_mask,in_dims)){
+      __m256i first=reinterpret_cast<__m256i*>(weights)[idx];
       uint16_t factor=static_cast<uint8_t>(input[idx]);
+      __m256i second;
       if(next_idx(&idx,&offset,&v,in_mask,in_dims)){
         second=reinterpret_cast<__m256i*>(weights)[idx];
-        factor|=input[idx]<<8;
+        factor|=static_cast<uint16_t>(input[idx])<<8;
       } else{
         second=k_zero;
       }
-      __m256i mul=_mm256_set1_epi16(static_cast<int16_t>(factor)),prod,signs;
-      prod=_mm256_maddubs_epi16(mul,_mm256_unpacklo_epi8(first,second));
-      signs=_mm256_cmpgt_epi16(k_zero,prod);
-      out_0=_mm256_add_epi32(out_0,_mm256_unpacklo_epi16(prod,signs));
-      out_1=_mm256_add_epi32(out_1,_mm256_unpackhi_epi16(prod,signs));
+      const __m256i mul=_mm256_set1_epi16(static_cast<int16_t>(factor));
+      __m256i prod=_mm256_maddubs_epi16(mul,_mm256_unpacklo_epi8(first,second));
+      __m256i signs=_mm256_cmpgt_epi16(k_zero,prod);
+      acc[0]=_mm256_add_epi32(acc[0],_mm256_unpacklo_epi16(prod,signs));
+      acc[1]=_mm256_add_epi32(acc[1],_mm256_unpackhi_epi16(prod,signs));
       prod=_mm256_maddubs_epi16(mul,_mm256_unpackhi_epi8(first,second));
       signs=_mm256_cmpgt_epi16(k_zero,prod);
-      out_2=_mm256_add_epi32(out_2,_mm256_unpacklo_epi16(prod,signs));
-      out_3=_mm256_add_epi32(out_3,_mm256_unpackhi_epi16(prod,signs));
+      acc[2]=_mm256_add_epi32(acc[2],_mm256_unpacklo_epi16(prod,signs));
+      acc[3]=_mm256_add_epi32(acc[3],_mm256_unpackhi_epi16(prod,signs));
     }
-    __m256i out16_0=_mm256_srai_epi16(_mm256_packs_epi32(out_0,out_1),shift_);
-    __m256i out16_1=_mm256_srai_epi16(_mm256_packs_epi32(out_2,out_3),shift_);
-    auto out_vec=static_cast<__m256i*>(output);
+    __m256i out16_0=_mm256_srai_epi16(_mm256_packs_epi32(acc[0],acc[1]),shift_);
+    __m256i out16_1=_mm256_srai_epi16(_mm256_packs_epi32(acc[2],acc[3]),shift_);
     out_vec[0]=_mm256_packs_epi16(out16_0,out16_1);
-    if(pack8_and_calc_mask) out_mask[0]=_mm256_movemask_epi8(_mm256_cmpgt_epi8(out_vec[0],k_zero));
-    else out_vec[0]=_mm256_max_epi8(out_vec[0],k_zero);
+    if(pack8_and_calc_mask){
+      out_mask[0]=_mm256_movemask_epi8(_mm256_cmpgt_epi8(out_vec[0],k_zero));
+    } else{
+      out_vec[0]=_mm256_max_epi8(out_vec[0],k_zero);
+    }
   }
 
   int16_t ft_biases alignas(64)[k_half_dimensions];
@@ -198,24 +208,27 @@ namespace{
 
   void refresh_accumulator(const board* pos){
     accumulator* accu=&pos->nnue[0]->accu;
-    index_list active_indices[2];
-    active_indices[0].size=active_indices[1].size=0;
+    index_list active_indices[2]={};
     append_active_indices(pos,active_indices);
-    for(unsigned c=0;c<2;c++){
-      for(unsigned i=0;i<k_half_dimensions/TILE_HEIGHT;i++){
-        const vec16_t* ft_biases_tile=
-          reinterpret_cast<vec16_t*>(&ft_biases[static_cast<size_t>(i)*TILE_HEIGHT]);
-        const auto acc_tile=reinterpret_cast<vec16_t*>(
-          &accu->accumulation[c][static_cast<size_t>(i)*TILE_HEIGHT]);
+    for(unsigned color=0;color<2;++color){
+      for(unsigned tile=0;tile<k_half_dimensions/TILE_HEIGHT;++tile){
+        const auto* bias_tile=reinterpret_cast<const vec16_t*>(&ft_biases[tile*TILE_HEIGHT]);
+        auto* acc_tile=reinterpret_cast<vec16_t*>(&accu->accumulation[color][tile*TILE_HEIGHT]);
         vec16_t acc[num_regs];
-        for(unsigned j=0;j<num_regs;j++) acc[j]=ft_biases_tile[j];
-        for(size_t k=0;k<active_indices[c].size;k++){
-          const unsigned index=active_indices[c].values[k];
-          const unsigned offset=k_half_dimensions*index+i*TILE_HEIGHT;
-          const vec16_t* column=reinterpret_cast<vec16_t*>(&ft_weights[offset]);
-          for(unsigned j=0;j<num_regs;j++) acc[j]=VEC_ADD_16(acc[j],column[j]);
+        for(unsigned i=0;i<num_regs;++i){
+          acc[i]=bias_tile[i];
         }
-        for(unsigned j=0;j<num_regs;j++) acc_tile[j]=acc[j];
+        for(size_t k=0;k<active_indices[color].size;++k){
+          const unsigned index=active_indices[color].values[k];
+          const size_t offset=static_cast<size_t>(index)*k_half_dimensions+tile*TILE_HEIGHT;
+          const auto* weight_tile=reinterpret_cast<const vec16_t*>(&ft_weights[offset]);
+          for(unsigned i=0;i<num_regs;++i){
+            acc[i]=VEC_ADD_16(acc[i],weight_tile[i]);
+          }
+        }
+        for(unsigned i=0;i<num_regs;++i){
+          acc_tile[i]=acc[i];
+        }
       }
     }
     accu->computed_accumulation=1;
@@ -224,45 +237,39 @@ namespace{
   bool update_accumulator(const board* pos){
     accumulator* accu=&pos->nnue[0]->accu;
     if(accu->computed_accumulation) return true;
-    accumulator* prev_acc;
-    if((!pos->nnue[1]||
-        !(prev_acc=&pos->nnue[1]->accu)->computed_accumulation)&&
-      (!pos->nnue[2]||
-        !(prev_acc=&pos->nnue[2]->accu)->computed_accumulation))
+    const accumulator* prev_acc=nullptr;
+    if((!pos->nnue[1]||!(prev_acc=&pos->nnue[1]->accu)->computed_accumulation)&&
+      (!pos->nnue[2]||!(prev_acc=&pos->nnue[2]->accu)->computed_accumulation)){
       return false;
-    index_list removed_indices[2],added_indices[2];
-    removed_indices[0].size=removed_indices[1].size=0;
-    added_indices[0].size=added_indices[1].size=0;
-    bool reset[2];
-    append_changed_indices(pos,removed_indices,added_indices,reset);
-    for(unsigned i=0;i<k_half_dimensions/TILE_HEIGHT;i++){
-      for(unsigned c=0;c<2;c++){
-        const auto acc_tile=reinterpret_cast<vec16_t*>(
-          &accu->accumulation[c][static_cast<size_t>(i)*TILE_HEIGHT]);
+    }
+    index_list removed[2]={};
+    index_list added[2]={};
+    bool reset[2]={};
+    append_changed_indices(pos,removed,added,reset);
+    for(unsigned tile=0;tile<k_half_dimensions/TILE_HEIGHT;++tile){
+      for(unsigned color=0;color<2;++color){
+        const auto acc_tile=reinterpret_cast<vec16_t*>(&accu->accumulation[color][tile*TILE_HEIGHT]);
         vec16_t acc[num_regs];
-        if(reset[c]){
-          const vec16_t* ft_b_tile=
-            reinterpret_cast<vec16_t*>(&ft_biases[static_cast<size_t>(i)*TILE_HEIGHT]);
-          for(unsigned j=0;j<num_regs;j++) acc[j]=ft_b_tile[j];
+        if(reset[color]){
+          const auto* bias_tile=reinterpret_cast<const vec16_t*>(&ft_biases[tile*TILE_HEIGHT]);
+          for(unsigned i=0;i<num_regs;++i) acc[i]=bias_tile[i];
         } else{
-          const vec16_t* prev_acc_tile=reinterpret_cast<vec16_t*>(
-            &prev_acc->accumulation[c][static_cast<size_t>(i)*TILE_HEIGHT]);
-          for(unsigned j=0;j<num_regs;j++) acc[j]=prev_acc_tile[j];
-          for(unsigned k=0;k<removed_indices[c].size;k++){
-            const unsigned index=removed_indices[c].values[k];
-            const unsigned offset=k_half_dimensions*index+i*TILE_HEIGHT;
-            const vec16_t* column=
-              reinterpret_cast<vec16_t*>(&ft_weights[offset]);
-            for(unsigned j=0;j<num_regs;j++) acc[j]=VEC_SUB_16(acc[j],column[j]);
+          const auto* prev_tile=reinterpret_cast<const vec16_t*>(&prev_acc->accumulation[color][tile*TILE_HEIGHT]);
+          for(unsigned i=0;i<num_regs;++i) acc[i]=prev_tile[i];
+          for(size_t i=0;i<removed[color].size;++i){
+            const unsigned index=removed[color].values[i];
+            const size_t offset=static_cast<size_t>(index)*k_half_dimensions+tile*TILE_HEIGHT;
+            const auto* weight_tile=reinterpret_cast<const vec16_t*>(&ft_weights[offset]);
+            for(unsigned j=0;j<num_regs;++j) acc[j]=VEC_SUB_16(acc[j],weight_tile[j]);
           }
         }
-        for(unsigned k=0;k<added_indices[c].size;k++){
-          const unsigned index=added_indices[c].values[k];
-          const unsigned offset=k_half_dimensions*index+i*TILE_HEIGHT;
-          const vec16_t* column=reinterpret_cast<vec16_t*>(&ft_weights[offset]);
-          for(unsigned j=0;j<num_regs;j++) acc[j]=VEC_ADD_16(acc[j],column[j]);
+        for(size_t i=0;i<added[color].size;++i){
+          const unsigned index=added[color].values[i];
+          const size_t offset=static_cast<size_t>(index)*k_half_dimensions+tile*TILE_HEIGHT;
+          const auto* weight_tile=reinterpret_cast<const vec16_t*>(&ft_weights[offset]);
+          for(unsigned j=0;j<num_regs;++j) acc[j]=VEC_ADD_16(acc[j],weight_tile[j]);
         }
-        for(unsigned j=0;j<num_regs;j++) acc_tile[j]=acc[j];
+        for(unsigned j=0;j<num_regs;++j) acc_tile[j]=acc[j];
       }
     }
     accu->computed_accumulation=1;
@@ -270,21 +277,21 @@ namespace{
   }
 
   void transform(const board* pos,clipped_t* output,mask_t* out_mask){
-    if(!update_accumulator(pos)) refresh_accumulator(pos);
-    int16_t (*accumulation)[2][256]=&pos->nnue[0]->accu.accumulation;
-    (void)out_mask;
+    if(!update_accumulator(pos)){
+      refresh_accumulator(pos);
+    }
+    auto& accumulation=pos->nnue[0]->accu.accumulation;
     const int perspectives[2]={pos->player,!pos->player};
-    for(unsigned p=0;p<2;p++){
+    for(unsigned p=0;p<2;++p){
       const unsigned offset=k_half_dimensions*p;
-      constexpr unsigned num_chunks=16*k_half_dimensions/simd_width;
       const auto out=reinterpret_cast<vec8_t*>(&output[offset]);
-      for(unsigned i=0;i<num_chunks/2;i++){
-        const vec16_t s0=
-          reinterpret_cast<vec16_t*>((*accumulation)[perspectives[p]])[static_cast<size_t>(i)*2];
-        const vec16_t s1=reinterpret_cast<vec16_t*>(
-          (*accumulation)[perspectives[p]])[i*2+1];
-        out[i]=VEC_PACKS(s0,s1);
-        *out_mask++=VEC_MASK_POS(out[i]);
+      constexpr unsigned num_chunks=16*k_half_dimensions/simd_width;
+      for(unsigned i=0;i<num_chunks/2;++i){
+        const vec16_t s0=reinterpret_cast<vec16_t*>(&accumulation[perspectives[p]])[i*2+0];
+        const vec16_t s1=reinterpret_cast<vec16_t*>(&accumulation[perspectives[p]])[i*2+1];
+        const vec8_t packed=VEC_PACKS(s0,s1);
+        out[i]=packed;
+        *out_mask++=VEC_MASK_POS(packed);
       }
     }
   }
@@ -337,42 +344,44 @@ namespace{
   }
 
   bool verify_net(const void* eval_data,const size_t size){
-    if(size!=21022697) return false;
-    const auto d=static_cast<const char*>(eval_data);
-    if(readu_le_u32(d)!=nnue_version) return false;
-    if(readu_le_u32(d+4)!=0x3e5aa6eeU) return false;
-    if(readu_le_u32(d+8)!=177) return false;
-    if(readu_le_u32(d+transformer_start)!=0x5d69d7b8) return false;
-    if(readu_le_u32(d+network_start)!=0x63337156) return false;
-    return true;
+    constexpr uint32_t magic1=0x3e5aa6eeU;
+    constexpr uint32_t magic2=0x5d69d7b8;
+    constexpr uint32_t magic3=0x63337156;
+    if(constexpr size_t expected_size=21022697;size!=expected_size) return false;
+    const auto* d=static_cast<const char*>(eval_data);
+    return
+      readu_le_u32(d)==nnue_version&&
+      readu_le_u32(d+4)==magic1&&
+      readu_le_u32(d+8)==177&&
+      readu_le_u32(d+transformer_start)==magic2&&
+      readu_le_u32(d+network_start)==magic3;
   }
 
   void init_weights(const void* eval_data){
     const char* d=static_cast<const char*>(eval_data)+transformer_start+4;
-    for(unsigned i=0;i<k_half_dimensions;i++,d+=2) ft_biases[i]=static_cast<int16_t>(readu_le_u16(d));
-    for(unsigned i=0;i<k_half_dimensions*ft_in_dims;i++,d+=2) ft_weights[i]=static_cast<int16_t>(readu_le_u16(d));
+    for(unsigned i=0;i<k_half_dimensions;++i,d+=2) ft_biases[i]=static_cast<int16_t>(readu_le_u16(d));
+    for(unsigned i=0;i<k_half_dimensions*ft_in_dims;++i,d+=2) ft_weights[i]=static_cast<int16_t>(readu_le_u16(d));
     d+=4;
-    for(unsigned i=0;i<32;i++,d+=4) hidden1_biases[i]=static_cast<int32_t>(readu_le_u32(d));
+    for(unsigned i=0;i<32;++i,d+=4) hidden1_biases[i]=static_cast<int32_t>(readu_le_u32(d));
     d=read_hidden_weights(hidden1_weights,512,d);
-    for(unsigned i=0;i<32;i++,d+=4) hidden2_biases[i]=static_cast<int32_t>(readu_le_u32(d));
+    for(unsigned i=0;i<32;++i,d+=4) hidden2_biases[i]=static_cast<int32_t>(readu_le_u32(d));
     d=read_hidden_weights(hidden2_weights,32,d);
-    for(unsigned i=0;i<1;i++,d+=4) output_biases[i]=static_cast<int32_t>(readu_le_u32(d));
+    output_biases[0]=static_cast<int32_t>(readu_le_u32(d));
+    d+=4;
     read_output_weights(output_weights,d);
     permute_biases(hidden1_biases);
     permute_biases(hidden2_biases);
   }
 
   bool load_eval_file(const char* eval_file){
-    const void* eval_data;
-    map_t mapping;
-    size_t size;
+    const void* eval_data=nullptr;
+    map_t mapping=nullptr;
+    size_t size=0;
 #if !defined(_MSC_VER) && defined(NNUE_EMBEDDED)
-  if (strcmp(eval_file, NNUE_EVAL_FILE) == 0) {
-    eval_data = gNetworkData;
-    mapping = 0;
-    size = gNetworkSize;
-  }
-  else
+    if (strcmp(eval_file, NNUE_EVAL_FILE) == 0) {
+      eval_data=gNetworkData;
+      size=gNetworkSize;
+    } else
 #endif
     {
       const FD fd=open_file(eval_file);
@@ -382,14 +391,19 @@ namespace{
       close_file(fd);
     }
     const bool success=verify_net(eval_data,size);
-    if(success) init_weights(eval_data);
-    if(mapping) unmap_file(eval_data,mapping);
+    if(success){
+      init_weights(eval_data);
+    }
+    if(mapping){
+      unmap_file(eval_data,mapping);
+    }
     return success;
   }
 }
 
 int nnue_init(const char* eval_file){
-  if(load_eval_file(eval_file)) acout()<<"NNUE loaded"<<std::endl;
+  if(load_eval_file(eval_file))
+    acout()<<"NNUE loaded"<<std::endl;
   else acout()<<"NNUE not found"<<std::endl;
   return fflush(stdout);
 }
@@ -397,27 +411,47 @@ int nnue_init(const char* eval_file){
 int nnue_evaluate_pos(const board* pos){
   alignas(8) mask_t input_mask[ft_out_dims/(8*sizeof(mask_t))];
   alignas(8) mask_t hidden1_mask[8/sizeof(mask_t)]={};
-  net_data buf;
-#define B(x) (buf.x)
-  transform(pos, B(input),input_mask);
-  affine_txfm(B(input), B(hidden1_out),ft_out_dims,32,hidden1_biases,
-    hidden1_weights,input_mask,hidden1_mask,true);
-  affine_txfm(B(hidden1_out), B(hidden2_out),32,32,hidden2_biases,
-    hidden2_weights,hidden1_mask,nullptr,false);
-  const int32_t out_value=
-    affine_propagate(B(hidden2_out),output_biases,output_weights);
-  return out_value/fv_scale;
+  net_data buffer;
+  transform(pos,buffer.input,input_mask);
+  affine_txfm(
+    buffer.input,
+    buffer.hidden1_out,
+    ft_out_dims,
+    32,
+    hidden1_biases,
+    hidden1_weights,
+    input_mask,
+    hidden1_mask,
+    true
+    );
+  affine_txfm(
+    buffer.hidden1_out,
+    buffer.hidden2_out,
+    32,
+    32,
+    hidden2_biases,
+    hidden2_weights,
+    hidden1_mask,
+    nullptr,
+    false
+    );
+  const int32_t raw_output=affine_propagate(
+    buffer.hidden2_out,
+    output_biases,
+    output_weights
+    );
+  return raw_output/fv_scale;
 }
 
 int nnue_evaluate(const int player,int* pieces,int* squares){
   nnue_data nnue;
   nnue.accu.computed_accumulation=0;
-  board pos;
-  pos.nnue[0]=&nnue;
-  pos.nnue[1]=nullptr;
-  pos.nnue[2]=nullptr;
+  board pos{};
   pos.player=player;
   pos.pieces=pieces;
   pos.squares=squares;
+  pos.nnue[0]=&nnue;
+  pos.nnue[1]=nullptr;
+  pos.nnue[2]=nullptr;
   return nnue_evaluate_pos(&pos);
 }
