@@ -1,3 +1,18 @@
+/*
+ * Chess Engine - Position Module (Interface)
+ * ------------------------------------------
+ * The position class represents a complete chess position and provides:
+ *   - Accessors for board state (pieces, piece counts, keys, phase)
+ *   - Methods to play and take back moves
+ *   - Attack and pin detection utilities
+ *   - FEN parsing and setup
+ *   - Static exchange evaluation helpers
+ *
+ * This is the central state structure used throughout search, evaluation,
+ * and move generation. It is designed for speed: heavy use of inline
+ * functions and bitboards.
+ */
+
 #pragma once
 #include "bitboard.h"
 #include "main.h"

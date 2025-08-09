@@ -1,3 +1,24 @@
+/*
+ * Chess Engine - Position Module (Implementation)
+ * -----------------------------------------------
+ * This file implements the core position class logic.
+ * The position object maintains:
+ *   - Bitboards and piece lists for fast access
+ *   - Zobrist keys for hash table lookup
+ *   - Castling rights, en passant state, game ply
+ *   - Attack and pin detection
+ *
+ * It supports:
+ *   - Generating and updating attack info (check, pins, threats)
+ *   - Making and unmaking moves, including special moves (castle, promotion, en passant)
+ *   - Position setup from FEN strings
+ *   - Static exchange evaluation (SEE) testing
+ *   - Detection of draw conditions (50-move rule, repetition)
+ *
+ * These functions are called heavily by the search, so care is taken
+ * to minimize overhead in critical paths.
+ */
+
 #include "position.h"
 #include <sstream>
 #include <utility>
@@ -10,6 +31,14 @@
 #include "util.h"
 #include "zobrist.h"
 
+/*
+ * attack_to(sq, occupied)
+ * -----------------------
+ * Return bitboard of all pieces attacking the given square, considering
+ * the supplied occupancy bitboard. Includes pawns, knights, bishops,
+ * rooks, queens, and kings from both colors.
+ */
+
 uint64_t position::attack_to(const square sq,const uint64_t occupied) const{
   return (attack_from<pt_pawn>(sq,black)&pieces(white,pt_pawn))|
     (attack_from<pt_pawn>(sq,white)&pieces(black,pt_pawn))|
@@ -19,6 +48,9 @@ uint64_t position::attack_to(const square sq,const uint64_t occupied) const{
     (attack_from<pt_king>(sq)&pieces(pt_king));
 }
 
+// Calculate a Zobrist sub-key for bishop colors. Used in evaluation
+// for recognizing opposite- or same-colored bishop situations.
+
 void position::calculate_bishop_color_key() const{
   uint64_t key=0;
   if(pieces(white,pt_bishop)&dark_squares) key^=0xF3094B57AC4789A2;
@@ -27,6 +59,16 @@ void position::calculate_bishop_color_key() const{
   if(pieces(black,pt_bishop)&~dark_squares) key^=0x4B57AC4789A2F309;
   pos_info_->bishop_color_key=key;
 }
+
+/*
+ * calculate_check_pins()
+ * ----------------------
+ * Updates pin and check information for the side to move:
+ *  - Calls calculate_pins<white>() and calculate_pins<black>() to mark
+ *    pinned pieces for each side.
+ *  - Fills check_squares[] arrays with bitboards of squares that would
+ *    give check if occupied by a piece of that type.
+ */
 
 void position::calculate_check_pins() const{
   calculate_pins<white>();
@@ -40,6 +82,12 @@ void position::calculate_check_pins() const{
     pos_info_->check_squares[pt_bishop]|pos_info_->check_squares[pt_rook];
   pos_info_->check_squares[pt_king]=0;
 }
+
+// calculate_pins<color>()
+// -----------------------
+// Detects all pieces pinned to the king of 'color' by sliding attacks
+// from enemy rooks, bishops, or queens. Stores pinning piece square
+// in pin_by[] and the pinned piece mask in x_ray[color].
 
 template<side color> void position::calculate_pins() const{
   uint64_t result=0;
@@ -56,6 +104,14 @@ template<side color> void position::calculate_pins() const{
   }
   pos_info_->x_ray[color]=result;
 }
+
+/*
+ * calculate_threat()
+ * ------------------
+ * Based on the previous move and moved piece type, determines if a new
+ * threat exists (e.g., discovered attack). Returns the square of the
+ * threatened piece or no_square if none found.
+ */
 
 square position::calculate_threat() const{
   if(!pos_info_->move_counter_values) return no_square;
@@ -100,6 +156,11 @@ square position::calculate_threat() const{
   return no_square;
 }
 
+// copy_position()
+// ----------------
+// Copy full position state from another position, including bitboards,
+// piece lists, keys, and game state. Adjusts thread-specific pointers.
+
 void position::copy_position(const position* pos,thread* th,
   const position_info* copy_state){
   std::memcpy(this,pos,sizeof(position));
@@ -123,10 +184,20 @@ void position::copy_position(const position* pos,thread* th,
   }
 }
 
+// Return the current game phase index based on non-pawn material.
+// Values are clamped between 0 and middlegame_phase.
+
 int position::game_phase() const{
   return std::max(
     0,std::min(middlegame_phase,static_cast<int>(pos_info_->phase)-6));
 }
+
+/*
+ * give_check(move)
+ * ----------------
+ * Determine if the given move delivers check to the opponent's king.
+ * Handles normal moves, promotions, castling, and en passant cases.
+ */
 
 bool position::give_check(const uint32_t move) const{
   const auto from=from_square(move);
@@ -152,6 +223,13 @@ bool position::give_check(const uint32_t move) const{
   }
 }
 
+/*
+ * init()
+ * ------
+ * Initialize Zobrist keys for all piece/square combinations, castling
+ * rights, en passant files, and side-to-move. Called once at startup.
+ */
+
 void position::init(){
   for(auto color=white;color<=black;++color) for(auto piece=pt_king;piece<=pt_queen;++piece) for(auto sq=a1;sq<=h8;++sq) zobrist::psq[make_piece(color,piece)][sq]=random::rand<uint64_t>();
   for(auto f=file_a;f<=file_h;++f) zobrist::enpassant[f]=random::rand<uint64_t>();
@@ -172,6 +250,13 @@ void position::init_hash_move50(const int fifty_move_distance){
     if(4*i+50<2*fifty_move_distance) zobrist::hash_50_move[i]=0;
     else zobrist::hash_50_move[i]=0x0001000100010001<<i;
 }
+
+/*
+ * is_draw()
+ * ---------
+ * Check for draw by 50-move rule or threefold repetition.
+ * Uses position history to detect repetition within limits.
+ */
 
 bool position::is_draw() const{
   if(pos_info_->draw50_moves>=2*thread_pool.fifty_move_distance){
@@ -199,6 +284,13 @@ uint64_t position::key_after_move(const uint32_t move) const{
   if(capture_piece) key^=zobrist::psq[capture_piece][to];
   return key^zobrist::psq[piece][to]^zobrist::psq[piece][from];
 }
+
+/*
+ * legal_move(move)
+ * ----------------
+ * Verify if a move is legal (does not leave own king in check).
+ * Includes special handling for en passant and castling.
+ */
 
 bool position::legal_move(const uint32_t move) const{
   const auto me=on_move_;
@@ -237,6 +329,14 @@ template<bool yes> void position::do_castle_move(const side me,const square from
     move_piece(me,make_piece(me,pt_rook),yes?to_r:from_r);
   }
 }
+
+/*
+ * play_move()
+ * -----------
+ * Update the position to reflect making the given move. Handles all
+ * special rules and updates keys, material counts, phase, and other
+ * incremental state. This is a hot function in the search loop.
+ */
 
 void position::play_move(const uint32_t move){
   const bool gives_check=
@@ -335,6 +435,11 @@ void position::play_move(const uint32_t move,const bool gives_check){
   calculate_check_pins();
 }
 
+// play_null_move()
+// ----------------
+// Make a "null move" (pass) by switching side to move without changing
+// piece placement. Used for null move pruning in search.
+
 void position::play_null_move(){
   ++nodes_;
   auto key=pos_info_->key^zobrist::on_move;
@@ -356,6 +461,14 @@ void position::play_null_move(){
   pos_info_->move_repetition=is_draw();
   calculate_check_pins();
 }
+
+/*
+ * see_test(move, limit)
+ * ---------------------
+ * Static Exchange Evaluation: simulate the sequence of captures on the
+ * target square to determine if the net material gain meets 'limit'.
+ * Returns true if exchange is favorable, false otherwise.
+ */
 
 bool position::see_test(const uint32_t move,const int limit) const{
   if(move_type(move)==castle_move) return 0>=limit;
@@ -437,6 +550,14 @@ bool position::see_test(const uint32_t move,const int limit) const{
 const int* position::see_values(){
   return see_value_simple;
 }
+
+/*
+ * set(fen_str, is_chess960, thread*)
+ * ----------------------------------
+ * Initialize position from a FEN string. Supports Chess960 castling
+ * notation. Sets up piece placement, side to move, castling rights,
+ * en passant, halfmove clock, and ply counters.
+ */
 
 void position::set_castling_possibilities(const side color,
   const square from_r){
@@ -583,6 +704,13 @@ void position::take_null_back(){
   pos_info_--;
   on_move_=~on_move_;
 }
+
+/*
+ * valid_move(move)
+ * ----------------
+ * Validate that a move is legal and consistent with the position state,
+ * including promotions, pawn advances, captures, and king safety.
+ */
 
 bool position::valid_move(const uint32_t move) const{
   const auto me=on_move_;
