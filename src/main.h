@@ -1,3 +1,16 @@
+/*
+ * Chess Engine - Core Types and Constants (Header)
+ * -----------------------------------------------
+ * Central definitions used across the engine:
+ *   - Platform macros and alignment helpers
+ *   - Enumerations (square, file, rank, stage) and constants
+ *   - Bitboard utilities (popcnt, lsb/msb, prefetch)
+ *   - Move encoding helpers (make_move, fields, types)
+ *   - Scoring helpers (make_score, mg/eg extraction)
+ *   - Engine parameters (values, limits, sizes)
+ * Notes: ASCII-only comments.
+ */
+
 #pragma once
 #include <algorithm>
 #include <cassert>
@@ -5,6 +18,7 @@
 #include <cstdint>
 #include <intrin.h>
 
+// Compiler-specific warnings and alignment helpers
 #ifdef _MSC_VER
 #pragma warning(disable : 4127)
 #pragma warning(disable : 4244)
@@ -17,13 +31,24 @@
 #endif
 
 #define C64(x) x##ULL
+
+// Board squares as linear indices (a1..h8)
+
 enum square : int8_t;
 enum side : int;
+
+// popcnt helpers: bit-manipulation constants for a software popcount
 
 constexpr uint64_t k1=0x5555555555555555;
 constexpr uint64_t k2=0x3333333333333333;
 constexpr uint64_t k4=0x0f0f0f0f0f0f0f0f;
 constexpr uint64_t kf=0x0101010101010101;
+
+/*
+ * popcnt(b)
+ * ---------
+ * Software population count using parallel bit operations.
+ */
 
 inline int popcnt(uint64_t b){
   b=b-(b>>1&k1);
@@ -32,6 +57,8 @@ inline int popcnt(uint64_t b){
   b=b*kf>>56;
   return static_cast<int>(b);
 }
+
+// De Bruijn index table to find bit positions for lsb/msb
 
 inline int debruin[64]={
 0,47,1,56,48,27,2,60,
@@ -44,9 +71,21 @@ inline int debruin[64]={
 13,18,8,12,7,6,5,63
 };
 
+/*
+ * lsb(bb)
+ * -------
+ * Return index of least-significant set bit using De Bruijn method.
+ */
+
 inline square lsb(const uint64_t b){
   return static_cast<square>(debruin[0x03f79d71b4cb0a89*(b^(b-1))>>58]);
 }
+
+/*
+ * msb(bb)
+ * -------
+ * Return index of most-significant set bit using bit spread + De Bruijn.
+ */
 
 inline square msb(uint64_t bb){
   constexpr uint64_t debruijn64=C64(0x03f79d71b4cb0a89);
@@ -59,6 +98,8 @@ inline square msb(uint64_t bb){
   return static_cast<square>(debruin[(bb*debruijn64)>>58]);
 }
 
+// Cache prefetch wrapper for MSVC/GCC/Clang
+
 #if defined(_MSC_VER)
 inline void prefetch(void* address){
   _mm_prefetch(static_cast<char*>(address), _MM_HINT_T0);
@@ -67,11 +108,15 @@ inline void prefetch(void* address){
 inline void prefetch(void* address) { __builtin_prefetch(address); }
 #endif
 
+// Engine metadata
+
 constexpr auto program="Fire";
 constexpr auto version="10";
 constexpr auto bmis="avx2";
 constexpr auto author="Norman Schmidt";
 constexpr auto platform="x64";
+
+// Engine limits and sizes
 
 constexpr int default_hash=64;
 constexpr int max_hash=1048576;
@@ -80,16 +125,24 @@ constexpr int max_moves=256;
 constexpr int max_ply=128;
 constexpr int max_pv=63;
 
+// Piece material values (centipawn-ish units scaled for this engine)
+
 constexpr int value_pawn=200;
 constexpr int value_knight=800;
 constexpr int value_bishop=850;
 constexpr int value_rook=1250;
 constexpr int value_queen=2500;
 
+// Score packing: mg/eg are scaled and packed into a 32-bit 'score'
+
 constexpr double score_factor=1.6;
+
+// Sorting sentinel values
 
 constexpr int sort_zero=0;
 constexpr int sort_max=999999;
+
+// Evaluation baselines and special markers
 
 constexpr int eval_0=0;
 constexpr int draw_eval=0;
@@ -97,11 +150,15 @@ constexpr int no_eval=199999;
 constexpr int pawn_eval=100*16;
 constexpr int bishop_eval=360*16;
 
+// Material phase weights for PSQT or tempo adjustments
+
 constexpr int mat_0=0;
 constexpr int mat_knight=41;
 constexpr int mat_bishop=42;
 constexpr int mat_rook=64;
 constexpr int mat_queen=127;
+
+// SEE (static exchange evaluation) piece values
 
 constexpr int see_0=0;
 constexpr int see_pawn=100;
@@ -110,10 +167,14 @@ constexpr int see_bishop=336;
 constexpr int see_rook=512;
 constexpr int see_queen=1016;
 
+// Search score constants: mate ranges, draw, and special values
+
 constexpr int score_0=0;
 constexpr int score_1=1;
 constexpr int draw_score=0;
 constexpr int win_score=10000;
+
+// Mate score framework (ensures distance-to-mate ordering)
 
 constexpr int mate_score=30256;
 constexpr int longest_mate_score=mate_score-2*max_ply;
@@ -123,6 +184,8 @@ constexpr int egtb_win_score=mate_score-max_ply;
 constexpr int max_score=30257;
 constexpr int no_score=30258;
 
+// Castling masks and combinations
+
 constexpr uint8_t no_castle=0;
 constexpr uint8_t white_short=1;
 constexpr uint8_t white_long=2;
@@ -130,6 +193,8 @@ constexpr uint8_t black_short=4;
 constexpr uint8_t black_long=8;
 constexpr uint8_t all=white_short|white_long|black_short|black_long;
 constexpr uint8_t castle_possible_n=16;
+
+// Piece type ids for non-colored pieces (pt_*), including queen and all
 
 constexpr uint8_t no_piecetype=0;
 constexpr uint8_t pt_king=1;
@@ -142,7 +207,11 @@ constexpr uint8_t pieces_without_king=7;
 constexpr uint8_t num_piecetypes=8;
 constexpr uint8_t all_pieces=0;
 
+// Game phase scaling limit (used by evaluation)
+
 constexpr int middlegame_phase=26;
+
+// Move encoding: layout and special types (castle, enpassant, promotions)
 
 constexpr uint32_t no_move=0;
 constexpr uint32_t null_move=65;
@@ -154,6 +223,8 @@ constexpr int promotion_b=12<<12;
 constexpr int promotion_r=13<<12;
 constexpr int promotion_q=14<<12;
 
+// Depth and ply definitions used by the search
+
 constexpr int plies=8;
 constexpr int main_thread_inc=9;
 constexpr int other_thread_inc=9;
@@ -161,6 +232,8 @@ constexpr int other_thread_inc=9;
 constexpr int depth_0=0;
 constexpr int no_depth=-6*plies;
 constexpr int max_depth=max_ply*plies;
+
+// Side constants (white, black) and board direction deltas
 
 constexpr auto white=static_cast<side>(0);
 constexpr auto black=static_cast<side>(1);
@@ -192,6 +265,7 @@ enum square : int8_t{
   a8,b8,c8,d8,e8,f8,g8,h8
 };
 
+// File and rank enumerations
 enum file{
   file_a,file_b,file_c,file_d,file_e,file_f,file_g,file_h
 };
@@ -200,7 +274,15 @@ enum rank{
   rank_1,rank_2,rank_3,rank_4,rank_5,rank_6,rank_7,rank_8
 };
 
+// Packed score forward declaration
 enum score : int;
+
+/*
+ * stage
+ * -----
+ * Move picker stages for search and quiescence. Determines which set
+ * of moves the picker will emit next (captures, killers, quiets, etc.).
+ */
 
 enum stage : uint8_t{
   normal_search,gen_good_captures,good_captures,killers_1,killers_2,gen_bxp_captures,bxp_captures,quietmoves,
@@ -208,6 +290,12 @@ enum stage : uint8_t{
   q_search_check_moves,q_search_no_checks,q_search_2,q_search_captures_2,probcut,gen_probcut,probcut_captures,gen_recaptures,
   recapture_moves
 };
+
+/*
+ * make_score(mg, eg)
+ * ------------------
+ * Pack middlegame and endgame components into a single score.
+ */
 
 constexpr score make_score(const int mg,const int eg){
   return static_cast<score>((static_cast<int>(mg*score_factor)<<16)+
@@ -217,6 +305,12 @@ constexpr score make_score(const int mg,const int eg){
 constexpr int remake_score(const int mg,const int eg){
   return (static_cast<int>(mg)<<16)+static_cast<int>(eg);
 }
+
+/*
+ * mg_value(score) / eg_value(score)
+ * ---------------------------------
+ * Extract the components from the packed score.
+ */
 
 inline int mg_value(const int score){
   const union{
@@ -234,21 +328,31 @@ inline int eg_value(const int score){
   return eg.s;
 }
 
+// Divide both mg and eg components by an integer
+
 inline int operator/(const score score,const int i){
   return remake_score(mg_value(score)/i,eg_value(score)/i);
 }
+
+// Toggle side (white <-> black)
 
 constexpr side operator~(const side color){
   return static_cast<side>(color^1);
 }
 
+// Flip square vertically (a1 <-> a8, etc.)
+
 constexpr square operator~(const square sq){
   return static_cast<square>(sq^56);
 }
 
+// Scale both mg and eg by mul/div (used for tempo or eval scaling)
+
 inline int mul_div(const int score,const int mul,const int div){
   return remake_score(mg_value(score)*mul/div,eg_value(score)*mul/div);
 }
+
+// Helper to encode mate scores with correct distance
 
 constexpr int gives_mate(const int ply){
   return mate_score-ply;
@@ -257,6 +361,8 @@ constexpr int gives_mate(const int ply){
 constexpr int gets_mated(const int ply){
   return -mate_score+ply;
 }
+
+// Square and coordinate helpers
 
 constexpr square make_square(const file f,const rank r){
   return static_cast<square>((r<<3)+f);
@@ -299,9 +405,13 @@ constexpr square to_square(const uint32_t move){
   return static_cast<square>(move&0x3F);
 }
 
+// Move decoding helpers
+
 constexpr int move_type(const uint32_t move){
   return static_cast<int>(move&15<<12);
 }
+
+// Promotion piece extraction from encoded move
 
 constexpr uint8_t promotion_piece(const uint32_t move){
   return static_cast<uint8_t>(pt_knight+
@@ -311,6 +421,8 @@ constexpr uint8_t promotion_piece(const uint32_t move){
 constexpr uint8_t piece_moved(const uint32_t move){
   return static_cast<uint8_t>(move>>12&7);
 }
+
+// Encode move from/to squares (with or without type bits)
 
 constexpr uint32_t make_move(const square from,const square to){
   return static_cast<uint32_t>(to+(from<<6));
@@ -324,6 +436,13 @@ constexpr uint32_t make_move(const int type,const square from,
 constexpr bool is_ok(const uint32_t move){
   return move!=no_move&&move!=null_move;
 }
+
+/*
+ * movelist<capacity>
+ * ------------------
+ * Small fixed-capacity container for encoded moves used in search.
+ * Provides push, random access, and simple search helpers.
+ */
 
 template<int capacity> struct movelist{
   int move_number;
