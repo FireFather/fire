@@ -1,0 +1,20 @@
+echo off
+del /s *.obj
+del /s *.ipch
+del /s *.db
+del /s *.iobj
+del /s *.ipdb
+del /s *.pdb
+del /s *.pch
+del /s *.res
+del /s *.log
+del /s *.recipe
+del /s *.xml
+del /s *.sarif
+del /s CodeAnalysisResultManifest.txt
+del /s *.lastcodeanalysissucceeded
+del /s *.FileListAbsolute.txt
+del /s *.lastbuildstate
+del /s *.tlog
+del /s *vsidx
+del /s Browse.*
