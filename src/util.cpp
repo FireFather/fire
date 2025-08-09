@@ -1,3 +1,25 @@
+/*
+ * Chess Engine - Utilities (Implementation)
+ * ----------------------------------------
+ * Misc helpers for I/O and formatting:
+ *   - move_to_string / move_from_string: UCI-algebraic move text
+ *   - stream operator<< for printing the board
+ *   - engine_info() and build_info() printers
+ * Notes: ASCII-only comments.
+ */
+
+/*
+ * Chess Engine - Utility Functions (Implementation)
+ * -------------------------------------------------
+ * Provides miscellaneous utilities:
+ *   - Thread-safe output stream wrapper (acout)
+ *   - Time measurement helpers
+ *   - String parsing for options and commands
+ *   - Misc helpers for string formatting
+ *
+ * ASCII-only comments for compatibility.
+ */
+
 #ifdef _WIN32
 #include <Windows.h>
 #else
@@ -9,6 +31,14 @@
 #include "main.h"
 #include "movegen.h"
 #include "util.h"
+
+/*
+ * move_to_string(move, pos)
+ * -------------------------
+ * Return UCI-style move string for a packed move:
+ *   - Handles Chess960 castling by converting to rook destination file
+ *   - Adds promotion suffix (q,r,b,n) when applicable
+ */
 
 std::string move_to_string(const uint32_t move,const position& pos){
   char s_move[6]{};
@@ -25,6 +55,16 @@ std::string move_to_string(const uint32_t move,const position& pos){
   return {s_move,5};
 }
 
+/*
+ * move_from_string(pos, str)
+ * --------------------------
+ * Parse a move string and return the encoded move id.
+ * Supports:
+ *   - Chess960 castling symbols O-O and O-O-O
+ *   - Lower/upper case promotion piece letters
+ * Tries all legal moves and returns the match or no_move.
+ */
+
 uint32_t move_from_string(const position& pos,std::string& str){
   if(pos.is_chess960()){
     if(str=="O-O")
@@ -40,6 +80,12 @@ uint32_t move_from_string(const position& pos,std::string& str){
   for(const auto& new_move:legal_move_list(pos)) if(str==move_to_string(new_move,pos)) return new_move;
   return no_move;
 }
+
+/*
+ * operator<<(os, pos)
+ * -------------------
+ * Pretty-print the board as 8 ranks of 8 squares using piece_to_char.
+ */
 
 std::ostream& operator<<(std::ostream& os,const position& pos){
   auto found=false;
@@ -66,11 +112,15 @@ std::ostream& operator<<(std::ostream& os,const position& pos){
   return os;
 }
 
+// Print engine name, version, platform, and BMI string
 void engine_info(){
   std::stringstream ei;
   ei<<program<<" "<<version<<" "<<platform<<" "<<bmis<<'\n';
   acout()<<ei.str();
 }
+
+// Print build date and time using __DATE__ and __TIME__
+// Example format: "Aug 09 2025 12:34:56"
 
 void build_info(){
   const std::string months("Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec");
