@@ -91,7 +91,7 @@ Uses multiple statistics tables: global history, counter-move history (CMH), fol
 
 Search loop: search.{h,cpp} (you didn’t paste this one, but the rest makes its interfaces clear)
 
-## Classic iterative deepening with a TT, a staged move picker, NNUE evaluation, and quiescence. The surrounding code has support for
+## classic iterative deepening with a TT, a staged move picker, NNUE evaluation, and quiescence. The surrounding code has support for
 
 ProbCut (a verification-style fast cutoff on promising captures)
 
