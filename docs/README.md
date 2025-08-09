@@ -37,10 +37,11 @@
 ![alt tag](https://raw.githubusercontent.com/FireFather/fire/master/docs/nnue_orientation_mapping.png)
 
 ## new
+- complete & detailed comments
 - lean & mean codebase size optimizations
 - syzygy TBs have been removed (as NNUE evaluation becomes stronger TB's become less valuable)
 - MCTS search has been removed
-- the source code footprint has been reduced more than 50% from 491 KB to 232 KB
+- source code footprint 208 KB (including comments = 282 KB)
 - and the source code has been reformatted via Google style guidelines
 - updated binaries available in /src directory (no change to the NNUE file)
 
