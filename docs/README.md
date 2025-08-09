@@ -59,9 +59,7 @@
 
 ## architectural overview
 
-The core state: position.{h,cpp}
-
-## holds the full board state (piece lists, bitboards, side to move, castling, en-passant, Zobrist keys, phase, repetition info, etc.). It precomputes and caches
+The core state: position.{h,cpp} holds the full board state (piece lists, bitboards, side to move, castling, en-passant, Zobrist keys, phase, repetition info, etc.). It precomputes and caches
 
 Attacked squares and x-rays/pins for both sides
 
