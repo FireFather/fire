@@ -30,20 +30,37 @@
 - bench, perft & divide
 - asychronous cout (acout) class using std::unique_lock <std::mutex>
 - unique NNUE (halfkp_256x2-32-32) evaluation
-- state-of-the-art modern c++ programming
 - visual studio 2022 project files included
 
-## perft
+##perft
 ![alt tag](https://raw.githubusercontent.com/FireFather/fire/master/docs/perft_7.png)
 
 ## nnue
 ![alt tag](https://raw.githubusercontent.com/FireFather/fire/master/docs/nuue_halfkp_data_flow.png)
 ![alt tag](https://raw.githubusercontent.com/FireFather/fire/master/docs/nnue_orientation_mapping.png)
 
+## new
+- complete & detailed comments
+- lean & mean codebase size optimizations
+- source code footprint is now 208 KB (including comments = 282 KB)
+- syzygy TBs have been removed (as NNUE evaluation becomes stronger TB's become less valuable)
+- MCTS search has been removed
+- the source code has been reformatted via Google style guidelines
+- updated binaries available in /src directory (no change to the NNUE file)
+
+## uci options
+- **Hash** -size of the hash table. default is 64 MB.
+- **Threads** -number of processor threads to use. default is 1, max = 128.
+- **MultiPV** -number of pv's/principal variations (lines of play) to be output. default is 1.
+- **MoveOverhead** -adjust this to compensate for network and GUI latency. This is useful to avoid losses on time.
+- **Ponder** -also think during opponent's time. default is false.
+- **UCI_Chess960** -play chess960 (often called FRC or Fischer Random Chess). default is false.
+- **Clear Hash** -clear the hash table. delete allocated memory and re-initialize.
 
 ## Architectural overview
 
-Core state: position.{h,cpp}
+The core state: position.{h,cpp}
+
 ## Holds the full board state (piece lists, bitboards, side to move, castling, en-passant, Zobrist keys, phase, repetition info, etc.). It precomputes and caches
 
 Attacked squares and x-rays/pins for both sides
@@ -56,7 +73,8 @@ Move generation: movegen.{h,cpp}
 Templated, bitboard-based generators for different move classes (captures only, quiets, quiet checks, check evasions, castles, pawn pushes). Supports Chess960 castling. Includes a legal filter that discards pseudo-legal moves leaving the king in check and handles the tricky en-passant legality.
 
 Move ordering / picker: movepick.{h,cpp}
-## Staged picker that feeds the search
+
+## Precise staged picker that feeds the search
 
 Hash move
 
@@ -74,7 +92,8 @@ Any delayed bucket
 Uses multiple statistics tables: global history, counter-move history (CMH), follow-up counters, max gain for tactical quiets, and a dedicated evasion history. Also has QS/ProbCut/recapture-only stages.
 
 Search loop: search.{h,cpp} (you didn’t paste this one, but the rest makes its interfaces clear)
-## Classic iterative deepening with a TT, staged move picker, NNUE evaluation, and quiescence. The surrounding code shows support for
+
+## Classic iterative deepening with a TT, a staged move picker, NNUE evaluation, and quiescence. The surrounding code has support for
 
 ProbCut (a verification-style fast cutoff on promising captures)
 
@@ -89,7 +108,8 @@ Transposition table: hash.{h,cpp}
 Cache-line-aware buckets (3 entries per bucket with padding), partial key (16 bits), ageing, and a replacement policy that prefers deeper or more recent entries. There’s explicit prefetching and a hash_full() estimator.
 
 Time management: chrono.{h,cpp}
-## A modern move-importance model that spreads available time across a horizon with guardrails
+
+## A modern, move-importance model that spreads available time across a horizon with guardrails
 
 “Optimal” and “maximum” budgets per move
 
@@ -117,8 +137,7 @@ Global random tables for piece-square, castling rights, en-passant file, side-to
 Bench / Perft: bench.{h,cpp} (+ perft elsewhere)
 A fixed set of FENs, timed fixed-depth runs, nodes/time/NPS per position and overall—very useful for regression and perf tracking.
 
-
-# Modern features and why they matter
+# Modern features
 
 NNUE evaluation (efficient neural net on CPUs): strong midgame strength with low branching cost. The code turns board state into compact (piece, square) arrays and calls a single nnue_evaluate.
 
@@ -148,7 +167,7 @@ Evaluation on leaves → NNUE; QS runs with captures/quiet checks; SEE and ProbC
 Best line & info → UCI “info” lines with PV / depth / score / nodes / nps; final “bestmove”.
 
 
-# Performance-oriented details baked in
+# Performance-oriented details included
 
 Incremental state: position::play_move() updates keys, phase, material, pawn keys, x-rays, check masks, capture info, 50-move counter—everything needed for quick legality and hash correctness.
 
@@ -174,7 +193,7 @@ Time control: The importance curve parameters are centralized—experimenting wi
 Protocol features: UCI already exposes the usual suspects (Hash, Threads, MultiPV, Ponder, Chess960). Adding custom options (e.g., LMR on/off, contempt style) is simple in uci::set_option().
 
 
-# What you get out of the box
+# What you get
 
 Strong, modern CPU-friendly engine powered by NNUE.
 
@@ -185,23 +204,6 @@ Robust position model with fast legality and accurate keys (material/pawn/bishop
 Practical time management and threading that scale to multi-core and pondering workflows.
 
 Full UCI support, Chess960 compatibility, and bench/perft tooling for regression.
-## new
-- complete & detailed comments
-- lean & mean codebase size optimizations
-- source code footprint is now 208 KB (including comments = 282 KB)
-- syzygy TBs have been removed (as NNUE evaluation becomes stronger TB's become less valuable)
-- MCTS search has been removed
-- the source code has been reformatted via Google style guidelines
-- updated binaries available in /src directory (no change to the NNUE file)
-
-## uci options
-- **Hash** -size of the hash table. default is 64 MB.
-- **Threads** -number of processor threads to use. default is 1, max = 128.
-- **MultiPV** -number of pv's/principal variations (lines of play) to be output. default is 1.
-- **MoveOverhead** -adjust this to compensate for network and GUI latency. This is useful to avoid losses on time.
-- **Ponder** -also think during opponent's time. default is false.
-- **UCI_Chess960** -play chess960 (often called FRC or Fischer Random Chess). default is false.
-- **Clear Hash** -clear the hash table. delete allocated memory and re-initialize.
 
 ## binaries
 - **x64 avx2** = fast pgo binary (targeting modern 64-bit systems w/ AVX2 instruction set)
