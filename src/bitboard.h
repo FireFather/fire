@@ -1,5 +1,15 @@
+/*
+ * Chess Engine - Bitboard Module (Interface)
+ * ------------------------------------------
+ * Declarations and inline helpers for bitboard operations.
+ * Exposes constants for ranks/files, masks, and magic tables,
+ * plus fast attack generators and utility functions.
+ */
+
 #pragma once
 #include "main.h"
+
+// File masks (A..H) and rank masks (1..8)
 
 inline constexpr uint64_t file_a_bb=0x0101010101010101ULL;
 inline constexpr uint64_t file_b_bb=file_a_bb<<1;
@@ -19,13 +29,19 @@ inline constexpr uint64_t rank_6_bb=rank_1_bb<<40;
 inline constexpr uint64_t rank_7_bb=rank_1_bb<<48;
 inline constexpr uint64_t rank_8_bb=rank_1_bb<<56;
 
+// Light and dark square masks
+
 inline constexpr uint64_t light_squares=0x55AA55AA55AA55AAULL;
 inline constexpr uint64_t dark_squares=0xAA55AA55AA55AA55ULL;
+
+// Namespace bitboard: initialization and magic tables
 
 namespace bitboard{
   void init();
 
   inline uint64_t magic_attack_r[102400];
+
+// Precomputed index offsets into the magic attack table for bishops
 
   inline constexpr int bishop_magic_index[64]={
   16530,9162,9674,18532,19172,17700,5730,19661,
@@ -38,6 +54,8 @@ namespace bitboard{
   17047,17780,2494,17716,17067,9465,16196,6166
   };
 
+// Precomputed index offsets into the magic attack table for rooks
+
   inline constexpr int rook_magic_index[64]={
   85487,43101,0,49085,93168,78956,60703,64799,
   30640,9256,28647,10404,63775,14500,52819,2048,
@@ -48,6 +66,8 @@ namespace bitboard{
   78319,12595,5152,32110,13894,2546,41052,77676,
   73580,44947,73565,17682,56607,56135,44989,21479
   };
+
+// Bishop magic multipliers used for hashing blocker subsets
 
   inline constexpr uint64_t bishop_magics[64]={
   0x007bfeffbfeffbffull,0x003effbfeffbfe08ull,0x0000401020200000ull,0x0000200810000000ull,
@@ -67,6 +87,8 @@ namespace bitboard{
   0x0003ffdfdfc27f80ull,0x000003ffefe0bfc0ull,0x0000000008208060ull,0x0000000003ff0040ull,
   0x0000000001002020ull,0x0000000040408020ull,0x00007ffeffbfeff9ull,0x007ffdff7fdff7fdull
   };
+
+// Rook magic multipliers used for hashing blocker subsets
 
   inline constexpr uint64_t rook_magics[64]={
   0x00a801f7fbfeffffull,0x00180012000bffffull,0x0040080010004004ull,0x0040040008004002ull,
@@ -88,6 +110,8 @@ namespace bitboard{
   };
 }
 
+// Global precomputed tables (defined in bitboard.cpp)
+
 extern uint64_t between_bb[num_squares][num_squares];
 extern uint64_t square_bb[num_squares];
 extern uint64_t adjacent_files_bb[num_files];
@@ -105,6 +129,8 @@ extern uint64_t bishop_mask[num_squares];
 extern uint64_t* bishop_attack_table[64];
 extern uint64_t* rook_attack_table[64];
 
+// Arrays of file and rank masks, indexed by enum values
+
 inline constexpr uint64_t file_bb[num_files]={
 file_a_bb,file_b_bb,file_c_bb,file_d_bb,
 file_e_bb,file_f_bb,file_g_bb,file_h_bb
@@ -114,6 +140,8 @@ inline constexpr uint64_t rank_bb[num_ranks]={
 rank_1_bb,rank_2_bb,rank_3_bb,rank_4_bb,
 rank_5_bb,rank_6_bb,rank_7_bb,rank_8_bb
 };
+
+// Shift a bitboard by a direction delta, masking off wrap-around
 
 template<square delta> uint64_t shift_bb(const uint64_t b){
   return delta==north
@@ -130,6 +158,8 @@ template<square delta> uint64_t shift_bb(const uint64_t b){
     ?(b&~file_a_bb)>>9
     :0;
 }
+
+// Move deltas for king/knight pseudo-legal steps used to build tables
 
 inline constexpr int kp_delta[][8]={
 {},
@@ -245,6 +275,8 @@ inline square rear_square(const side color,const uint64_t b){
   return color==white?lsb(b):msb(b);
 }
 
+// Magic attack lookup helpers: bishop and rook
+
 inline uint64_t attack_bishop_bb(const square sq,const uint64_t occupied){
   return bishop_attack_table[sq][(occupied&bishop_mask[sq])*
     bitboard::bishop_magics[sq]>>55];
@@ -255,6 +287,8 @@ inline uint64_t attack_rook_bb(const square sq,const uint64_t occupied){
     bitboard::rook_magics[sq]>>52];
 }
 
+// Unified attack dispatcher for sliding and non-sliding pieces
+
 inline uint64_t attack_bb(const uint8_t piece_t,const square sq,const uint64_t occupied){
   switch(piece_t){
   case pt_bishop: return attack_bishop_bb(sq,occupied);
@@ -264,10 +298,14 @@ inline uint64_t attack_bb(const uint8_t piece_t,const square sq,const uint64_t o
   }
 }
 
+// Pawn attack bitboards for a given color
+
 template<side color> uint64_t pawn_attack(const uint64_t b){
   if constexpr(color==white) return shift_bb<north_west>(b)|shift_bb<north_east>(b);
   else return shift_bb<south_west>(b)|shift_bb<south_east>(b);
 }
+
+// Directional shifts relative to side to move
 
 template<side color> uint64_t shift_up(const uint64_t b){
   return color==white?shift_bb<north>(b):shift_bb<south>(b);
@@ -284,6 +322,8 @@ template<side color> uint64_t shift_up_left(const uint64_t b){
 template<side color> uint64_t shift_up_right(const uint64_t b){
   return color==white?shift_bb<north_east>(b):shift_bb<south_east>(b);
 }
+
+// Pop least significant bit: return its square and clear it
 
 inline square pop_lsb(uint64_t* b){
   const auto sq=lsb(*b);
