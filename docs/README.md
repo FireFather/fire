@@ -201,9 +201,9 @@ Practical time management and threading that scale to multi-core and pondering w
 Full UCI support, Chess960 compatibility, and bench/perft tooling for regression.
 
 
-# Benefits of Modern C++ in This Engine
+# Benefits of Modern C++ in Fire
 
-his engine clearly leans on modern C++ idioms in ways that give it real, measurable advantages over the older, more procedural C-style engines from the 90s/early 2000s like Crafty, early Stockfish derivatives, or GNU Chess.
+Fire leans on modern C++ idioms in ways that give it real, measurable advantages over the older, more procedural C-style engines from the 90s/early 2000s like Crafty & GNU Chess, and many of the old-school C engines that exist today.
 
 Here’s how:
 
