@@ -1,6 +1,34 @@
+/*
+ * Chess Engine - Move Picker (Implementation)
+ * -------------------------------------------
+ * Implements staged move generation and ordering for search.
+ *
+ * Responsibilities:
+ *   - Incremental generation of moves in priority order
+ *   - Integration of transposition table move, killers, and history
+ *   - SEE (static exchange evaluation) for pruning bad captures
+ *   - Stage-based pipeline to order captures, quiets, evasions, etc.
+ *
+ * Stages are designed to quickly find good moves (for cutoffs) and
+ * defer bad moves until later.
+ *
+ * Notes: ASCII-only comments to avoid UTF-8 warnings.
+ */
+
 #include "movepick.h"
 #include "main.h"
 #include "thread.h"
+
+/*
+ * init_search(pos, hash_move, depth, only_quiet_check_moves)
+ * ----------------------------------------------------------
+ * Prepare staged picking at a full-width node.
+ *  - Record depth and whether only quiet checks are allowed.
+ *  - Validate and store the hash move (to try first).
+ *  - If in check: start in check evasion stage(s).
+ *  - Otherwise: start in normal stages with captures, killers, etc.
+ *  - Determine a counter move from previous moves for ordering.
+ */
 
 namespace movepick{
   void init_search(const position& pos,const uint32_t hash_move,const int depth,
@@ -28,6 +56,16 @@ namespace movepick{
     }
   }
 
+/*
+ * init_q_search(pos, hash_move, depth, sq)
+ * ----------------------------------------
+ * Prepare staged picking at a quiescence node.
+ *  - If in check: generate and score evasions.
+ *  - Else select between QS-with-checks, QS-no-checks, or recaptures
+ *    when depth is below a threshold, seeding capture square if needed.
+ *  - Optionally set and skip hash move if invalid.
+ */
+
   void init_q_search(const position& pos,const uint32_t hash_move,
     const int depth,const square sq){
     auto* pi=pos.info();
@@ -44,6 +82,13 @@ namespace movepick{
     if(!pi->mp_hash_move) ++pi->mp_stage;
   }
 
+/*
+ * init_prob_cut(pos, hash_move, limit)
+ * ------------------------------------
+ * Set up ProbCut stage: consider only captures that are promising by SEE
+ * relative to a verification threshold.
+ */
+
   void init_prob_cut(const position& pos,const uint32_t hash_move,
     const int limit){
     auto* pi=pos.info();
@@ -56,12 +101,29 @@ namespace movepick{
     pi->mp_stage=pi->mp_hash_move?probcut:gen_probcut;
   }
 
+/*
+ * score<captures_promotions>(pos)
+ * --------------------------------
+ * MVV-LVA-like capture values with small rank penalty to prefer deeper
+ * recaptures near promotion squares.
+ */
+
   template<> void score<captures_promotions>(const position& pos){
     const auto* const pi=pos.info();
     for(auto* z=pi->mp_current_move;z<pi->mp_end_list;z++)
       z->value=capture_sort_values[pos.piece_on_square(to_square(z->move))]-
         200*relative_rank(pos.on_move(),to_square(z->move));
   }
+
+/*
+ * score<quiet_moves>(pos)
+ * -----------------------
+ * Combine multiple history-like sources:
+ *   - Global history
+ *   - Counter-move history for current and previous plies
+ *   - Max-gain table for tactical quiets
+ *   - Threat bonus for moves that address a freshly created threat
+ */
 
   template<> void score<quiet_moves>(const position& pos){
     const auto& history=pos.thread_info()->history;
@@ -93,6 +155,13 @@ namespace movepick{
     }
   }
 
+/*
+ * score<evade_check>(pos)
+ * -----------------------
+ * Prefer captures in evasions (with MVV-LVA bias), otherwise order
+ * by specialized evasion history.
+ */
+
   template<> void score<evade_check>(const position& pos){
     const auto* const pi=pos.info();
     const auto& history=pos.thread_info()->evasion_history;
@@ -108,6 +177,12 @@ namespace movepick{
     }
   }
 
+/*
+ * insertion_sort(begin, end)
+ * --------------------------
+ * Stable-ish insertion sort used on small tails of move lists.
+ */
+
   namespace{
     void insertion_sort(s_move* begin,const s_move* end){
       s_move* q;
@@ -117,6 +192,13 @@ namespace movepick{
         *q=tmp;
       }
     }
+
+/*
+ * partition(begin, end, val)
+ * --------------------------
+ * Partition the move list in-place such that moves with value > val
+ * are before the returned iterator. Used to partially sort by a cutoff.
+ */
 
     s_move* partition(s_move* begin,s_move* end,const int val){
       while(true){
@@ -138,6 +220,13 @@ namespace movepick{
       }
     }
 
+/*
+ * find_best_move(begin, end)
+ * --------------------------
+ * Return the move with highest value and move it to the head position.
+ * This avoids full sort when we only need the single best at a time.
+ */
+
     uint32_t find_best_move(s_move* begin,const s_move* end){
       auto* best=begin;
       for(auto* z=begin+1;z<end;z++) if(z->value>best->value) best=z;
@@ -145,6 +234,12 @@ namespace movepick{
       *best=*begin;
       return move;
     }
+
+/*
+ * crc16(data, length)
+ * -------------------
+ * Small CRC used to hash bitboards for killer indexing.
+ */
 
     uint16_t crc16(const uint8_t* data_p,uint8_t length){
       uint16_t crc=0xFFFF;
@@ -156,10 +251,23 @@ namespace movepick{
       return crc;
     }
 
+/*
+ * hash_bb(bb)
+ * -----------
+ * Hash a 64-bit bitboard into a small integer via CRC16.
+ */
+
     int hash_bb(const uint64_t bb){
       const auto crc=crc16(reinterpret_cast<const uint8_t*>(&bb),8);
       return crc;
     }
+
+/*
+ * pick_move_stage_fallback(pos)
+ * -----------------------------
+ * Fallback dispatcher that drives stage transitions for less common
+ * code paths: evasions, QS captures/checks, ProbCut, and recaptures.
+ */
 
     uint32_t pick_move_stage_fallback(const position& pos){
       switch(auto* pi=pos.info();pi->mp_stage){
@@ -214,6 +322,21 @@ namespace movepick{
     }
   }
 
+/*
+ * pick_move(pos)
+ * --------------
+ * Main staged move picker for full-width nodes.
+ * Stage outline:
+ *   1) Return hash move if present.
+ *   2) Good captures (SEE >= 0), keep bad captures aside.
+ *   3) Killer 1 and Killer 2, then counter move.
+ *   4) BxP tactical pattern from delayed bad captures.
+ *   5) Quiet moves (optionally only quiet checks or pawn advances).
+ *   6) Remaining bad captures.
+ *   7) Delayed moves bucket, if any.
+ * If no move is available fall back to the helper or return no_move.
+ */
+
   uint32_t pick_move(const position& pos){
     switch(auto* pi=pos.info();pi->mp_stage){
     case normal_search:
@@ -223,7 +346,7 @@ namespace movepick{
     case probcut: pi->mp_end_list=(pi-1)->mp_end_list;
       ++pi->mp_stage;
       return pi->mp_hash_move;
-    case gen_good_captures: pi->mp_current_move=(pi-1)->mp_end_list;
+    case gen_good_captures:/* generate and score captures, split good/bad by SEE */ pi->mp_current_move=(pi-1)->mp_end_list;
       pi->mp_end_bad_capture=pi->mp_current_move;
       pi->mp_delayed_number=0;
       pi->mp_end_list=generate_moves<captures_promotions>(pos,pi->mp_current_move);
@@ -231,29 +354,27 @@ namespace movepick{
       pi->mp_stage=good_captures;
       [[fallthrough]];
     case good_captures: while(pi->mp_current_move<pi->mp_end_list){
-        const uint32_t move=find_best_move(pi->mp_current_move++,pi->mp_end_list);
-        if(move!=pi->mp_hash_move){
+        if(const uint32_t move=find_best_move(pi->mp_current_move++,pi->mp_end_list);move!=pi->mp_hash_move){
           if(pos.see_test(move,see_0)) return move;
           *pi->mp_end_bad_capture++=move;
         }
       }
       pi->mp_stage=killers_1;
       [[fallthrough]];
-    case killers_1: pi->mp_stage=killers_2;
+    case killers_1:/* try killer move slot 1 if valid and quiet */ pi->mp_stage=killers_2;
       if(const auto move=pi->killers[0];move&&move!=pi->mp_hash_move&&pos.valid_move(move)&&!pos.capture_or_promotion(move)) return move;
       [[fallthrough]];
-    case killers_2: pi->mp_stage=gen_bxp_captures;
+    case killers_2:/* try killer move slot 2 if valid and quiet */ pi->mp_stage=gen_bxp_captures;
       if(const auto move=pi->killers[1];move&&move!=pi->mp_hash_move&&pos.valid_move(move)&&!pos.capture_or_promotion(move)) return move;
       [[fallthrough]];
-    case gen_bxp_captures: pi->mp_stage=bxp_captures;
+    case gen_bxp_captures:/* bishop x knight tactical pattern from bad captures */ pi->mp_stage=bxp_captures;
       if(const auto move=pi->mp_counter_move;move&&move!=pi->mp_hash_move&&
         move!=pi->killers[0]&&move!=pi->killers[1]&&
         pos.valid_move(move)&&!pos.capture_or_promotion(move))
         return move;
       [[fallthrough]];
-    case bxp_captures: while(pi->mp_current_move<pi->mp_end_bad_capture){
-        const uint32_t move=*pi->mp_current_move++;
-        if(piece_type(pos.piece_on_square(to_square(move)))==pt_knight&&
+    case bxp_captures:/* scan delayed bad captures for tactical BxN */ while(pi->mp_current_move<pi->mp_end_bad_capture){
+        if(const uint32_t move=*pi->mp_current_move++;piece_type(pos.piece_on_square(to_square(move)))==pt_knight&&
           piece_type(pos.piece_on_square(from_square(move)))==pt_bishop){
           *(pi->mp_current_move-1)=no_move;
           return move;
@@ -279,7 +400,7 @@ namespace movepick{
       }
       pi->mp_stage=quietmoves;
       [[fallthrough]];
-    case quietmoves: while(pi->mp_current_move<pi->mp_end_list){
+    case quietmoves:/* emit remaining quiets not equal to hash/killers/counter */ while(pi->mp_current_move<pi->mp_end_list){
         if(const uint32_t move=*pi->mp_current_move++;move!=pi->mp_hash_move&&
           move!=pi->killers[0]&&move!=pi->killers[1]&&
           move!=pi->mp_counter_move)
@@ -289,14 +410,14 @@ namespace movepick{
       pi->mp_end_list=pi->mp_end_bad_capture;
       pi->mp_stage=bad_captures;
       [[fallthrough]];
-    case bad_captures: while(pi->mp_current_move<pi->mp_end_list){
+    case bad_captures:/* emit postponed bad captures */ while(pi->mp_current_move<pi->mp_end_list){
         if(const uint32_t move=*pi->mp_current_move++) return move;
       }
       if(!pi->mp_delayed_number) return no_move;
       pi->mp_stage=delayed_moves;
       pi->mp_delayed_current=0;
       [[fallthrough]];
-    case delayed_moves: if(pi->mp_delayed_current!=pi->mp_delayed_number) return pi->mp_delayed[pi->mp_delayed_current++];
+    case delayed_moves:/* late bucket of deferred moves */ if(pi->mp_delayed_current!=pi->mp_delayed_number) return pi->mp_delayed[pi->mp_delayed_current++];
       return no_move;
     default: return pick_move_stage_fallback(pos);
     }
