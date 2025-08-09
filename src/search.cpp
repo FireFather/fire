@@ -1,3 +1,44 @@
+/*
+ * Chess Engine - Search Module (Implementation)
+ * ------------------------------------------------
+ * This file implements the core search used by the engine:
+ *
+ * - Principal Variation (PV) alpha-beta with a rich set of pruning
+ * and reduction techniques (null-move pruning, razoring,
+ * futility pruning, late-move reductions, singular move extension,
+ * probabilistic cut / probcut).
+ * - Quiescence search for tactical stability at leaf nodes.
+ * - Time management hooks and iterative deepening from the root.
+ * - Move ordering via transposition table (TT), killers, history,
+ * counter-moves, capture history, SEE, and stage-based picking.
+ *
+ * Reading guide
+ * -------------
+ * The search is organized around two templated functions:
+ *
+ * template<nodetype NT> int alpha_beta(position&, int alpha, int beta, int depth, bool cut_node)
+ * - Full-width negamax alpha-beta with numerous pruning/reduction
+ * heuristics. NT==is_pv toggles PV-node behavior (no fail-high
+ * cutoffs, re-search in PV, tighter pruning guards).
+ *
+ * template<nodetype NT, bool IN_CHECK> int q_search(position&, int alpha, int beta, int depth)
+ * - Quiescence search: only captures, promotions, checks, and some
+ * tactical replies, with SEE and futility guards to contain
+ * explosion at the leaves.
+ *
+ * The code is heavily optimized; comments below explain the intent of
+ * each technique and the conditions that enable it. Keep comments
+ * concise near hot paths to avoid cluttering the instruction cache.
+ *
+ * Glossary:
+ * - TT: Transposition Table. We probe early to obtain a bound or hash move.
+ * - SEE: Static Exchange Evaluation, a fast capture profitability test.
+ * - LMR: Late-Move Reductions; reduce depth for low-priority quiet moves.
+ * - ProbCut: A forward pruning technique using a shallow verification search.
+ * - Null move: Try a pass move to test for fail-high (search instability).
+ * - PV: The principal variation line; PV nodes receive stricter rules.
+ */
+
 #include "search.h"
 #include <sstream>
 #include "chrono.h"
@@ -11,10 +52,42 @@
 #include "util.h"
 
 namespace search{
+// Adjust TT "age" and time budget after we detect a ponder hit.
+// - TT is aged to prevent reusing overly stale entries.
+// - If time control is active, we shift the remaining budget forward
+// so the current move still receives a fair slice after pondering.
+
   void adjust_time_after_ponder_hit(){
     main_hash.new_age();
     if(param.use_time_calculating()) time_control.adjustment_after_ponder_hit();
   }
+
+/*
+ * alpha_beta<NT>(pos, alpha, beta, depth, cut_node)
+ * -------------------------------------------------
+ * Negamax alpha-beta with strong move ordering and forward pruning.
+ *
+ * Highlevel flow (roughly in order):
+ * 1) Administration: stop flags, mate-distance bounds, root vs non-root.
+ * 2) TT probe: try to return a bound immediately; fetch hash move & eval.
+ * 3) Static eval: compute or reuse. Early returns via razoring/futility.
+ * 4) Nullmove pruning: try a "pass" to detect easy failhighs quickly.
+ * 5) ProbCut (capture-only verification): prune if a shallow search exceeds a margin.
+ * 6) Internal iterative deepening: if no TT move, do a reduced search to find one.
+ * 7) Move loop:
+ * - Generate (movepick stages), apply LMR for late quiets.
+ * - SEE / tactical filters for shallow nodes.
+ * - Search child with reduced depth; on improvement, research full.
+ * - Maintain best move/score; update PV and root info.
+ * 8) On exit: store result in TT with correct bound type.
+ *
+ * Key heuristics and guards:
+ * - PV nodes: tighter pruning, re-search on first move, exact bound storage.
+ * - cut_node: deeper reductions on late moves to accelerate cutoffs.
+ * - LMR: depth reduction scales with (depth, move_number, stats).
+ * - SEE gates and futility margins: control explosion for weak moves.
+ * - Singular extension (approx.) via excluding hash move at high depth.
+ */
 
   template<nodetype nt> int alpha_beta(position& pos,int alpha,int beta,int depth,bool cut_node){
     constexpr auto null_move_tempo_mult=2;
@@ -521,11 +594,24 @@ view_all_moves: const counter_move_values* cmh=pi->move_counter_values;
     return best_score;
   }
 
+// Copy child PV upwards and prepend the current best move.
+// The PV array is 0-terminated with no_move.
+
   void copy_pv(uint32_t* pv,const uint32_t move,const uint32_t* pv_lower){
     *pv++=move;
     if(pv_lower) while(*pv_lower!=no_move) *pv++=*pv_lower++;
     *pv=no_move;
   }
+
+/*
+ * init()
+ * ------
+ * Precompute LMR reduction table and counter-move bonuses.
+ * - lm_reductions[pv][progress][depth][move_no] is derived from an
+ * analytical formula; values are clamped and smalldepths ignored.
+ * - counter_move_bonus[d] grows ~quadratically with depth to reward
+ * deeper successes more strongly in history/counter tables.
+ */
 
   void init(){
     std::memset(lm_reductions,0,sizeof lm_reductions);
@@ -548,6 +634,23 @@ view_all_moves: const counter_move_values* cmh=pi->move_counter_values;
         std::min(8192,counter_move_bonus_value*(d*d+2*d-2)));
     }
   }
+
+/*
+ * q_search<NT, IN_CHECK>(pos, alpha, beta, depth)
+ * -----------------------------------------------
+ * Quiescence search to resolve horizon effects:
+ * - If IN_CHECK: generate evasions (and some checking replies).
+ * - Otherwise: try only tactical moves (captures, promotions, some checks).
+ *
+ * Steps:
+ * 1) TT probe: return bound if strong enough; seed hash move for ordering.
+ * 2) Standpat: use static eval (if not in check) as a lower bound.
+ * - Early cutoff if >= beta; raise alpha if between (alpha, beta).
+ * 3) Futility pruning for hopeless captures (piecedependent margins)
+ * and SEE gates to avoid obviously losing trades.
+ * 4) Move loop: search tactical replies; maintain PV in PV nodes.
+ * 5) Store TT entry with a depth of 0 or -1 (depending on check state).
+ */
 
   template<nodetype nt,bool state_check> int q_search(position& pos,int alpha,const int beta,const int depth){
     constexpr auto qs_futility_value_0=102;
@@ -737,6 +840,9 @@ skip_see_test: if(!pos.legal_move(move)) continue;
     return best_value;
   }
 
+// Clear TT and all per-thread heuristics between searches (new game/position).
+// Also resets root-level bookkeeping for time and "easy move" logic.
+
   void reset(){
     main_hash.clear();
     threadpool::delete_counter_move_history();
@@ -754,6 +860,16 @@ skip_see_test: if(!pos.legal_move(move)) continue;
     thread_pool.main()->quick_move_allow=false;
   }
 
+/*
+ * send_time_info()
+ * ----------------
+ * Periodically print UCI 'info' lines (time, nodes, nps, hashfull) and
+ * enforce stop conditions when limits are reached:
+ * - absolute time/movetime
+ * - node limit
+ * - hard cap near maximum allotted time
+ */
+
   void send_time_info(){
     const auto elapsed=time_control.elapsed();
     if(!bench_active&&elapsed-previous_info_time>=1000){
@@ -769,6 +885,17 @@ skip_see_test: if(!pos.legal_move(move)) continue;
       (param.nodes&&thread_pool.visited_nodes()>=param.nodes))
       signals.stop_analyzing=true;
   }
+
+/*
+ * update_stats(... best quiet/cutoff ...)
+ * --------------------------------------
+ * Learning feedback on a *successful* move:
+ * - Update killers when a noncapture causes a beta cutoff.
+ * - Update history, countermove, and counterfollowup tables with
+ * positive bonuses; penalize other quiets tested in the node.
+ * - Extra penalty for previous move if it failed at move #1 and no capture.
+ * These tables strongly drive move ordering in later nodes.
+ */
 
   void update_stats(const position& pos,const bool state_check,
     const uint32_t move,const int depth,
@@ -822,6 +949,9 @@ skip_see_test: if(!pos.legal_move(move)) continue;
     }
   }
 
+// Like update_stats(), but apply *negative* feedback when a move was poor.
+// This decays history/counter values to demote bad quiets in ordering.
+
   void update_stats_minus(const position& pos,const bool state_check,
     const uint32_t move,const int depth){
     const auto* pi=pos.info();
@@ -843,6 +973,9 @@ skip_see_test: if(!pos.legal_move(move)) continue;
       }
     }
   }
+
+// Penalize a batch of quiet moves on faillow nodes. Helps avoid retrying
+// unpromising quiets at similar nodes in future iterations.
 
   void update_stats_quiet(const position& pos,const bool state_check,
     const int depth,const uint32_t* quiet_moves,
@@ -867,6 +1000,9 @@ skip_see_test: if(!pos.legal_move(move)) continue;
     }
   }
 
+// Encode mate scores with ply distance so TT entries remain consistent
+// across different depths (mate in N transforms to a stable absolute value).
+
   int value_to_hash(const int val,const int ply){
     return val>=longest_mate_score
       ?val+ply
@@ -874,6 +1010,8 @@ skip_see_test: if(!pos.legal_move(move)) continue;
       ?val-ply
       :val;
   }
+
+// Decode TT value back into the search's score space (undo ply encoding).
 
   int value_from_hash(const int val,const int ply){
     return val==no_score

@@ -1,3 +1,22 @@
+/*
+ * Chess Engine - Search Module (Interface)
+ * ----------------------------------------
+ * Declarations, small inline utilities, and search-related structs.
+ *
+ * Key types:
+ * - search::nodetype: tags PV vs non-PV nodes at compile-time.
+ * - search_signals: cooperative stop flags for time control & ponder.
+ * - easy_move_manager: tracks a short PV prefix to opportunistically
+ * play an "easy move" under time pressure.
+ *
+ * Key helpers:
+ * - counter_move/history bonuses: learning heuristics for move ordering.
+ * - futility margins & late-move formulae: forward pruning thresholds.
+ * - lmr_reduction(): precomputed reductions indexed by (pv,progress,depth,move_no).
+ *
+ * See search.cpp for detailed algorithm-level commentary.
+ */
+
 #pragma once
 #include <atomic>
 #include <algorithm>
@@ -9,6 +28,12 @@
 using principal_variation=movelist<max_pv>;
 
 namespace search{
+/**
+ * Cooperative stop flags shared across threads.
+ * - stop_analyzing: hard stop requested (time/node/GUI).
+ * - stop_if_ponder_hit: stop early when pondered move appears on board.
+ */
+
   struct search_signals{
     std::atomic_bool stop_analyzing=false;
     std::atomic_bool stop_if_ponder_hit=false;
@@ -22,9 +47,23 @@ namespace search{
   void reset();
   void adjust_time_after_ponder_hit();
 
+/**
+ * Node classification
+ * -------------------
+ * - is_pv : node lies on the principal variation; search returns exact scores,
+ * pruning is conservative, and PV is maintained.
+ * - non_pv : interior node used for bounds; allows more aggressive pruning.
+ */
+
   enum nodetype : uint8_t{
     is_pv,non_pv
   };
+
+// Heuristic learning tables
+// -------------------------
+// counter_move_bonus[d] is used both as history and countermove bonus.
+// Depth is bucketed by 'plies' to keep arrays small while reflecting
+// increased confidence from deeper cutoffs.
 
   inline int counter_move_bonus[max_ply];
 
@@ -35,6 +74,12 @@ namespace search{
   inline int history_bonus(const int d){
     return counter_move_bonus[static_cast<uint32_t>(d)/plies];
   }
+
+/**
+ * Tracks a short PV prefix to detect "easy moves".
+ * If the same first three PV moves remain stable and the time is tight,
+ * the engine may play pv[0] early.
+ */
 
   struct easy_move_manager{
     void clear(){
@@ -85,6 +130,13 @@ namespace search{
 
   inline uint8_t lm_reductions[2][2][64*plies][64];
 
+// Pruning thresholds & margins
+// ----------------------------
+// Tuned constants used by:
+// - Razoring (preQS pruning when eval is far below alpha)
+// - Futility pruning (skip hopeless nodes at shallow depths)
+// - Extended futility (for deeper, nonPV nodes)
+
   inline constexpr int razor_margin=384;
   inline constexpr int futility_value_0=0;
   inline constexpr int futility_value_1=112;
@@ -115,9 +167,17 @@ namespace search{
   {0,0,5,5,6,7,9,11,14,17,20,23,27,31,35,40,45,50,55,60,65,71,77,84,91,98,105,112,119,127,135,143}
   };
 
+// Latemove counting
+// ------------------
+// Determines from (depth, progress) how many moves are considered "early".
+// Moves after this index are eligible for significant LMR reductions.
+
   inline int late_move_number(const int d,const bool progress){
     return late_move_number_values[progress][static_cast<uint32_t>(d)/(plies/2)];
   }
+
+// Lookup precomputed LMR reductions for (pv, progress, depth, move_no).
+// Values are measured in 'plies' and clamped for safety.
 
   inline int lmr_reduction(const bool pv,const bool vg,const int d,const int n){
     const int d_idx=(std::min)(d,64*plies-1);
@@ -180,8 +240,7 @@ struct rootmoves{
   }
 
   [[nodiscard]] int find(const uint32_t move) const{
-    for(int i=0;i<move_number;++i)
-      if(moves[i].pv[0]==move) return i;
+    for(int i=0;i<move_number;++i) if(moves[i].pv[0]==move) return i;
     return -1;
   }
 };
