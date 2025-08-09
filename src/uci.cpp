@@ -1,3 +1,19 @@
+/*
+ * Chess Engine - UCI Module (Implementation)
+ * ------------------------------------------
+ * This file implements the Universal Chess Interface (UCI) protocol loop
+ * and supporting command handlers.
+ *
+ * Responsibilities:
+ *  - Initialize engine subsystems
+ *  - Parse UCI commands from GUI or console
+ *  - Dispatch to search, position setup, benchmarking, perft, etc.
+ *  - Maintain and update engine options (hash size, threads, MultiPV, etc.)
+ *
+ * The UCI loop reads commands line-by-line and responds according to
+ * the protocol, ensuring compatibility with UCI-compliant GUIs.
+ */
+
 #include "uci.h"
 #include <iostream>
 #include <sstream>
@@ -13,12 +29,42 @@
 #include "thread.h"
 #include "util.h"
 
+// new_game()
+// ----------
+// Stop any current search, wait for search thread to finish, and reset search state.
+// Called when starting a new game or after "ucinewgame" command.
+
+/*
+ * new_game()
+ * ----------
+ * Stop any running search, wait for threads to finish, and reset
+ * search state so the next "position" or "go" starts clean.
+ */
+
 void new_game(){
   search::signals.stop_analyzing=true;
   thread_pool.main()->wake(false);
   thread_pool.main()->wait_for_search_to_end();
   search::reset();
 }
+
+// init_engine()
+// --------------
+// Initialize all engine subsystems (bitboards, position, search, threads, hash table, NNUE eval).
+// Returns non-zero on success.
+
+/*
+ * init_engine()
+ * -------------
+ * Initialize all core subsystems in a safe order:
+ *  1) Time origin
+ *  2) Bitboards and attack tables
+ *  3) Position and search static data
+ *  4) Thread pool
+ *  5) Hash table size
+ *  6) Load NNUE network file
+ * Returns nonzero on success if nnue_init succeeds.
+ */
 
 int init_engine(){
   thread_pool.start=now();
@@ -33,6 +79,11 @@ int init_engine(){
 }
 
 namespace{
+  // handle_uci()
+// ------------
+// Respond to "uci" command: print engine name, author, and available UCI options.
+// Finish with "uciok".
+
   void handle_uci(){
     acout()<<"id name "<<program<<" "<<version<<" "<<platform<<" "<<bmis<<std::endl;
     acout()<<"id author "<<author<<std::endl;
@@ -47,10 +98,32 @@ namespace{
     fflush(stdout);
   }
 
+  // handle_stop()
+// -------------
+// Signal search to stop and wake the main search thread.
+
+/*
+ * handle_stop()
+ * -------------
+ * Request the search to stop and wake the main thread.
+ * Used for "stop" and "ponderhit" commands.
+ */
+
   void handle_stop(){
     search::signals.stop_analyzing=true;
     thread_pool.main()->wake(false);
   }
+
+  // handle_perft()
+// ---------------
+// Parse depth and optional FEN, then run perft (performance test) for debugging move generation.
+
+/*
+ * handle_perft(is)
+ * ----------------
+ * Parse optional depth and FEN, then run a perft test.
+ * Syntax: "perft [depth] [fen-string]"
+ */
 
   void handle_perft(std::istringstream& is){
     int depth=7;
@@ -60,6 +133,17 @@ namespace{
     perft(depth,fen);
   }
 
+  // handle_divide()
+// ----------------
+// Like perft but prints a breakdown per move, useful for debugging move generation.
+
+/*
+ * handle_divide(is)
+ * -----------------
+ * Like perft, but prints a breakdown of nodes per move.
+ * Syntax: "divide [depth] [fen-string]"
+ */
+
   void handle_divide(std::istringstream& is){
     int depth=7;
     std::string fen=startpos;
@@ -68,14 +152,44 @@ namespace{
     divide(depth,fen);
   }
 
+  // handle_bench()
+// ---------------
+// Run a benchmark search to measure engine speed and performance.
+
+/*
+ * handle_bench(is)
+ * ----------------
+ * Optional argument: depth. Runs a fixed bench to measure speed.
+ * While bench is running, bench_active is set to true.
+ */
+
   void handle_bench(std::istringstream& is){
     std::string token;
-    std::string bench_depth=is>>token?token:"14";
+    const std::string bench_depth=is>>token?token:"14";
     bench_active=true;
     bench(std::stoi(bench_depth));
     bench_active=false;
   }
 }
+
+/*
+ * uci_loop(argc, argv)
+ * --------------------
+ * Main loop for reading and executing UCI commands. Handles both interactive (stdin)
+ * and command-line modes. Commands include:
+ *   - uci, isready, ucinewgame, setoption, position, go, stop, quit
+ *   - perft, divide, bench (debug/utility)
+ */
+
+/*
+ * uci_loop(argc, argv)
+ * --------------------
+ * Main UCI read-eval-print loop.
+ *  - If argc > 1, process the command from argv and exit.
+ *  - Otherwise, read lines from stdin until "quit".
+ * Handles: uci, isready, ucinewgame, setoption, position, go, stop,
+ *          ponderhit, quit, perft, divide, bench.
+ */
 
 int uci_loop(const int argc,char* argv[]){
   position pos{};
@@ -122,6 +236,19 @@ int uci_loop(const int argc,char* argv[]){
   thread_pool.exit();
   return ret;
 }
+
+// set_option()
+// -------------
+// Parse "setoption" command and update global engine settings accordingly.
+// Recognizes options: Hash, Threads, MultiPV, Contempt, MoveOverhead, Ponder, UCI_Chess960.
+
+/*
+ * set_option(is)
+ * --------------
+ * Parse "setoption name X value Y" and update engine options:
+ *  - Hash, Threads, MultiPV, Contempt, MoveOverhead, Ponder, UCI_Chess960
+ * Reconfigure subsystems as needed (hash size, thread pool).
+ */
 
 int set_option(std::istringstream& is){
   std::string token;
@@ -194,6 +321,19 @@ int set_option(std::istringstream& is){
   return ret;
 }
 
+// go()
+// -----
+// Parse "go" command parameters (time control, depth, nodes, movetime, infinite)
+// and start a search with those constraints.
+
+/*
+ * go(pos, is)
+ * -----------
+ * Parse time controls and search limits, then start a search:
+ *   wtime/btime, winc/binc, movestogo, depth, nodes, movetime, infinite.
+ * Passes a search_param to the thread pool.
+ */
+
 void go(position& pos,std::istringstream& is){
   search_param param;
   std::string token;
@@ -228,6 +368,20 @@ void go(position& pos,std::istringstream& is){
   thread_pool.begin_search(pos,param);
 }
 
+// set_position()
+// ---------------
+// Parse "position" command to set board state from "startpos" or a FEN string.
+// Optionally play a sequence of moves afterwards.
+
+/*
+ * set_position(pos, is)
+ * ---------------------
+ * Parse a position specification:
+ *  - "position startpos [moves ...]"
+ *  - "position fen <FEN> moves ..."
+ * Apply moves sequentially, updating ply for repetition tracking.
+ */
+
 void set_position(position& pos,std::istringstream& is){
   uint32_t move;
   std::string token,fen;
@@ -244,6 +398,17 @@ void set_position(position& pos,std::istringstream& is){
   }
 }
 
+// trim()
+// -------
+// Remove leading and trailing whitespace from a string.
+
+/*
+ * trim(str, whitespace)
+ * ---------------------
+ * Return a copy of 'str' with leading and trailing characters in
+ * 'whitespace' removed.
+ */
+
 std::string trim(const std::string& str,const std::string& whitespace){
   const auto str_begin=str.find_first_not_of(whitespace);
   if(str_begin==std::string::npos) return "";
@@ -251,6 +416,16 @@ std::string trim(const std::string& str,const std::string& whitespace){
   const auto str_range=str_end-str_begin+1;
   return str.substr(str_begin,str_range);
 }
+
+// sq()
+// -----
+// Convert a square index to algebraic notation string, e.g., e4.
+
+/*
+ * sq(sq)
+ * ------
+ * Convert a square enum to a coordinate string like "e4".
+ */
 
 std::string sq(const square sq){
   return std::string{
