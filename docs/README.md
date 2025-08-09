@@ -188,7 +188,7 @@ Time control: The importance curve parameters are centralized—experimenting wi
 
 Protocol features: UCI already exposes the usual suspects (Hash, Threads, MultiPV, Ponder, Chess960). Adding custom options (e.g., LMR on/off, contempt style) is simple in uci::set_option().
 
-## What you get with Fire 10.0:
+## what you get with Fire 10.0:
 
 Strong, modernized CPU-friendly engine powered by a unique NNUE.
 
