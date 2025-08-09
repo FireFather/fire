@@ -1,5 +1,17 @@
+/*
+ * Chess Engine - Lightweight Operators (Header)
+ * ---------------------------------------------
+ * Provides small inline operator overloads for engine enums:
+ *   - file, rank, side, square: arithmetic and increment/decrement
+ *   - score: arithmetic with mixing of middlegame and endgame packed score
+ *   - Helpers for move encoding/decoding are in main.h
+ * Notes: ASCII-only comments.
+ */
+
 #pragma once
 #include "main.h"
+
+// file arithmetic: treat files as small integers (a..h)
 
 inline file operator+(const file f1,const file f2){
   return static_cast<file>(static_cast<int>(f1)+static_cast<int>(f2));
@@ -12,6 +24,8 @@ inline file operator-(const file f1,const file f2){
 inline file& operator++(file& f){
   return f=static_cast<file>(static_cast<int>(f)+1);
 }
+
+// rank arithmetic: treat ranks as small integers (1..8)
 
 inline rank operator+(const rank r1,const rank r2){
   return static_cast<rank>(static_cast<int>(r1)+static_cast<int>(r2));
@@ -28,6 +42,8 @@ inline rank& operator++(rank& r){
 inline rank& operator--(rank& r){
   return r=static_cast<rank>(static_cast<int>(r)-1);
 }
+
+// score arithmetic: combine packed (mg, eg) halves
 
 inline score operator+(const score s1,const score s2){
   return static_cast<score>(static_cast<int>(s1)+static_cast<int>(s2));
@@ -53,6 +69,8 @@ inline score& operator-=(score& s1,const score s2){
   return s1=s1-s2;
 }
 
+// side arithmetic: allow small integer math on side values
+
 inline side operator+(const side c1,const side c2){
   return static_cast<side>(static_cast<int>(c1)+static_cast<int>(c2));
 }
@@ -68,6 +86,8 @@ inline side operator*(const int i,const side c){
 inline side& operator++(side& c){
   return c=static_cast<side>(static_cast<int>(c)+1);
 }
+
+// square arithmetic: linear index in 0..63 with helpers
 
 inline square operator+(const square s1,const square s2){
   return static_cast<square>(static_cast<int>(s1)+static_cast<int>(s2));
