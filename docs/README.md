@@ -39,6 +39,151 @@
 ![alt tag](https://raw.githubusercontent.com/FireFather/fire/master/docs/nuue_halfkp_data_flow.png)
 ![alt tag](https://raw.githubusercontent.com/FireFather/fire/master/docs/nnue_orientation_mapping.png)
 
+
+## Architectural overview
+
+Core state: position.{h,cpp}
+## Holds the full board state (piece lists, bitboards, side to move, castling, en-passant, Zobrist keys, phase, repetition info, etc.). It precomputes and caches
+
+Attacked squares and x-rays/pins for both sides
+
+“Check squares” masks (where a given piece type would give check)
+
+Per-position keys: full key, pawn key, material key, bishop color key, plus a compact key for the 50-move bucket
+
+Move generation: movegen.{h,cpp}
+Templated, bitboard-based generators for different move classes (captures only, quiets, quiet checks, check evasions, castles, pawn pushes). Supports Chess960 castling. Includes a legal filter that discards pseudo-legal moves leaving the king in check and handles the tricky en-passant legality.
+
+Move ordering / picker: movepick.{h,cpp}
+## Staged picker that feeds the search
+
+Hash move
+
+Good captures (kept via SEE ≥ 0)
+
+Killers and counter-moves
+
+A tactical BxN (bishop-takes-knight) pattern from delayed captures
+
+Quiet moves ordered by rich history signals (see below)
+
+Bad captures
+
+Any delayed bucket
+Uses multiple statistics tables: global history, counter-move history (CMH), follow-up counters, max gain for tactical quiets, and a dedicated evasion history. Also has QS/ProbCut/recapture-only stages.
+
+Search loop: search.{h,cpp} (you didn’t paste this one, but the rest makes its interfaces clear)
+## Classic iterative deepening with a TT, staged move picker, NNUE evaluation, and quiescence. The surrounding code shows support for
+
+ProbCut (a verification-style fast cutoff on promising captures)
+
+SEE for capture pruning and ordering
+
+Quiet checks stage (useful for “check extension”–friendly QS)
+
+Evaluation: evaluate.{h,cpp}
+Delegates to NNUE (nnue.h/nnue.cpp elsewhere). It builds a compact list of (piece, square) pairs and asks the network for a score. Provides eval_after_null_move() as the quick flip used in null-move pruning paths.
+
+Transposition table: hash.{h,cpp}
+Cache-line-aware buckets (3 entries per bucket with padding), partial key (16 bits), ageing, and a replacement policy that prefers deeper or more recent entries. There’s explicit prefetching and a hash_full() estimator.
+
+Time management: chrono.{h,cpp}
+## A modern move-importance model that spreads available time across a horizon with guardrails
+
+“Optimal” and “maximum” budgets per move
+
+Increment awareness and ponder bonus
+
+Ponder-hit rescaling so the remaining budget keeps its proportion
+
+Threading: thread.{h,cpp}
+A lightweight thread-pool with one main search thread and optional workers. Each thread owns a threadinfo block (root position, move lists, histories, etc.) and sleeps in an idle loop behind a condition variable until woken. The pool orchestrates UCI ‘go’, wakes workers, and aggregates node counts.
+
+Protocol / I/O: uci.{h,cpp}, util.{h,cpp}
+Full UCI support (Hash, Threads, MultiPV, Contempt, MoveOverhead, Ponder, Chess960). Position parsing from startpos/FEN and moves, UCI go parameterization, and a thread-safe acout wrapper for clean output. util also has move <-> string helpers (including Chess960 castling strings).
+
+Bitboard layer: bitboard.{h,cpp}, macro.h, main.h
+
+Precomputed attacks (empty_attack tables) and on-the-fly sliding attacks (e.g., attack_rook_bb, attack_bishop_bb).
+
+Compact enums for square/file/rank, directional deltas, and operator overloads for clean arithmetic on those types.
+
+Fast popcount, LSB/MSB via De Bruijn, and prefetch wrappers.
+
+Zobrist hashing: zobrist.{h,cpp}
+Global random tables for piece-square, castling rights, en-passant file, side-to-move, and 50-move counter buckets. position maintains full, material, pawn, and bishop-color keys incrementally.
+
+Bench / Perft: bench.{h,cpp} (+ perft elsewhere)
+A fixed set of FENs, timed fixed-depth runs, nodes/time/NPS per position and overall—very useful for regression and perf tracking.
+
+
+# Modern features and why they matter
+
+NNUE evaluation (efficient neural net on CPUs): strong midgame strength with low branching cost. The code turns board state into compact (piece, square) arrays and calls a single nnue_evaluate.
+
+Rich move ordering stack: TT hash move, SEE-filtered good captures, killers, counter-moves (CMH + “follow-up” CMH), max gain signals, and quiet checks/pawn-push stages. This combo dramatically improves fail-high early probability.
+
+SEE-aware capture handling: keeps most good captures early and delays the poison ones—stability and speed.
+
+ProbCut hook: fast tactical verification to cut branches early at high depths.
+
+Sophisticated time manager: importance curve by ply with increment, move overhead, ponder bonus, and post-ponder rescale.
+
+Thread pool with per-thread state: avoids false sharing by giving each thread its own move lists, histories, and root position.
+
+Cache-friendly TT design: bucket size aligned to cache line, small partial key, and age field with a biased replacement policy.
+
+Chess960 support in move generation and UCI parsing, including castle path/safety logic.
+
+Data flow (from GUI command to best move)
+UCI input → uci::set_position() builds a position from FEN and plays the listed moves (legal-checked).
+
+Search start → threadpool::begin_search() publishes search_param (depth, nodes, times, inc, etc.), toggles stop flags, and wakes the main thread.
+
+Search driver (in the main thread’s begin_search()): iterative deepening loop, calls TT probe, asks movepick for the next candidate in the current stage, makes the move on a lightweight copy of position, recurses, un-makes, updates histories/TT.
+
+Evaluation on leaves → NNUE; QS runs with captures/quiet checks; SEE and ProbCut trim the tree.
+
+Best line & info → UCI “info” lines with PV / depth / score / nodes / nps; final “bestmove”.
+
+
+# Performance-oriented details baked in
+
+Incremental state: position::play_move() updates keys, phase, material, pawn keys, x-rays, check masks, capture info, 50-move counter—everything needed for quick legality and hash correctness.
+
+Fast legality checks: pinned pieces tracked in pos_info_; king moves verified against live attack masks; en-passant verified by recomputing the discovered attack rays of sliders through the capture square.
+
+Target-masked generators: most movegen functions accept a target mask so higher-level code (quiet only, captures only, specific square) can prune at the source.
+
+History tables everywhere: move_value_stats, counter_move_values, follow-up counters, max_gain_stats, evasion_history—all feeding ordering.
+
+ASCII-only comments (your recent change): zero UTF-8 issues in toolchains and linters.
+
+Prefetch & alignment: TT prefetch and cache-aligned buckets reduce memory stalls.
+
+
+# Extensibility hot-spots
+
+Search heuristics: Easy to drop in LMR tuning, futility/razoring, or aspiration windows around the TT score. The staged picker already supports finer buckets.
+
+Evaluation: NNUE front-end is isolated; adding tapered or specialized terms (tempo, threats, PST mixing) is straightforward if needed around the net output.
+
+Time control: The importance curve parameters are centralized—experimenting with moves horizon, steal ratio, or ponder bonus is low friction.
+
+Protocol features: UCI already exposes the usual suspects (Hash, Threads, MultiPV, Ponder, Chess960). Adding custom options (e.g., LMR on/off, contempt style) is simple in uci::set_option().
+
+
+# What you get out of the box
+
+Strong, modern CPU-friendly engine powered by NNUE.
+
+Solid move ordering stack with CMH, killers, SEE, and tailored stages for QS and check evasion.
+
+Robust position model with fast legality and accurate keys (material/pawn/bishop-color sub-keys are great for caching eval terms).
+
+Practical time management and threading that scale to multi-core and pondering workflows.
+
+Full UCI support, Chess960 compatibility, and bench/perft tooling for regression.
 ## new
 - complete & detailed comments
 - lean & mean codebase size optimizations
