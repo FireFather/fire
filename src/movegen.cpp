@@ -1,10 +1,46 @@
+/*
+ * Chess Engine - Move Generation Module (Implementation)
+ * ------------------------------------------------------
+ * Generates pseudo-legal moves for all pieces and special moves.
+ *
+ * Features:
+ *   - Uses precomputed bitboards from bitboard.cpp for fast attacks
+ *   - Separate generators for each piece type
+ *   - Generates captures, quiet moves, promotions, and special moves
+ *   - Pawn pushes and captures, including en passant
+ *   - Castling rights and legality checks
+ *
+ * This module is performance-critical and heavily bitboard-based.
+ * All comments are ASCII-only to avoid UTF-8 warnings.
+ */
+
 #include "movegen.h"
 
 #include "macro.h"
 #include "main.h"
 #include "position.h"
 
+/*
+ * Internal helpers (anonymous namespace)
+ * --------------------------------------
+ * The core generators are templated on side 'me' and move class 'type'.
+ * They produce moves into a caller-supplied buffer and return the new end.
+ */
+
 namespace movegen{ namespace{
+/*
+ * all_piece_moves<me, type>(pos, moves, target)
+ * ---------------------------------------------
+ * Generate moves for all pieces of side 'me', honoring the move class:
+ *   - captures_promotions: captures and promotions only
+ *   - quiet_moves: non-captures (and non-castle) only
+ *   - quiet_checks: only quiet moves that give check
+ *   - evade_check: only legal evasions while in check
+ *   - all_moves: union of captures and quiets (no filtering by check)
+ *   - castle_moves: castle only
+ * 'target' is a bitboard mask of destination squares allowed.
+ */
+
     template<side me,move_gen type> s_move* all_piece_moves(const position& pos,s_move* moves,
       const uint64_t target){
       const auto only_check_moves=type==quiet_checks;
@@ -39,6 +75,13 @@ namespace movegen{ namespace{
       return moves;
     }
 
+/*
+ * generate_pawn_advance<me>(pos, moves)
+ * -------------------------------------
+ * Generate single pawn pushes to rank 6/7 (white) or 3/2 (black) only.
+ * Used by specialized stages in move ordering.
+ */
+
     template<side me> s_move* generate_pawn_advance(const position& pos,s_move* moves){
       const auto ranks_6_7=
         me==white?rank_6_bb|rank_7_bb:rank_3_bb|rank_2_bb;
@@ -50,6 +93,13 @@ namespace movegen{ namespace{
       }
       return moves;
     }
+
+/*
+ * get_promotions<me, mg, delta>(pos, moves, to)
+ * ---------------------------------------------
+ * Helper to push the 4 promotion types depending on 'mg' selection.
+ * 'delta' indicates direction of motion from the from-square to 'to'.
+ */
 
     template<side me,move_gen mg,square delta> s_move* get_promotions(const position& pos,s_move* moves,const square to){
       const auto you=me==white?black:white;
@@ -63,6 +113,14 @@ namespace movegen{ namespace{
       return moves;
     }
   }
+
+/*
+ * get_castle<castle, only_check_moves, chess960>(pos, moves)
+ * ----------------------------------------------------------
+ * Emit a castle move if it is allowed and safe. In Chess960 mode,
+ * verify safety by scanning all squares between king destination and
+ * rook source; in standard mode, check the two crossing squares.
+ */
 
   template<uint8_t castle,bool only_check_moves,bool chess960> s_move* get_castle(const position& pos,s_move* moves){
     const auto me=castle<=white_long?white:black;
@@ -86,15 +144,23 @@ namespace movegen{ namespace{
     return moves;
   }
 
+/*
+ * moves_for_pawn<me, mg>(pos, moves, target)
+ * ------------------------------------------
+ * Generate pawn moves for side 'me' with behavior controlled by 'mg'.
+ * Produces promotions, single/double pushes, captures, en passant, and
+ * quiet-check heuristics where applicable.
+ */
+
   template<side me,move_gen mg> s_move* moves_for_pawn(const position& pos,s_move* moves,
     const uint64_t target){
     const auto you=me==white?black:white;
-    const auto eighth_rank=me==white?rank_8_bb:rank_1_bb;
-    const auto seventh_rank=me==white?rank_7_bb:rank_2_bb;
-    const auto third_rank=me==white?rank_3_bb:rank_6_bb;
-    const auto straight_ahead=me==white?north:south;
-    const auto capture_right=me==white?north_east:south_west;
-    const auto capture_left=me==white?north_west:south_east;
+    const auto eighth_rank=me==white?rank_8_bb:rank_1_bb;// Promotion rank for side me
+    const auto seventh_rank=me==white?rank_7_bb:rank_2_bb;// One rank before promotion
+    const auto third_rank=me==white?rank_3_bb:rank_6_bb;// Starting line for double push
+    const auto straight_ahead=me==white?north:south;// Direction delta for forward move
+    const auto capture_right=me==white?north_east:south_west;// Diagonal right capture delta
+    const auto capture_left=me==white?north_west:south_east;// Diagonal left capture delta
     uint64_t empty_squares=0;
     const auto pawns_7_th_rank=pos.pieces(me,pt_pawn)&seventh_rank;
     const auto pawns_not_7_th_rank=pos.pieces(me,pt_pawn)&~seventh_rank;
@@ -106,9 +172,8 @@ namespace movegen{ namespace{
     if constexpr(mg!=captures_promotions){
       empty_squares=
         mg==quiet_moves||mg==quiet_checks?target:~pos.pieces();
-      uint64_t multi_move_bb=shift_up<me>(pawns_not_7_th_rank)&empty_squares;
-      uint64_t double_move_bb=
-        shift_up<me>(multi_move_bb&third_rank)&empty_squares;
+      uint64_t multi_move_bb=shift_up<me>(pawns_not_7_th_rank)&empty_squares;// Single pushes
+      uint64_t double_move_bb=shift_up<me>(multi_move_bb&third_rank)&empty_squares;// Double pushes through empty squares
       if constexpr(mg==evade_check){
         multi_move_bb&=target;
         double_move_bb&=target;
@@ -142,7 +207,7 @@ namespace movegen{ namespace{
         shift_bb<capture_right>(pawns_7_th_rank)&your_pieces;
       uint64_t promotion_left=
         shift_bb<capture_left>(pawns_7_th_rank)&your_pieces;
-      uint64_t promotion_forward=shift_up<me>(pawns_7_th_rank)&empty_squares;
+      uint64_t promotion_forward=shift_up<me>(pawns_7_th_rank)&empty_squares;// Promote by forward push
       while(promotion_right)
         moves=get_promotions<me,mg,capture_right>(pos,moves,
           pop_lsb(&promotion_right));
@@ -181,6 +246,14 @@ namespace movegen{ namespace{
     return moves;
   }
 
+/*
+ * moves_for_piece<me, piece, only_check_moves>(pos, moves, target)
+ * ----------------------------------------------------------------
+ * Generate moves for a non-pawn piece. If only_check_moves is true,
+ * restrict destinations to those that give check and exclude discovered
+ * check pieces from moving if moving them would break the line.
+ */
+
   template<side me,uint8_t piece,bool only_check_moves> s_move* moves_for_piece(const position& pos,s_move* moves,
     const uint64_t target){
     const auto* pl=pos.piece_list(me,piece);
@@ -200,6 +273,13 @@ namespace movegen{ namespace{
   }
 }
 
+/*
+ * generate_moves<mg>(pos, moves)
+ * ------------------------------
+ * Front-end dispatcher that chooses target masks for the move class
+ * and calls the side-specialized all_piece_moves<>.
+ */
+
 template<move_gen mg> s_move* generate_moves(const position& pos,s_move* moves){
   const auto me=pos.on_move();
   const auto target=mg==captures_promotions
@@ -218,6 +298,13 @@ template s_move* generate_moves<captures_promotions>(const position&,s_move*);
 template s_move* generate_moves<quiet_moves>(const position&,s_move*);
 template s_move* generate_moves<all_moves>(const position&,s_move*);
 
+/*
+ * generate_captures_on_square(pos, moves, sq)
+ * -------------------------------------------
+ * Produce all captures that land exactly on 'sq' for the side to move.
+ * Useful for SEE and quiescence ordering.
+ */
+
 s_move* generate_captures_on_square(const position& pos,s_move* moves,
   const square sq){
   const auto target=square_bb[sq];
@@ -228,14 +315,21 @@ s_move* generate_captures_on_square(const position& pos,s_move* moves,
       target);
 }
 
+/*
+ * generate_moves<evade_check>(pos, moves)
+ * ---------------------------------------
+ * Generate legal king moves to safe squares, then if in single check,
+ * generate interpositions and captures that neutralize the checking piece.
+ */
+
 template<> s_move* generate_moves<evade_check>(const position& pos,s_move* moves){
   const auto me=pos.on_move();
   const auto square_k=pos.king(me);
   uint64_t attacked_squares=0;
-  auto far_attackers=pos.is_in_check()&~pos.pieces(pt_knight,pt_pawn);
+  auto far_attackers=pos.is_in_check()&~pos.pieces(pt_knight,pt_pawn);// Sliding checkers only
   while(far_attackers){
     const auto check_square=pop_lsb(&far_attackers);
-    attacked_squares|=connection_bb[check_square][square_k]^check_square;
+    attacked_squares|=connection_bb[check_square][square_k]^check_square;// Squares between checker and king
   }
   auto squares=
     pos.attack_from<pt_king>(square_k)&~pos.pieces(me)&~attacked_squares;
@@ -248,12 +342,24 @@ template<> s_move* generate_moves<evade_check>(const position& pos,s_move* moves
     :movegen::all_piece_moves<black,evade_check>(pos,moves,target);
 }
 
+/*
+ * generate_moves<pawn_advances>(pos, moves)
+ * -----------------------------------------
+ * Specialized stage to generate only forward pawn pushes (no captures).
+ */
+
 template<> s_move* generate_moves<pawn_advances>(const position& pos,s_move* moves){
   const auto me=pos.on_move();
   return me==white
     ?movegen::generate_pawn_advance<white>(pos,moves)
     :movegen::generate_pawn_advance<black>(pos,moves);
 }
+
+/*
+ * generate_moves<queen_checks>(pos, moves)
+ * ----------------------------------------
+ * Generate only quiet queen checks to improve move ordering.
+ */
 
 template<> s_move* generate_moves<queen_checks>(const position& pos,s_move* moves){
   return pos.on_move()==white
@@ -262,6 +368,13 @@ template<> s_move* generate_moves<queen_checks>(const position& pos,s_move* move
     :movegen::moves_for_piece<black,pt_queen,true>(pos,moves,
       ~pos.pieces());
 }
+
+/*
+ * generate_moves<quiet_checks>(pos, moves)
+ * ----------------------------------------
+ * Generate quiet checking moves, including discovered checks by moving
+ * pinned pieces off the line when legal.
+ */
 
 template<> s_move* generate_moves<quiet_checks>(const position& pos,s_move* moves){
   const auto me=pos.on_move();
@@ -281,6 +394,13 @@ template<> s_move* generate_moves<quiet_checks>(const position& pos,s_move* move
       pos,moves,~pos.pieces());
 }
 
+/*
+ * generate_legal_moves(pos, moves)
+ * --------------------------------
+ * Generate pseudo-legal moves and then filter them by legality.
+ * The filter ensures king safety and handles en passant edge cases.
+ */
+
 s_move* generate_legal_moves(const position& pos,s_move* moves){
   const auto pinned=pos.pinned_pieces();
   const auto square_k=pos.king(pos.on_move());
@@ -297,6 +417,12 @@ s_move* generate_legal_moves(const position& pos,s_move* moves){
   return moves;
 }
 
+/*
+ * legal_move_list_contains_castle(pos, move)
+ * ------------------------------------------
+ * Return true if the given castle move is legal in the current position.
+ */
+
 bool legal_move_list_contains_castle(const position& pos,const uint32_t move){
   s_move moves[max_moves];
   if(pos.is_in_check()) return false;
@@ -308,6 +434,12 @@ bool legal_move_list_contains_castle(const position& pos,const uint32_t move){
   }
   return false;
 }
+
+/*
+ * legal_moves_list_contains_move(pos, move)
+ * -----------------------------------------
+ * Return true if 'move' is generated and is legal in the current position.
+ */
 
 bool legal_moves_list_contains_move(const position& pos,const uint32_t move){
   s_move moves[max_moves];
@@ -321,6 +453,12 @@ bool legal_moves_list_contains_move(const position& pos,const uint32_t move){
   }
   return false;
 }
+
+/*
+ * at_least_one_legal_move(pos)
+ * ----------------------------
+ * Return true if there exists at least one legal move.
+ */
 
 bool at_least_one_legal_move(const position& pos){
   s_move moves[max_moves];
