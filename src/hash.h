@@ -1,3 +1,10 @@
+/*
+ * Chess Engine - Transposition Table (Interface)
+ * ----------------------------------------------
+ * Declares the transposition table entry format and the tt class
+ * which manages allocation, lookup, store, and reset operations.
+ */
+
 #pragma once
 #include <memory>
 #include <cstring>
@@ -86,6 +93,7 @@ public:
   [[nodiscard]] main_hash_entry* replace(uint64_t key) const;
   [[nodiscard]] int hash_full() const;
   void init(size_t mb_size);
+  // Reset entries to empty
   void clear() const;
 
   void prefetch_entry(const uint64_t key) const{

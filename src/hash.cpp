@@ -1,3 +1,19 @@
+/*
+ * Chess Engine - Transposition Table (Implementation)
+ * ---------------------------------------------------
+ * Implements a hash table for storing previously searched positions
+ * to speed up alpha-beta search.
+ *
+ * Features:
+ *   - Stores Zobrist key, depth, score, bound type, best move, and age
+ *   - Replacement policy: always prefer deeper or more recent entries
+ *   - Age system: allows clearing old entries without full wipe
+ *   - Separate clear() and new_search() to manage lifecycle
+ *
+ * Notes:
+ *   - ASCII-only comments to avoid UTF-8 warnings
+ */
+
 #include "hash.h"
 #include "main.h"
 
