@@ -57,11 +57,11 @@
 - **UCI_Chess960** -play chess960 (often called FRC or Fischer Random Chess). default is false.
 - **Clear Hash** -clear the hash table. delete allocated memory and re-initialize.
 
-## Architectural overview
+## architectural overview
 
 The core state: position.{h,cpp}
 
-## Holds the full board state (piece lists, bitboards, side to move, castling, en-passant, Zobrist keys, phase, repetition info, etc.). It precomputes and caches
+## holds the full board state (piece lists, bitboards, side to move, castling, en-passant, Zobrist keys, phase, repetition info, etc.). It precomputes and caches
 
 Attacked squares and x-rays/pins for both sides
 
@@ -74,7 +74,7 @@ Templated, bitboard-based generators for different move classes (captures only, 
 
 Move ordering / picker: movepick.{h,cpp}
 
-## Precise staged picker that feeds the search
+## precise staged picker that feeds the search
 
 Hash move
 
@@ -109,7 +109,7 @@ Cache-line-aware buckets (3 entries per bucket with padding), partial key (16 bi
 
 Time management: chrono.{h,cpp}
 
-## A modern, move-importance model that spreads available time across a horizon with guardrails
+## a modern, move-importance model that spreads available time across a horizon with guardrails
 
 “Optimal” and “maximum” budgets per move
 
@@ -137,7 +137,7 @@ Global random tables for piece-square, castling rights, en-passant file, side-to
 Bench / Perft: bench.{h,cpp} (+ perft elsewhere)
 A fixed set of FENs, timed fixed-depth runs, nodes/time/NPS per position and overall—very useful for regression and perf tracking.
 
-# Modern features
+# modern features
 
 NNUE evaluation (efficient neural net on CPUs): strong midgame strength with low branching cost. The code turns board state into compact (piece, square) arrays and calls a single nnue_evaluate.
 
@@ -166,8 +166,7 @@ Evaluation on leaves → NNUE; QS runs with captures/quiet checks; SEE and ProbC
 
 Best line & info → UCI “info” lines with PV / depth / score / nodes / nps; final “bestmove”.
 
-
-# Performance-oriented details included
+# performance-oriented details
 
 Incremental state: position::play_move() updates keys, phase, material, pawn keys, x-rays, check masks, capture info, 50-move counter—everything needed for quick legality and hash correctness.
 
@@ -181,8 +180,7 @@ ASCII-only comments (your recent change): zero UTF-8 issues in toolchains and li
 
 Prefetch & alignment: TT prefetch and cache-aligned buckets reduce memory stalls.
 
-
-# Extensibility hot-spots
+# extensibility hot-spots
 
 Search heuristics: Easy to drop in LMR tuning, futility/razoring, or aspiration windows around the TT score. The staged picker already supports finer buckets.
 
@@ -192,10 +190,9 @@ Time control: The importance curve parameters are centralized—experimenting wi
 
 Protocol features: UCI already exposes the usual suspects (Hash, Threads, MultiPV, Ponder, Chess960). Adding custom options (e.g., LMR on/off, contempt style) is simple in uci::set_option().
 
+# What you get with Fire:
 
-# What you get
-
-Strong, modern CPU-friendly engine powered by NNUE.
+Strong, modernized CPU-friendly engine powered by a unique NNUE.
 
 Solid move ordering stack with CMH, killers, SEE, and tailored stages for QS and check evasion.
 
