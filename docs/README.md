@@ -32,6 +32,10 @@
 - unique NNUE (halfkp_256x2-32-32) evaluation
 - visual studio 2022 project files included
 
+## nnue
+![alt tag](https://raw.githubusercontent.com/FireFather/fire/master/docs/nuue_halfkp_data_flow.png)
+![alt tag](https://raw.githubusercontent.com/FireFather/fire/master/docs/nnue_orientation_mapping.png)
+
 ## new
 - lean & mean codebase size optimizations
 - syzygy TBs have been removed (as NNUE evaluation becomes stronger TB's become less valuable)
