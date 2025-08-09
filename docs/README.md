@@ -32,7 +32,7 @@
 - unique NNUE (halfkp_256x2-32-32) evaluation
 - visual studio 2022 project files included
 
-##perft
+## perft
 ![alt tag](https://raw.githubusercontent.com/FireFather/fire/master/docs/perft_7.png)
 
 ## nnue
