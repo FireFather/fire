@@ -1,3 +1,10 @@
+/*
+ * Chess Engine - Threading and Search Coordination (Interface)
+ * ------------------------------------------------------------
+ * Declares the worker thread class, per-thread data containers,
+ * and the thread pool that coordinates search across threads.
+ */
+
 #pragma once
 #include <atomic>
 #include <condition_variable>
@@ -10,7 +17,15 @@
 #include "position.h"
 #include "search.h"
 
+// Global counter-move history storage (shared across threads)
 inline cmhinfo* cmh_data;
+
+/*
+ * class thread
+ * ------------
+ * Worker thread object with its own condition variable and mutex.
+ * Each thread owns a threadinfo and a root_position to search from.
+ */
 
 class thread{
   std::thread native_thread;
@@ -21,7 +36,8 @@ class thread{
 public:
   thread();
   virtual ~thread();
-  virtual void begin_search();
+  virtual// Publish search params and wake main thread
+  void begin_search();
   void idle_loop();
   void wake(bool activate_search);
   void wait_for_search_to_end();
@@ -36,9 +52,22 @@ public:
   int active_pv{};
 };
 
+/*
+ * cmhinfo
+ * -------
+ * Per-thread (or shared) counter-move history tables.
+ */
+
 struct cmhinfo{
   counter_move_history counter_move_stats;
 };
+
+/*
+ * threadinfo
+ * ----------
+ * Per-thread buffers and statistics used by search and move ordering.
+ * Contains move lists, history tables, and the root position instance.
+ */
 
 struct threadinfo{
   position root_position{};
@@ -51,6 +80,12 @@ struct threadinfo{
   counter_follow_up_move_stats counter_followup_moves;
   move_value_stats capture_history{};
 };
+
+/*
+ * mainthread : thread
+ * -------------------
+ * Extends worker with extra fields for quick-move logic and UI feedback.
+ */
 
 struct mainthread final:thread{
   void begin_search() override;
@@ -65,8 +100,17 @@ struct mainthread final:thread{
   int previous_root_depth={};
 };
 
+/*
+ * threadpool
+ * ----------
+ * Manages creation, lifetime, and coordination of threads.
+ * Holds parameters for the current search and aggregates results.
+ */
+
 struct threadpool:std::vector<thread*>{
+  // Set up threads and global state
   void init();
+  // Tear down all threads and free resources
   void exit();
 
   int thread_count{};
@@ -79,8 +123,10 @@ struct threadpool:std::vector<thread*>{
   }
 
   void begin_search(position&,const search_param&);
+  // Adjust the number of worker threads
   void change_thread_count(int num_threads);
-  [[nodiscard]] uint64_t visited_nodes() const;
+  [[nodiscard]]// Aggregate count of visited nodes across threads
+  uint64_t visited_nodes() const;
   static void delete_counter_move_history();
 
   int active_thread_count{};
