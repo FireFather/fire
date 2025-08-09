@@ -1,4 +1,18 @@
+/*
+ * Chess Engine - Benchmark (Interface)
+ * ------------------------------------
+ * Declares the list of benchmark FENs and the bench(depth) entry point.
+ */
+
 #pragma once
+
+/*
+ * bench_positions
+ * ---------------
+ * A curated set of FENs spanning opening, middlegame, and endgame.
+ * Meant to exercise move generation, evaluation, and pruning behavior.
+ */
+
 inline const char* bench_positions[]={
 "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -",
 "r1bn1rk1/ppp1qppp/3pp3/3P4/2P1n3/2B2NP1/PP2PPBP/2RQK2R w K -",
@@ -33,4 +47,5 @@ inline const char* bench_positions[]={
 "r1b3k1/2p4p/3p1p2/1p1P4/1P3P2/P5P1/5KNP/R7 b - -",
 "1k2b3/1pp5/4r3/R3N1pp/1P3P2/p5P1/2P4P/1K6 w - -",
 };
+// Run the benchmark to the given search depth
 int bench(int depth);
