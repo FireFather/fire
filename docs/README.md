@@ -135,7 +135,7 @@ Global random tables for piece-square, castling rights, en-passant file, side-to
 Bench / Perft: bench.{h,cpp} (+ perft elsewhere)
 A fixed set of FENs, timed fixed-depth runs, nodes/time/NPS per position and overall—very useful for regression and perf tracking.
 
-# modern features
+## modern features in C++
 
 NNUE evaluation (efficient neural net on CPUs): strong midgame strength with low branching cost. The code turns board state into compact (piece, square) arrays and calls a single nnue_evaluate.
 
@@ -164,7 +164,7 @@ Evaluation on leaves → NNUE; QS runs with captures/quiet checks; SEE and ProbC
 
 Best line & info → UCI “info” lines with PV / depth / score / nodes / nps; final “bestmove”.
 
-# performance-oriented details
+## performance-oriented details
 
 Incremental state: position::play_move() updates keys, phase, material, pawn keys, x-rays, check masks, capture info, 50-move counter—everything needed for quick legality and hash correctness.
 
@@ -178,7 +178,7 @@ ASCII-only comments (your recent change): zero UTF-8 issues in toolchains and li
 
 Prefetch & alignment: TT prefetch and cache-aligned buckets reduce memory stalls.
 
-# extensibility hot-spots
+## extensibility hot-spots
 
 Search heuristics: Easy to drop in LMR tuning, futility/razoring, or aspiration windows around the TT score. The staged picker already supports finer buckets.
 
@@ -188,7 +188,7 @@ Time control: The importance curve parameters are centralized—experimenting wi
 
 Protocol features: UCI already exposes the usual suspects (Hash, Threads, MultiPV, Ponder, Chess960). Adding custom options (e.g., LMR on/off, contempt style) is simple in uci::set_option().
 
-# What you get with Fire:
+## What you get with Fire 10.0:
 
 Strong, modernized CPU-friendly engine powered by a unique NNUE.
 
