@@ -92,7 +92,9 @@ Uses multiple statistics tables: global history, counter-move history (CMH), fol
 
 Search loop: search.{h,cpp}
 
-## classic iterative deepening with a TT, a staged move picker, NNUE evaluation, and quiescence. The surrounding code has support for
+## classic iterative deepening with a TT, a staged move picker, NNUE evaluation, and quiescence
+
+The supporting code has support for:
 
 ProbCut (a verification-style fast cutoff on promising captures)
 
@@ -108,7 +110,7 @@ Cache-line-aware buckets (3 entries per bucket with padding), partial key (16 bi
 
 Time management: chrono.{h,cpp}
 
-## a modern, move-importance model that spreads available time across a horizon with guardrails
+## Fire uses a modern, move-importance model that spreads available time across a horizon with guardrails:
 
 “Optimal” and “maximum” time budgets per move
 
@@ -165,7 +167,7 @@ Evaluation on leaves → NNUE; QS runs with captures/quiet checks; SEE and ProbC
 
 Best line & info → UCI “info” lines with PV / depth / score / nodes / nps; final “bestmove”.
 
-## performance-oriented details
+## high performance-oriented details
 
 Incremental state: position::play_move() updates keys, phase, material, pawn keys, x-rays, check masks, capture info, 50-move counter—everything needed for quick legality and hash correctness.
 
@@ -204,7 +206,7 @@ Full UCI support, Chess960 compatibility, and bench/perft tooling for regression
 
 # Benefits of Modern C++ in Fire
 
-Fire leans on modern C++ idioms in ways that give it real, measurable advantages over the older, more procedural C-style engines from the 90s/early 2000s like Crafty & GNU Chess, and many of the old-school C engines that exist today.
+Fire leans on modern C++ idioms in ways that give it real, measurable advantages over the older, more procedural C-style engines from the 90s/early 2000s like Crafty & GNU Chess, and many of the numerous old-school C engines that exist today.
 
 Here’s how:
 
