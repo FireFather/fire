@@ -89,7 +89,7 @@ Bad captures
 Any delayed bucket
 Uses multiple statistics tables: global history, counter-move history (CMH), follow-up counters, max gain for tactical quiets, and a dedicated evasion history. Also has QS/ProbCut/recapture-only stages.
 
-Search loop: search.{h,cpp} (you didn’t paste this one, but the rest makes its interfaces clear)
+Search loop: search.{h,cpp}
 
 ## classic iterative deepening with a TT, a staged move picker, NNUE evaluation, and quiescence. The surrounding code has support for
 
@@ -109,7 +109,7 @@ Time management: chrono.{h,cpp}
 
 ## a modern, move-importance model that spreads available time across a horizon with guardrails
 
-“Optimal” and “maximum” budgets per move
+“Optimal” and “maximum” time budgets per move
 
 Increment awareness and ponder bonus
 
@@ -174,7 +174,7 @@ Target-masked generators: most movegen functions accept a target mask so higher-
 
 History tables everywhere: move_value_stats, counter_move_values, follow-up counters, max_gain_stats, evasion_history—all feeding ordering.
 
-ASCII-only comments (your recent change): zero UTF-8 issues in toolchains and linters.
+ASCII-only comments: zero UTF-8 issues in toolchains and linters.
 
 Prefetch & alignment: TT prefetch and cache-aligned buckets reduce memory stalls.
 
