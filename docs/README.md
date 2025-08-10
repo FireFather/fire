@@ -27,7 +27,8 @@
 - ponder
 - multiPV
 - chess960 (Fischer Random)
-- bench, perft & divide
+- bench
+- fast perft (& divide)
 - asychronous cout (acout) class using std::unique_lock <std::mutex>
 - unique NNUE (halfkp_256x2-32-32) evaluation
 - visual studio 2022 project files included
