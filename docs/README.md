@@ -1,4 +1,4 @@
-# Fire — UCI Chess Engine with NNUE
+# Fire — UCI Chess Engine
 
 [![Release][release-badge]][release-link]
 [![Commits][commits-badge]][commits-link]
