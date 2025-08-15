@@ -91,7 +91,7 @@ divide 7
 
 ## Perft
 
-![Perft 7](https://raw.githubusercontent.com/FireFather/fire/master/docs/perft.txt)
+![Perft 7](https://raw.githubusercontent.com/FireFather/fire/master/docs/perft.md)
 
 ---
 
