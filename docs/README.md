@@ -69,8 +69,8 @@ go depth 10
 
 Perft and divide are built in:
 ```text
-perft 5
-divide 4
+perft 7
+divide 7
 ```
 
 ---
@@ -91,7 +91,7 @@ divide 4
 
 ## Perft
 
-![Perft 7](https://raw.githubusercontent.com/FireFather/fire/master/docs/perft_7.png)
+![Perft 7](https://raw.githubusercontent.com/FireFather/fire/master/docs/perft.txt)
 
 ---
 
