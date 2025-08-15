@@ -90,7 +90,7 @@ divide 7
 ---
 
 ## Perft
-
+```text
 Fire 10 x64 avx2
 Aug 09 2025 15:36:42
 NNUE loaded
