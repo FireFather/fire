@@ -105,7 +105,7 @@ divide 4
 ![NNUE Orientation Mapping](https://raw.githubusercontent.com/FireFather/fire/master/docs/nnue_orientation_mapping.png)
 
 
-_For full technical details, see [NNUE Developer Guide](docs/NNUE.md)._
+_For full technical details, see [NNUE Developer Guide](NNUE.md)._
 
 ---
 
@@ -135,7 +135,7 @@ _For full technical details, see [NNUE Developer Guide](docs/NNUE.md)._
 - **Bitboards** (`bitboard.{h,cpp}`, `macro.h`, `main.h`): precomputed attacks, sliding attacks, enums for square/file/rank, fast LSB/MSB, prefetch.
 
 
-_For a deeper explanation of move generation, see [Move Generation Developer Guide](docs/MoveGen.md)._
+_For a deeper explanation of move generation, see [Move Generation Developer Guide](MoveGen.md)._
 
 <details>
 <summary>Show more technical notes</summary>
