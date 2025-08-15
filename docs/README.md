@@ -104,6 +104,9 @@ divide 4
 ![NNUE Data Flow](https://raw.githubusercontent.com/FireFather/fire/master/docs/nuue_halfkp_data_flow.png)
 ![NNUE Orientation Mapping](https://raw.githubusercontent.com/FireFather/fire/master/docs/nnue_orientation_mapping.png)
 
+
+_For full technical details, see [NNUE Developer Guide](docs/NNUE.md)._
+
 ---
 
 ## What’s New
@@ -130,6 +133,9 @@ divide 4
 - **Threads** (`thread.{h,cpp}`): lightweight pool; each worker owns its state; condition variable wake/sleep; aggregates NPS.
 - **Protocol/I‑O** (`uci.{h,cpp}`, `util.{h,cpp}`): full UCI, FEN parsing, thread‑safe `acout`, move<->string helpers (incl. Chess960 castling).
 - **Bitboards** (`bitboard.{h,cpp}`, `macro.h`, `main.h`): precomputed attacks, sliding attacks, enums for square/file/rank, fast LSB/MSB, prefetch.
+
+
+_For a deeper explanation of move generation, see [Move Generation Developer Guide](docs/MoveGen.md)._
 
 <details>
 <summary>Show more technical notes</summary>
