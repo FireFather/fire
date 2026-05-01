@@ -1,5 +1,5 @@
 /*
- * Chess Engine - Program Entry (Implementation)
+ * Fire Chess Engine - Program Entry (Implementation)
  * --------------------------------------------
  * Boot sequence:
  *   1) Print engine and build information

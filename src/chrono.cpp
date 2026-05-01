@@ -1,5 +1,5 @@
 /*
- * Chess Engine - Time Control Module (Implementation)
+ * Fire Chess Engine - Time Control Module (Implementation)
  * --------------------------------------------------
  * Implements thinking time allocation for the engine. The main entry
  * points are:
@@ -17,7 +17,7 @@
  */
 
 /*
- * Chess Engine - Chrono / Time Control Module (Implementation)
+ * Fire Chess Engine - Chrono / Time Control Module (Implementation)
  * ------------------------------------------------------------
  * Implements time allocation logic for search. Responsible for:
  *   - Initializing optimal and maximum times per move

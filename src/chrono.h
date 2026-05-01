@@ -1,12 +1,12 @@
 /*
- * Chess Engine - Time Control Module (Interface)
+ * Fire Chess Engine - Time Control Module (Interface)
  * ----------------------------------------------
  * Declares the search_param struct (UCI limits) and the timecontrol
  * class which manages per-move time budgets and elapsed timing.
  */
 
 /*
- * Chess Engine - Chrono / Time Control Module (Interface)
+ * Fire Chess Engine - Chrono / Time Control Module (Interface)
  * -------------------------------------------------------
  * Declares the timecontrol class and supporting types.
  * Provides methods to initialize, query, and adjust time usage.

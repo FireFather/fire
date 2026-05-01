@@ -1,5 +1,5 @@
 /*
- * Chess Engine - Move Picker (Implementation)
+ * Fire Chess Engine - Move Picker (Implementation)
  * -------------------------------------------
  * Implements staged move generation and ordering for search.
  *

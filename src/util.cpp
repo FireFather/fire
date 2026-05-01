@@ -1,5 +1,5 @@
 /*
- * Chess Engine - Utilities (Implementation)
+ * Fire Chess Engine - Utilities (Implementation)
  * ----------------------------------------
  * Misc helpers for I/O and formatting:
  *   - move_to_string / move_from_string: UCI-algebraic move text
@@ -9,7 +9,7 @@
  */
 
 /*
- * Chess Engine - Utility Functions (Implementation)
+ * Fire Chess Engine - Utility Functions (Implementation)
  * -------------------------------------------------
  * Provides miscellaneous utilities:
  *   - Thread-safe output stream wrapper (acout)

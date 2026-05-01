@@ -1,12 +1,12 @@
 /*
- * Chess Engine - Utilities (Interface)
+ * Fire Chess Engine - Utilities (Interface)
  * ------------------------------------
  * Thread-safe console output helper (acout) and utility functions
  * for move formatting and build information.
  */
 
 /*
- * Chess Engine - Utility Functions (Interface)
+ * Fire Chess Engine - Utility Functions (Interface)
  * ---------------------------------------------
  * Declares miscellaneous helpers, the acout class for synchronized
  * output, and string/time utilities used across the engine.

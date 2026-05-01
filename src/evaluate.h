@@ -1,5 +1,5 @@
 /*
- * Chess Engine - Evaluation Module (Interface)
+ * Fire Chess Engine - Evaluation Module (Interface)
  * ---------------------------------------------
  * Declares evaluation functions used by the search module.
  *

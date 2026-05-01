@@ -1,5 +1,5 @@
 /*
- * Chess Engine - Search Module (Interface)
+ * Fire Chess Engine - Search Module (Interface)
  * ----------------------------------------
  * Declarations, small inline utilities, and search-related structs.
  *

@@ -1,5 +1,5 @@
 /*
- * Chess Engine - Core Types and Constants (Header)
+ * Fire Chess Engine - Core Types and Constants (Header)
  * -----------------------------------------------
  * Central definitions used across the engine:
  *   - Platform macros and alignment helpers

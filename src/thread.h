@@ -1,5 +1,5 @@
 /*
- * Chess Engine - Threading and Search Coordination (Interface)
+ * Fire Chess Engine - Threading and Search Coordination (Interface)
  * ------------------------------------------------------------
  * Declares the worker thread class, per-thread data containers,
  * and the thread pool that coordinates search across threads.

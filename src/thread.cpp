@@ -1,5 +1,5 @@
 /*
- * Chess Engine - Threading and Search Coordination (Implementation)
+ * Fire Chess Engine - Threading and Search Coordination (Implementation)
  * ----------------------------------------------------------------
  * This file implements the worker thread class and the thread pool.
  *

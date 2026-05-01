@@ -1,5 +1,5 @@
 /*
- * Chess Engine - Evaluation Module (Implementation)
+ * Fire Chess Engine - Evaluation Module (Implementation)
  * -------------------------------------------------
  * This file implements the evaluation entry points, currently delegating
  * entirely to an NNUE (Efficiently Updatable Neural Network) backend.

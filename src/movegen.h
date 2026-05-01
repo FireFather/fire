@@ -1,5 +1,5 @@
 /*
- * Chess Engine - Move Generation Module (Interface)
+ * Fire Chess Engine - Move Generation Module (Interface)
  * -------------------------------------------------
  * Declares functions for generating moves into a move list.
  * Functions exist for all-moves, captures-only, and evasions.

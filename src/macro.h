@@ -1,5 +1,5 @@
 /*
- * Chess Engine - Lightweight Operators (Header)
+ * Fire Chess Engine - Lightweight Operators (Header)
  * ---------------------------------------------
  * Provides small inline operator overloads for engine enums:
  *   - file, rank, side, square: arithmetic and increment/decrement

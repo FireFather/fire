@@ -1,5 +1,5 @@
 /*
- * Chess Engine - UCI Module (Interface)
+ * Fire Chess Engine - UCI Module (Interface)
  * -------------------------------------
  * Declares the functions and global settings used by the UCI front-end.
  *

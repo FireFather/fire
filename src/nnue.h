@@ -1,5 +1,5 @@
 /*
- * Chess Engine - NNUE Interface (Header)
+ * Fire Chess Engine - NNUE Interface (Header)
  * --------------------------------------
  * Declarations and constants for the NNUE evaluation subsystem.
  *

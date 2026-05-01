@@ -1,5 +1,5 @@
 /*
- * Chess Engine - Transposition Table (Implementation)
+ * Fire Chess Engine - Transposition Table (Implementation)
  * ---------------------------------------------------
  * Implements a hash table for storing previously searched positions
  * to speed up alpha-beta search.

@@ -1,5 +1,5 @@
 /*
- * Chess Engine - UCI Module (Implementation)
+ * Fire Chess Engine - UCI Module (Implementation)
  * ------------------------------------------
  * This file implements the Universal Chess Interface (UCI) protocol loop
  * and supporting command handlers.

@@ -1,5 +1,5 @@
 /*
- * Chess Engine - Benchmark (Interface)
+ * Fire Chess Engine - Benchmark (Interface)
  * ------------------------------------
  * Declares the list of benchmark FENs and the bench(depth) entry point.
  */

@@ -1,5 +1,5 @@
 /*
- * Chess Engine - Move Generation Module (Implementation)
+ * Fire Chess Engine - Move Generation Module (Implementation)
  * ------------------------------------------------------
  * Generates pseudo-legal moves for all pieces and special moves.
  *

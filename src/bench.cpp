@@ -1,5 +1,5 @@
 /*
- * Chess Engine - Benchmark (Implementation)
+ * Fire Chess Engine - Benchmark (Implementation)
  * ----------------------------------------
  * Runs a fixed suite of positions to a given depth and reports:
  *   - Nodes per position and aggregate nodes

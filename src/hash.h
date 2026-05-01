@@ -1,5 +1,5 @@
 /*
- * Chess Engine - Transposition Table (Interface)
+ * Fire Chess Engine - Transposition Table (Interface)
  * ----------------------------------------------
  * Declares the transposition table entry format and the tt class
  * which manages allocation, lookup, store, and reset operations.

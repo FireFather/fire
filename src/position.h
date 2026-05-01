@@ -1,5 +1,5 @@
 /*
- * Chess Engine - Position Module (Interface)
+ * Fire Chess Engine - Position Module (Interface)
  * ------------------------------------------
  * The position class represents a complete chess position and provides:
  *   - Accessors for board state (pieces, piece counts, keys, phase)

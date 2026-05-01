@@ -1,5 +1,5 @@
 /*
- * Chess Engine - Zobrist Hashing (Interface)
+ * Fire Chess Engine - Zobrist Hashing (Interface)
  * ------------------------------------------
  * Declares global Zobrist key tables and the initialization function.
  */

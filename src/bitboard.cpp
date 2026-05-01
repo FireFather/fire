@@ -1,5 +1,5 @@
 /*
- * Chess Engine - Bitboard Module (Implementation)
+ * Fire Chess Engine - Bitboard Module (Implementation)
  * -----------------------------------------------
  * Initializes and provides fast bitboard utilities:
  *   - Precomputed single-square masks, ranks/files, distances

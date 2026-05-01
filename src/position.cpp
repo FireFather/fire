@@ -1,5 +1,5 @@
 /*
- * Chess Engine - Position Module (Implementation)
+ * Fire Chess Engine - Position Module (Implementation)
  * -----------------------------------------------
  * This file implements the core position class logic.
  * The position object maintains:

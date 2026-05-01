@@ -1,5 +1,5 @@
 /*
- * Chess Engine - Bitboard Module (Interface)
+ * Fire Chess Engine - Bitboard Module (Interface)
  * ------------------------------------------
  * Declarations and inline helpers for bitboard operations.
  * Exposes constants for ranks/files, masks, and magic tables,

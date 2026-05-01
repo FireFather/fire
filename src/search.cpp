@@ -1,5 +1,5 @@
 /*
- * Chess Engine - Search Module (Implementation)
+ * Fire Chess Engine - Search Module (Implementation)
  * ------------------------------------------------
  * This file implements the core search used by the engine:
  *

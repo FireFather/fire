@@ -1,5 +1,5 @@
 /*
- * Chess Engine - NNUE Evaluation (Implementation)
+ * Fire Chess Engine - NNUE Evaluation (Implementation)
  * -----------------------------------------------
  * HalfKP feature transformer + AVX2 dense layers with incremental updates.
  *

@@ -1,5 +1,5 @@
 /*
- * Chess Engine - Move Picker (Interface)
+ * Fire Chess Engine - Move Picker (Interface)
  * ---------------------------------------
  * Declares the move_picker class and supporting data structures.
  * Provides staged move iteration tailored to search contexts.

@@ -1,5 +1,5 @@
 /*
- * Chess Engine - Zobrist Hashing (Implementation)
+ * Fire Chess Engine - Zobrist Hashing (Implementation)
  * -----------------------------------------------
  * Initializes and applies Zobrist hashing:
  *   - Random keys for piece-square combinations
